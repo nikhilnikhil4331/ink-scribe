@@ -16,9 +16,9 @@ export type HandwritingFont =
   | 'cedarville-cursive'
   | 'la-belle-aurore';
 
-export type PageStyle = 'plain' | 'ruled' | 'single-line';
+export type PageStyle = 'plain' | 'ruled' | 'single-line' | 'graph' | 'dotted' | 'college' | 'legal';
 
-export type InkColor = 'blue' | 'black';
+export type InkColor = 'blue' | 'black' | 'red' | 'green' | 'purple' | 'brown' | 'teal' | 'orange';
 
 export interface PageMargins {
   top: number;
@@ -36,6 +36,23 @@ export interface HeaderFooter {
   showPageNumber: boolean;
 }
 
+export interface TableConfig {
+  enabled: boolean;
+  rows: number;
+  columns: number;
+  showBorders: boolean;
+  headerRow: boolean;
+}
+
+export interface DiagramImage {
+  id: string;
+  src: string;
+  name: string;
+  width: number;
+  height: number;
+  position: 'inline' | 'left' | 'right' | 'center';
+}
+
 export interface NoteSettings {
   font: HandwritingFont;
   fontSize: number;
@@ -47,6 +64,7 @@ export interface NoteSettings {
   headerFooter: HeaderFooter;
   baselineJitter: boolean;
   strokeRandomness: boolean;
+  table: TableConfig;
 }
 
 export const DEFAULT_SETTINGS: NoteSettings = {
@@ -72,6 +90,13 @@ export const DEFAULT_SETTINGS: NoteSettings = {
   },
   baselineJitter: true,
   strokeRandomness: true,
+  table: {
+    enabled: false,
+    rows: 4,
+    columns: 3,
+    showBorders: true,
+    headerRow: true,
+  },
 };
 
 export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: string; category: string }[] = [
@@ -96,13 +121,23 @@ export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: s
   { value: 'la-belle-aurore', label: 'La Belle Aurore', className: 'font-handwriting-16', category: 'Cursive' },
 ];
 
-export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string }[] = [
-  { value: 'plain', label: 'Plain' },
-  { value: 'ruled', label: 'Ruled' },
-  { value: 'single-line', label: 'Single Line' },
+export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string; description: string }[] = [
+  { value: 'plain', label: 'Plain', description: 'No lines' },
+  { value: 'ruled', label: 'Ruled', description: 'Horizontal lines' },
+  { value: 'single-line', label: 'Wide Ruled', description: 'Spaced lines' },
+  { value: 'graph', label: 'Graph Paper', description: 'Grid squares' },
+  { value: 'dotted', label: 'Dotted', description: 'Dot grid' },
+  { value: 'college', label: 'College', description: 'Narrow ruled' },
+  { value: 'legal', label: 'Legal Pad', description: 'Yellow paper' },
 ];
 
-export const INK_COLOR_OPTIONS: { value: InkColor; label: string }[] = [
-  { value: 'blue', label: 'Blue Ink' },
-  { value: 'black', label: 'Black Ink' },
+export const INK_COLOR_OPTIONS: { value: InkColor; label: string; colorClass: string }[] = [
+  { value: 'blue', label: 'Blue', colorClass: 'bg-ink-blue' },
+  { value: 'black', label: 'Black', colorClass: 'bg-ink-black' },
+  { value: 'red', label: 'Red', colorClass: 'bg-ink-red' },
+  { value: 'green', label: 'Green', colorClass: 'bg-ink-green' },
+  { value: 'purple', label: 'Purple', colorClass: 'bg-ink-purple' },
+  { value: 'brown', label: 'Brown', colorClass: 'bg-ink-brown' },
+  { value: 'teal', label: 'Teal', colorClass: 'bg-ink-teal' },
+  { value: 'orange', label: 'Orange', colorClass: 'bg-ink-orange' },
 ];

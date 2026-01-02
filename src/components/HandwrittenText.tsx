@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from 'react';
-import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
+import { NoteSettings, FONT_OPTIONS, DiagramImage } from '@/types/notes';
 import { generateJitter, generateRotation, getRandomOpacity } from '@/utils/handwriting';
 
 interface HandwrittenTextProps {
@@ -7,6 +7,8 @@ interface HandwrittenTextProps {
   settings: NoteSettings;
   pageNumber?: number;
   totalPages?: number;
+  tableData?: string[][];
+  diagrams?: DiagramImage[];
 }
 
 const HandwrittenWord = memo(({ 
@@ -23,9 +25,7 @@ const HandwrittenWord = memo(({
     const jitterY = generateJitter(settings.baselineJitter, 2);
     const rotation = generateRotation(settings.strokeRandomness, 0.5);
     const opacity = getRandomOpacity(settings.strokeRandomness);
-    const extraSpacing = settings.strokeRandomness 
-      ? (Math.random() - 0.5) * 3 
-      : 0;
+    const extraSpacing = settings.strokeRandomness ? (Math.random() - 0.5) * 3 : 0;
 
     return {
       transform: `translate(${jitterX}px, ${jitterY}px) rotate(${rotation}deg)`,
@@ -53,21 +53,9 @@ const HandwrittenLine = memo(({
   const lineJitter = generateJitter(settings.baselineJitter, 1);
 
   return (
-    <div 
-      style={{ 
-        height: `${settings.lineSpacing}px`,
-        display: 'flex',
-        alignItems: 'center',
-        transform: `translateY(${lineJitter}px)`,
-      }}
-    >
+    <div style={{ height: `${settings.lineSpacing}px`, display: 'flex', alignItems: 'center', transform: `translateY(${lineJitter}px)` }}>
       {words.map((word, wordIndex) => (
-        <HandwrittenWord 
-          key={`${lineIndex}-${wordIndex}`} 
-          word={word} 
-          settings={settings} 
-          index={wordIndex}
-        />
+        <HandwrittenWord key={`${lineIndex}-${wordIndex}`} word={word} settings={settings} index={wordIndex} />
       ))}
     </div>
   );
@@ -80,16 +68,12 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
   settings,
   pageNumber,
   totalPages,
+  tableData,
+  diagrams,
 }) => {
   const fontClass = FONT_OPTIONS.find(f => f.value === settings.font)?.className || 'font-handwriting-1';
-  const inkClass = settings.inkColor === 'blue' ? 'ink-blue' : 'ink-black';
-  
-  const pageStyleClass = {
-    plain: 'paper-plain',
-    ruled: 'paper-ruled',
-    'single-line': 'paper-single-line',
-  }[settings.pageStyle];
-
+  const inkClass = `ink-${settings.inkColor}`;
+  const pageStyleClass = `paper-${settings.pageStyle}`;
   const lines = text.split('\n');
 
   return (
@@ -102,15 +86,10 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
         paddingLeft: `${settings.margins.left}px`,
       }}
     >
-      {/* Left margin line */}
       {settings.margins.left > 30 && (
-        <div 
-          className="absolute top-0 bottom-0 w-0.5 bg-margin"
-          style={{ left: `${settings.margins.left - 10}px` }}
-        />
+        <div className="absolute top-0 bottom-0 w-0.5 bg-margin" style={{ left: `${settings.margins.left - 10}px` }} />
       )}
 
-      {/* Header */}
       {settings.headerFooter.showHeader && (
         <div className={`${fontClass} ${inkClass} text-sm mb-4 flex justify-between`} style={{ fontSize: settings.fontSize * 0.6 }}>
           {settings.headerFooter.name && <span>Name: {settings.headerFooter.name}</span>}
@@ -119,34 +98,43 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
         </div>
       )}
 
-      {/* Content */}
-      <div 
-        className={`${fontClass} ${inkClass} leading-relaxed`}
-        style={{ fontSize: `${settings.fontSize}px` }}
-      >
+      {/* Diagrams */}
+      {diagrams && diagrams.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2 justify-center">
+          {diagrams.map((diagram) => (
+            <img key={diagram.id} src={diagram.src} alt={diagram.name} className="max-w-full h-auto rounded" style={{ maxHeight: '150px' }} />
+          ))}
+        </div>
+      )}
+
+      {/* Table */}
+      {settings.table.enabled && tableData && tableData.length > 0 && (
+        <div className="mb-4 overflow-x-auto">
+          <table className={`w-full ${fontClass} ${inkClass} ${settings.table.showBorders ? 'border border-current' : ''}`} style={{ fontSize: `${settings.fontSize * 0.8}px` }}>
+            <tbody>
+              {tableData.map((row, rowIndex) => (
+                <tr key={rowIndex} className={rowIndex === 0 && settings.table.headerRow ? 'font-bold' : ''}>
+                  {row.map((cell, colIndex) => (
+                    <td key={colIndex} className={`p-2 text-center ${settings.table.showBorders ? 'border border-current' : ''}`}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className={`${fontClass} ${inkClass} leading-relaxed`} style={{ fontSize: `${settings.fontSize}px` }}>
         {lines.map((line, index) => (
-          <HandwrittenLine 
-            key={index} 
-            line={line} 
-            settings={settings} 
-            lineIndex={index}
-          />
+          <HandwrittenLine key={index} line={line} settings={settings} lineIndex={index} />
         ))}
       </div>
 
-      {/* Footer */}
       {(settings.headerFooter.showFooter || settings.headerFooter.showPageNumber) && (
-        <div 
-          className={`absolute bottom-4 left-0 right-0 ${fontClass} ${inkClass} text-center`}
-          style={{ 
-            fontSize: settings.fontSize * 0.5,
-            paddingLeft: settings.margins.left,
-            paddingRight: settings.margins.right,
-          }}
-        >
-          {settings.headerFooter.showPageNumber && pageNumber && totalPages && (
-            <span>Page {pageNumber} of {totalPages}</span>
-          )}
+        <div className={`absolute bottom-4 left-0 right-0 ${fontClass} ${inkClass} text-center`} style={{ fontSize: settings.fontSize * 0.5, paddingLeft: settings.margins.left, paddingRight: settings.margins.right }}>
+          {settings.headerFooter.showPageNumber && pageNumber && totalPages && <span>Page {pageNumber} of {totalPages}</span>}
         </div>
       )}
     </div>

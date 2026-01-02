@@ -1,11 +1,13 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
-import { NoteSettings } from '@/types/notes';
+import { NoteSettings, DiagramImage } from '@/types/notes';
 import { HandwrittenText } from './HandwrittenText';
 import { splitTextIntoPages, calculateLinesPerPage } from '@/utils/handwriting';
 
 interface PagePreviewProps {
   text: string;
   settings: NoteSettings;
+  tableData?: string[][];
+  diagrams?: DiagramImage[];
 }
 
 export interface PagePreviewHandle {
@@ -13,7 +15,7 @@ export interface PagePreviewHandle {
 }
 
 export const PagePreview = forwardRef<PagePreviewHandle, PagePreviewProps>(
-  ({ text, settings }, ref) => {
+  ({ text, settings, tableData = [], diagrams = [] }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -51,6 +53,8 @@ export const PagePreview = forwardRef<PagePreviewHandle, PagePreviewProps>(
                 settings={settings}
                 pageNumber={index + 1}
                 totalPages={pages.length}
+                tableData={index === 0 ? tableData : undefined}
+                diagrams={index === 0 ? diagrams : undefined}
               />
             </div>
           ))}

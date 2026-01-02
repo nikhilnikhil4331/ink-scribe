@@ -19,6 +19,12 @@
     --ink-blue: 220 80% 35%;
     --ink-black: 220 15% 15%;
     --ink-blue-light: 220 70% 45%;
+    --ink-red: 0 75% 45%;
+    --ink-green: 140 60% 35%;
+    --ink-purple: 270 60% 45%;
+    --ink-brown: 25 60% 35%;
+    --ink-teal: 180 60% 35%;
+    --ink-orange: 25 90% 50%;
     
     /* Ruled lines */
     --line-color: 210 40% 80%;
@@ -79,6 +85,12 @@
     --ink-blue: 210 70% 60%;
     --ink-black: 45 10% 85%;
     --ink-blue-light: 210 60% 55%;
+    --ink-red: 0 70% 60%;
+    --ink-green: 140 50% 55%;
+    --ink-purple: 270 50% 60%;
+    --ink-brown: 25 50% 55%;
+    --ink-teal: 180 50% 55%;
+    --ink-orange: 25 80% 60%;
     
     --line-color: 220 15% 25%;
     --margin-color: 0 40% 40%;
@@ -227,6 +239,53 @@
       hsl(var(--paper));
   }
 
+  .paper-graph {
+    background: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 19px,
+        hsl(var(--line-color) / 0.5) 19px,
+        hsl(var(--line-color) / 0.5) 20px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        hsl(var(--line-color) / 0.5) 19px,
+        hsl(var(--line-color) / 0.5) 20px
+      ),
+      hsl(var(--paper));
+  }
+
+  .paper-dotted {
+    background-image: radial-gradient(circle, hsl(var(--line-color)) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: hsl(var(--paper));
+  }
+
+  .paper-college {
+    background: 
+      repeating-linear-gradient(
+        transparent,
+        transparent 23px,
+        hsl(var(--line-color)) 23px,
+        hsl(var(--line-color)) 24px
+      ),
+      hsl(var(--paper-ruled));
+  }
+
+  .paper-legal {
+    background: 
+      repeating-linear-gradient(
+        transparent,
+        transparent 31px,
+        hsl(210 40% 70%) 31px,
+        hsl(210 40% 70%) 32px
+      ),
+      hsl(50 80% 88%);
+  }
+
   .paper-margin-left {
     border-left: 2px solid hsl(var(--margin-color));
   }
@@ -238,6 +297,30 @@
 
   .ink-black {
     color: hsl(var(--ink-black));
+  }
+
+  .ink-red {
+    color: hsl(var(--ink-red));
+  }
+
+  .ink-green {
+    color: hsl(var(--ink-green));
+  }
+
+  .ink-purple {
+    color: hsl(var(--ink-purple));
+  }
+
+  .ink-brown {
+    color: hsl(var(--ink-brown));
+  }
+
+  .ink-teal {
+    color: hsl(var(--ink-teal));
+  }
+
+  .ink-orange {
+    color: hsl(var(--ink-orange));
   }
 
   /* Paper shadow effect */
