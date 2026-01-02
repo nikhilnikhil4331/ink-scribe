@@ -2,14 +2,16 @@ import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { DiagramImage } from '@/types/notes';
-import { Image, Upload, X, Move } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { DrawingTool } from './DrawingTool';
 
 interface DiagramImportProps {
   diagrams: DiagramImage[];
   onAddDiagram: (diagram: DiagramImage) => void;
   onRemoveDiagram: (id: string) => void;
   onUpdateDiagram: (id: string, updates: Partial<DiagramImage>) => void;
+  inkColor: string;
 }
 
 export const DiagramImport: React.FC<DiagramImportProps> = ({
@@ -17,6 +19,7 @@ export const DiagramImport: React.FC<DiagramImportProps> = ({
   onAddDiagram,
   onRemoveDiagram,
   onUpdateDiagram,
+  inkColor,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -51,6 +54,18 @@ export const DiagramImport: React.FC<DiagramImportProps> = ({
     });
   };
 
+  const handleSaveDrawing = (dataUrl: string) => {
+    const diagram: DiagramImage = {
+      id: `drawing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      src: dataUrl,
+      name: `Drawing ${diagrams.length + 1}`,
+      width: 400,
+      height: 300,
+      position: 'center',
+    };
+    onAddDiagram(diagram);
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -68,7 +83,8 @@ export const DiagramImport: React.FC<DiagramImportProps> = ({
 
   return (
     <div className="space-y-3">
-      <Label className="control-label">Diagrams & Images</Label>
+      {/* Drawing Tool */}
+      <DrawingTool onSaveDrawing={handleSaveDrawing} inkColor={inkColor} />
       
       {/* Drop zone */}
       <div

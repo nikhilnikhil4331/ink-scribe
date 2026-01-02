@@ -247,6 +247,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           onAddDiagram={onAddDiagram}
           onRemoveDiagram={onRemoveDiagram}
           onUpdateDiagram={onUpdateDiagram}
+          inkColor={settings.inkColor}
         />
       </div>
 
