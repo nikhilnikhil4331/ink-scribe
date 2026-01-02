@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { FONT_OPTIONS, HandwritingFont, InkColor } from '@/types/notes';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +47,7 @@ export const FontPreviewPanel: React.FC<FontPreviewPanelProps> = ({
         <Button 
           variant="outline" 
           className="w-full justify-between h-auto py-3 px-4"
+          type="button"
         >
           <div className="flex flex-col items-start gap-1">
             <span className="text-xs text-muted-foreground">Current Font</span>
@@ -74,16 +75,17 @@ export const FontPreviewPanel: React.FC<FontPreviewPanelProps> = ({
         </div>
 
         {/* Font grid */}
-        <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+        <div className="flex-1 overflow-y-auto pr-2 -mr-2 scroll-smooth">
           {Object.entries(fontCategories).map(([category, fonts]) => (
             <div key={category} className="mb-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 sticky top-0 bg-background py-1">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 sticky top-0 bg-popover py-1 z-10">
                 {category}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {fonts.map((font) => (
                   <button
                     key={font.value}
+                    type="button"
                     onClick={() => handleSelectFont(font.value)}
                     className={cn(
                       'relative p-4 rounded-lg border-2 text-left transition-all hover:border-primary/50 hover:bg-accent/50',

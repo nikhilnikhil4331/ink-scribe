@@ -20,8 +20,7 @@ import {
   Trash2, 
   Download,
   MousePointer,
-  Undo,
-  X
+  Undo
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -31,7 +30,7 @@ interface DrawingToolProps {
   inkColor: string;
 }
 
-type DrawingTool = 'select' | 'pencil' | 'line' | 'rectangle' | 'circle' | 'eraser';
+type DrawingToolType = 'select' | 'pencil' | 'line' | 'rectangle' | 'circle' | 'eraser';
 
 const COLORS = [
   { name: 'Blue', value: '#1e40af' },
@@ -46,7 +45,7 @@ const COLORS = [
 
 export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColor }) => {
   const [open, setOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState<DrawingTool>('pencil');
+  const [activeTool, setActiveTool] = useState<DrawingToolType>('pencil');
   const [brushSize, setBrushSize] = useState(3);
   const [activeColor, setActiveColor] = useState(COLORS[0].value);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -106,7 +105,7 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
     }
   }, [activeTool, activeColor, brushSize]);
 
-  const handleToolClick = useCallback((tool: DrawingTool) => {
+  const handleToolClick = useCallback((tool: DrawingToolType) => {
     setActiveTool(tool);
 
     if (!fabricRef.current) return;
@@ -181,7 +180,7 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
     toast.success('Drawing added to document');
   }, [onSaveDrawing]);
 
-  const tools: { tool: DrawingTool; icon: React.ReactNode; label: string }[] = [
+  const tools: { tool: DrawingToolType; icon: React.ReactNode; label: string }[] = [
     { tool: 'select', icon: <MousePointer className="w-4 h-4" />, label: 'Select' },
     { tool: 'pencil', icon: <Pencil className="w-4 h-4" />, label: 'Pencil' },
     { tool: 'line', icon: <Minus className="w-4 h-4" />, label: 'Line' },
@@ -193,7 +192,7 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full gap-2">
+        <Button variant="outline" className="w-full gap-2" type="button">
           <Pencil className="w-4 h-4" />
           Open Drawing Tool
         </Button>
@@ -213,6 +212,7 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
                 key={tool}
                 variant={activeTool === tool ? 'default' : 'outline'}
                 size="icon"
+                type="button"
                 onClick={() => handleToolClick(tool)}
                 title={label}
                 className="h-9 w-9"
@@ -229,6 +229,7 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
             {COLORS.map((color) => (
               <button
                 key={color.value}
+                type="button"
                 onClick={() => setActiveColor(color.value)}
                 className={cn(
                   'w-7 h-7 rounded-full border-2 transition-transform hover:scale-110',
@@ -243,10 +244,10 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
           <div className="w-px h-8 bg-border mx-1" />
 
           {/* Actions */}
-          <Button variant="outline" size="icon" onClick={handleUndo} title="Undo" className="h-9 w-9">
+          <Button variant="outline" size="icon" type="button" onClick={handleUndo} title="Undo" className="h-9 w-9">
             <Undo className="w-4 h-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={handleClear} title="Clear" className="h-9 w-9">
+          <Button variant="outline" size="icon" type="button" onClick={handleClear} title="Clear" className="h-9 w-9">
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -270,10 +271,10 @@ export const DrawingTool: React.FC<DrawingToolProps> = ({ onSaveDrawing, inkColo
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" type="button" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="gap-2">
+          <Button type="button" onClick={handleSave} className="gap-2">
             <Download className="w-4 h-4" />
             Add to Document
           </Button>

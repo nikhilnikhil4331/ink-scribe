@@ -39,7 +39,7 @@ export const PagePreview = forwardRef<PagePreviewHandle, PagePreviewProps>(
     }));
 
     return (
-      <div ref={containerRef} className="h-full overflow-y-auto p-6 scrollbar-hide">
+      <div ref={containerRef} className="h-full overflow-y-auto p-6 scroll-smooth" style={{ scrollBehavior: 'smooth' }}>
         <div className="flex flex-col items-center gap-6">
           {pages.map((pageText, index) => (
             <div
