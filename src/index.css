@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Shadows+Into+Light&family=Indie+Flower&family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Shadows+Into+Light&family=Indie+Flower&family=Dancing+Script:wght@400;500;600;700&family=Architects+Daughter&family=Satisfy&family=Gloria+Hallelujah&family=Covered+By+Your+Grace&family=Rock+Salt&family=Reenie+Beanie&family=Homemade+Apple&family=Nothing+You+Could+Do&family=Cedarville+Cursive&family=La+Belle+Aurore&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -157,6 +157,46 @@
   
   .font-handwriting-6 {
     font-family: 'Dancing Script', cursive;
+  }
+  
+  .font-handwriting-7 {
+    font-family: 'Architects Daughter', cursive;
+  }
+  
+  .font-handwriting-8 {
+    font-family: 'Satisfy', cursive;
+  }
+  
+  .font-handwriting-9 {
+    font-family: 'Gloria Hallelujah', cursive;
+  }
+  
+  .font-handwriting-10 {
+    font-family: 'Covered By Your Grace', cursive;
+  }
+  
+  .font-handwriting-11 {
+    font-family: 'Rock Salt', cursive;
+  }
+  
+  .font-handwriting-12 {
+    font-family: 'Reenie Beanie', cursive;
+  }
+  
+  .font-handwriting-13 {
+    font-family: 'Homemade Apple', cursive;
+  }
+  
+  .font-handwriting-14 {
+    font-family: 'Nothing You Could Do', cursive;
+  }
+  
+  .font-handwriting-15 {
+    font-family: 'Cedarville Cursive', cursive;
+  }
+  
+  .font-handwriting-16 {
+    font-family: 'La Belle Aurore', cursive;
   }
 
   /* Paper styles */

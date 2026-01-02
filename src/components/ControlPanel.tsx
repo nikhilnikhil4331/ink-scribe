@@ -36,6 +36,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   updateMargins,
   updateHeaderFooter,
 }) => {
+  // Group fonts by category
+  const fontCategories = FONT_OPTIONS.reduce((acc, font) => {
+    if (!acc[font.category]) acc[font.category] = [];
+    acc[font.category].push(font);
+    return acc;
+  }, {} as Record<string, typeof FONT_OPTIONS>);
+
   return (
     <div className="h-full overflow-y-auto scrollbar-hide">
       {/* Font Selection */}
@@ -55,11 +62,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                {FONT_OPTIONS.map((font) => (
-                  <SelectItem key={font.value} value={font.value}>
-                    <span className={font.className}>{font.label}</span>
-                  </SelectItem>
+              <SelectContent className="max-h-[300px]">
+                {Object.entries(fontCategories).map(([category, fonts]) => (
+                  <div key={category}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {category}
+                    </div>
+                    {fonts.map((font) => (
+                      <SelectItem key={font.value} value={font.value}>
+                        <span className={`${font.className} text-base`}>{font.label}</span>
+                      </SelectItem>
+                    ))}
+                  </div>
                 ))}
               </SelectContent>
             </Select>
