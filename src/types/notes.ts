@@ -4,7 +4,17 @@ export type HandwritingFont =
   | 'patrick-hand'
   | 'shadows-into-light'
   | 'indie-flower'
-  | 'dancing-script';
+  | 'dancing-script'
+  | 'architects-daughter'
+  | 'satisfy'
+  | 'gloria-hallelujah'
+  | 'covered-by-your-grace'
+  | 'rock-salt'
+  | 'reenie-beanie'
+  | 'homemade-apple'
+  | 'nothing-you-could-do'
+  | 'cedarville-cursive'
+  | 'la-belle-aurore';
 
 export type PageStyle = 'plain' | 'ruled' | 'single-line';
 
@@ -64,13 +74,26 @@ export const DEFAULT_SETTINGS: NoteSettings = {
   strokeRandomness: true,
 };
 
-export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: string }[] = [
-  { value: 'caveat', label: 'Caveat', className: 'font-handwriting-1' },
-  { value: 'kalam', label: 'Kalam', className: 'font-handwriting-2' },
-  { value: 'patrick-hand', label: 'Patrick Hand', className: 'font-handwriting-3' },
-  { value: 'shadows-into-light', label: 'Shadows Into Light', className: 'font-handwriting-4' },
-  { value: 'indie-flower', label: 'Indie Flower', className: 'font-handwriting-5' },
-  { value: 'dancing-script', label: 'Dancing Script', className: 'font-handwriting-6' },
+export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: string; category: string }[] = [
+  // Casual & Natural
+  { value: 'caveat', label: 'Caveat', className: 'font-handwriting-1', category: 'Casual' },
+  { value: 'kalam', label: 'Kalam', className: 'font-handwriting-2', category: 'Casual' },
+  { value: 'patrick-hand', label: 'Patrick Hand', className: 'font-handwriting-3', category: 'Casual' },
+  { value: 'architects-daughter', label: 'Architects Daughter', className: 'font-handwriting-7', category: 'Casual' },
+  { value: 'gloria-hallelujah', label: 'Gloria Hallelujah', className: 'font-handwriting-9', category: 'Casual' },
+  // Messy & Authentic  
+  { value: 'shadows-into-light', label: 'Shadows Into Light', className: 'font-handwriting-4', category: 'Messy' },
+  { value: 'indie-flower', label: 'Indie Flower', className: 'font-handwriting-5', category: 'Messy' },
+  { value: 'covered-by-your-grace', label: 'Covered By Your Grace', className: 'font-handwriting-10', category: 'Messy' },
+  { value: 'reenie-beanie', label: 'Reenie Beanie', className: 'font-handwriting-12', category: 'Messy' },
+  { value: 'rock-salt', label: 'Rock Salt', className: 'font-handwriting-11', category: 'Messy' },
+  // Cursive & Elegant
+  { value: 'dancing-script', label: 'Dancing Script', className: 'font-handwriting-6', category: 'Cursive' },
+  { value: 'satisfy', label: 'Satisfy', className: 'font-handwriting-8', category: 'Cursive' },
+  { value: 'homemade-apple', label: 'Homemade Apple', className: 'font-handwriting-13', category: 'Cursive' },
+  { value: 'nothing-you-could-do', label: 'Nothing You Could Do', className: 'font-handwriting-14', category: 'Cursive' },
+  { value: 'cedarville-cursive', label: 'Cedarville Cursive', className: 'font-handwriting-15', category: 'Cursive' },
+  { value: 'la-belle-aurore', label: 'La Belle Aurore', className: 'font-handwriting-16', category: 'Cursive' },
 ];
 
 export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string }[] = [
