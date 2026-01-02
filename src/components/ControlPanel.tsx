@@ -1,10 +1,11 @@
 import React from 'react';
-import { NoteSettings, FONT_OPTIONS, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS } from '@/types/notes';
+import { NoteSettings, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS } from '@/types/notes';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { FontPreviewPanel } from './FontPreviewPanel';
 import {
   Select,
   SelectContent,
@@ -36,13 +37,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   updateMargins,
   updateHeaderFooter,
 }) => {
-  // Group fonts by category
-  const fontCategories = FONT_OPTIONS.reduce((acc, font) => {
-    if (!acc[font.category]) acc[font.category] = [];
-    acc[font.category].push(font);
-    return acc;
-  }, {} as Record<string, typeof FONT_OPTIONS>);
-
   return (
     <div className="h-full overflow-y-auto scrollbar-hide">
       {/* Font Selection */}
@@ -55,28 +49,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div className="space-y-4">
           <div>
             <Label className="control-label">Handwriting Style</Label>
-            <Select 
-              value={settings.font} 
-              onValueChange={(value) => updateSettings({ font: value as NoteSettings['font'] })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {Object.entries(fontCategories).map(([category, fonts]) => (
-                  <div key={category}>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {category}
-                    </div>
-                    {fonts.map((font) => (
-                      <SelectItem key={font.value} value={font.value}>
-                        <span className={`${font.className} text-base`}>{font.label}</span>
-                      </SelectItem>
-                    ))}
-                  </div>
-                ))}
-              </SelectContent>
-            </Select>
+            <FontPreviewPanel
+              selectedFont={settings.font}
+              onSelectFont={(font) => updateSettings({ font })}
+              inkColor={settings.inkColor}
+            />
           </div>
 
           <div>
