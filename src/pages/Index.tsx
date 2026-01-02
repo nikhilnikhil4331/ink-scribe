@@ -9,7 +9,7 @@ import { useDiagrams } from '@/hooks/useDiagrams';
 import { useTableData } from '@/hooks/useTableData';
 import { exportToPDF, exportAllPagesToImages } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3 } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -92,27 +92,28 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 glass border-b border-border/50 shadow-sm">
+        <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <PenLine className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/20">
+              <PenLine className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-semibold text-lg text-foreground">HandWrite</h1>
-              <p className="text-xs text-muted-foreground">Transform text to handwriting</p>
+              <h1 className="font-bold text-lg text-foreground tracking-tight">HandWrite</h1>
+              <p className="text-[11px] text-muted-foreground font-medium">Transform text to handwriting</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowControls(!showControls)}
-              className="gap-2 hidden md:flex"
+              className="gap-2 hidden lg:flex hover:bg-secondary/80 rounded-xl"
             >
               <Settings2 className="w-4 h-4" />
-              {showControls ? 'Hide' : 'Show'} Controls
+              <span className="text-sm">{showControls ? 'Hide' : 'Show'} Controls</span>
+              <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${showControls ? 'rotate-180' : ''}`} />
             </Button>
             <Toolbar
               onExportPDF={handleExportPDF}
@@ -128,33 +129,33 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 lg:px-6 py-6">
         {/* Mobile Tabs */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="editor" className="gap-2">
+            <TabsList className="grid w-full grid-cols-3 mb-4 p-1 h-12 bg-secondary/50 rounded-2xl">
+              <TabsTrigger value="editor" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Edit3 className="w-4 h-4" />
-                Editor
+                <span className="text-sm font-medium">Editor</span>
               </TabsTrigger>
-              <TabsTrigger value="preview" className="gap-2">
+              <TabsTrigger value="preview" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Eye className="w-4 h-4" />
-                Preview
+                <span className="text-sm font-medium">Preview</span>
               </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2">
+              <TabsTrigger value="settings" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Settings2 className="w-4 h-4" />
-                Settings
+                <span className="text-sm font-medium">Settings</span>
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="editor" className="mt-0">
-              <div className="bg-card rounded-xl border border-border p-4 animate-fade-in">
+              <div className="panel-card p-5 animate-fade-in">
                 <TextEditor value={text} onChange={setText} />
               </div>
             </TabsContent>
             
             <TabsContent value="preview" className="mt-0">
-              <div className="bg-muted/50 rounded-xl border border-border min-h-[500px] animate-fade-in">
+              <div className="bg-muted/30 rounded-2xl border border-border/50 min-h-[500px] animate-fade-in overflow-hidden">
                 <PagePreview 
                   ref={previewRef} 
                   text={text} 
@@ -166,7 +167,7 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="settings" className="mt-0">
-              <div className="bg-card rounded-xl border border-border animate-fade-in">
+              <div className="panel-card animate-fade-in overflow-hidden">
                 <ControlPanel {...controlPanelProps} />
               </div>
             </TabsContent>
@@ -174,17 +175,17 @@ const Index = () => {
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden md:grid md:grid-cols-12 gap-6">
+        <div className="hidden lg:grid lg:grid-cols-12 gap-5">
           {/* Editor */}
           <div className="col-span-4 animate-fade-in">
-            <div className="bg-card rounded-xl border border-border p-5 sticky top-24">
+            <div className="panel-card p-5 sticky top-24">
               <TextEditor value={text} onChange={setText} />
             </div>
           </div>
 
           {/* Preview */}
-          <div className={`${showControls ? 'col-span-5' : 'col-span-8'} animate-fade-in transition-all duration-300`}>
-            <div className="bg-muted/30 rounded-xl border border-border min-h-[calc(100vh-10rem)]">
+          <div className={`${showControls ? 'col-span-5' : 'col-span-8'} animate-fade-in transition-all duration-500 ease-out`}>
+            <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-inner">
               <PagePreview 
                 ref={previewRef} 
                 text={text} 
@@ -198,13 +199,21 @@ const Index = () => {
           {/* Controls */}
           {showControls && (
             <div className="col-span-3 animate-slide-in-right">
-              <div className="bg-card rounded-xl border border-border sticky top-24 max-h-[calc(100vh-8rem)] overflow-hidden">
+              <div className="panel-card sticky top-24 max-h-[calc(100vh-8rem)] overflow-hidden">
                 <ControlPanel {...controlPanelProps} />
               </div>
             </div>
           )}
         </div>
       </main>
+
+      {/* Floating hint for first-time users */}
+      {!text && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 animate-fade-in hidden lg:flex items-center gap-2 bg-card border border-border/80 shadow-lg rounded-full px-5 py-3">
+          <Sparkles className="w-4 h-4 text-accent" />
+          <span className="text-sm text-muted-foreground">Start typing in the editor to see your handwritten notes</span>
+        </div>
+      )}
     </div>
   );
 };
