@@ -99,8 +99,8 @@ const Index = () => {
               <PenLine className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-foreground tracking-tight">HandWrite</h1>
-              <p className="text-[11px] text-muted-foreground font-medium">Transform text to handwriting</p>
+              <h1 className="font-bold text-lg text-foreground tracking-tight">Nikhil Note</h1>
+              <p className="text-[11px] text-muted-foreground font-medium">Handwritten notes made easy</p>
             </div>
           </div>
 
