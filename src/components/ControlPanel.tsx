@@ -53,7 +53,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onUpdateDiagram,
 }) => {
   return (
-    <div className="h-full overflow-y-auto scrollbar-hide">
+    <div className="h-full overflow-y-auto scroll-smooth" style={{ scrollBehavior: 'smooth' }}>
       {/* Font Selection */}
       <div className="control-section">
         <div className="flex items-center gap-2 mb-3">
