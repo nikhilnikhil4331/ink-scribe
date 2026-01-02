@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FONT_OPTIONS, HandwritingFont } from '@/types/notes';
+import { FONT_OPTIONS, HandwritingFont, InkColor } from '@/types/notes';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 interface FontPreviewPanelProps {
   selectedFont: HandwritingFont;
   onSelectFont: (font: HandwritingFont) => void;
-  inkColor: 'blue' | 'black';
+  inkColor: InkColor;
 }
 
 export const FontPreviewPanel: React.FC<FontPreviewPanelProps> = ({
@@ -27,7 +27,7 @@ export const FontPreviewPanel: React.FC<FontPreviewPanelProps> = ({
   const [sampleText, setSampleText] = useState('The quick brown fox jumps over the lazy dog');
   
   const selectedFontOption = FONT_OPTIONS.find(f => f.value === selectedFont);
-  const inkClass = inkColor === 'blue' ? 'text-ink-blue' : 'text-ink-black';
+  const inkClass = `ink-${inkColor}`;
 
   // Group fonts by category
   const fontCategories = FONT_OPTIONS.reduce((acc, font) => {

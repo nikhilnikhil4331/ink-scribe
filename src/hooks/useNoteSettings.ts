@@ -22,6 +22,13 @@ export function useNoteSettings() {
     }));
   }, []);
 
+  const updateTable = useCallback((updates: Partial<NoteSettings['table']>) => {
+    setSettings((prev) => ({
+      ...prev,
+      table: { ...prev.table, ...updates },
+    }));
+  }, []);
+
   const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
   }, []);
@@ -31,6 +38,7 @@ export function useNoteSettings() {
     updateSettings,
     updateMargins,
     updateHeaderFooter,
+    updateTable,
     resetSettings,
   };
 }

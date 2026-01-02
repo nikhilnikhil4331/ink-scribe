@@ -1,11 +1,13 @@
 import React from 'react';
-import { NoteSettings, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS } from '@/types/notes';
+import { NoteSettings, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS, DiagramImage } from '@/types/notes';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { FontPreviewPanel } from './FontPreviewPanel';
+import { TableConfigPanel } from './TableConfigPanel';
+import { DiagramImport } from './DiagramImport';
 import {
   Select,
   SelectContent,
@@ -21,7 +23,8 @@ import {
   Sparkles,
   User,
   Hash,
-  BookOpen
+  BookOpen,
+  Image
 } from 'lucide-react';
 
 interface ControlPanelProps {
@@ -29,6 +32,12 @@ interface ControlPanelProps {
   updateSettings: (updates: Partial<NoteSettings>) => void;
   updateMargins: (updates: Partial<NoteSettings['margins']>) => void;
   updateHeaderFooter: (updates: Partial<NoteSettings['headerFooter']>) => void;
+  tableData: string[][];
+  onTableDataChange: (data: string[][]) => void;
+  diagrams: DiagramImage[];
+  onAddDiagram: (diagram: DiagramImage) => void;
+  onRemoveDiagram: (id: string) => void;
+  onUpdateDiagram: (id: string, updates: Partial<DiagramImage>) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -36,6 +45,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   updateSettings,
   updateMargins,
   updateHeaderFooter,
+  tableData,
+  onTableDataChange,
+  diagrams,
+  onAddDiagram,
+  onRemoveDiagram,
+  onUpdateDiagram,
 }) => {
   return (
     <div className="h-full overflow-y-auto scrollbar-hide">
@@ -106,43 +121,46 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div className="space-y-4">
           <div>
             <Label className="control-label">Ink Color</Label>
-            <Select 
-              value={settings.inkColor} 
-              onValueChange={(value) => updateSettings({ inkColor: value as NoteSettings['inkColor'] })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {INK_COLOR_OPTIONS.map((ink) => (
-                  <SelectItem key={ink.value} value={ink.value}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${ink.value === 'blue' ? 'bg-ink-blue' : 'bg-ink-black'}`} />
-                      {ink.label}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-4 gap-2 mt-2">
+              {INK_COLOR_OPTIONS.map((ink) => (
+                <button
+                  key={ink.value}
+                  onClick={() => updateSettings({ inkColor: ink.value })}
+                  className={`
+                    flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all
+                    ${settings.inkColor === ink.value 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-transparent hover:border-border hover:bg-muted/50'
+                    }
+                  `}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-ink-${ink.value}`} />
+                  <span className="text-xs text-muted-foreground">{ink.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
             <Label className="control-label">Page Style</Label>
-            <Select 
-              value={settings.pageStyle} 
-              onValueChange={(value) => updateSettings({ pageStyle: value as NoteSettings['pageStyle'] })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_STYLE_OPTIONS.map((style) => (
-                  <SelectItem key={style.value} value={style.value}>
-                    {style.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {PAGE_STYLE_OPTIONS.map((style) => (
+                <button
+                  key={style.value}
+                  onClick={() => updateSettings({ pageStyle: style.value })}
+                  className={`
+                    flex flex-col items-start p-3 rounded-lg border-2 transition-all text-left
+                    ${settings.pageStyle === style.value 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/50'
+                    }
+                  `}
+                >
+                  <span className="text-sm font-medium">{style.label}</span>
+                  <span className="text-xs text-muted-foreground">{style.description}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -202,6 +220,34 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </div>
         </div>
+      </div>
+
+      <Separator />
+
+      {/* Table */}
+      <div className="control-section">
+        <TableConfigPanel
+          settings={settings}
+          updateSettings={updateSettings}
+          tableData={tableData}
+          onTableDataChange={onTableDataChange}
+        />
+      </div>
+
+      <Separator />
+
+      {/* Diagrams */}
+      <div className="control-section">
+        <div className="flex items-center gap-2 mb-3">
+          <Image className="w-4 h-4 text-primary" />
+          <span className="font-medium text-sm">Diagrams & Images</span>
+        </div>
+        <DiagramImport
+          diagrams={diagrams}
+          onAddDiagram={onAddDiagram}
+          onRemoveDiagram={onRemoveDiagram}
+          onUpdateDiagram={onUpdateDiagram}
+        />
       </div>
 
       <Separator />
