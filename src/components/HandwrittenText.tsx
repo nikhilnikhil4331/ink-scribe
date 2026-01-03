@@ -139,9 +139,6 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
         paddingLeft: `${settings.margins.left}px`,
       }}
     >
-      {settings.margins.left > 30 && (
-        <div className="absolute top-0 bottom-0 w-0.5 bg-margin" style={{ left: `${settings.margins.left - 10}px` }} />
-      )}
 
       {settings.headerFooter.showHeader && (
         <div className={`${fontClass} ${inkClass} text-sm mb-4 flex justify-between`} style={{ fontSize: settings.fontSize * 0.6 }}>
