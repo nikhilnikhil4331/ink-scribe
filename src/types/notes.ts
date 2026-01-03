@@ -14,7 +14,8 @@ export type HandwritingFont =
   | 'homemade-apple'
   | 'nothing-you-could-do'
   | 'cedarville-cursive'
-  | 'la-belle-aurore';
+  | 'la-belle-aurore'
+  | 'custom';
 
 export type PageStyle = 'plain' | 'ruled' | 'single-line' | 'graph' | 'dotted' | 'college' | 'legal';
 
@@ -53,6 +54,19 @@ export interface DiagramImage {
   position: 'inline' | 'left' | 'right' | 'center';
 }
 
+export interface CustomHandwritingStyle {
+  id: string;
+  name: string;
+  fontSize: number;
+  lineSpacing: number;
+  wordSpacing: number;
+  letterSpacing: number;
+  slant: number;
+  baselineJitter: number;
+  strokeRandomness: number;
+  baseFont: HandwritingFont;
+}
+
 export interface NoteSettings {
   font: HandwritingFont;
   fontSize: number;
@@ -65,6 +79,7 @@ export interface NoteSettings {
   baselineJitter: boolean;
   strokeRandomness: boolean;
   table: TableConfig;
+  customStyle?: CustomHandwritingStyle;
 }
 
 export const DEFAULT_SETTINGS: NoteSettings = {
@@ -119,6 +134,8 @@ export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: s
   { value: 'nothing-you-could-do', label: 'Nothing You Could Do', className: 'font-handwriting-14', category: 'Cursive' },
   { value: 'cedarville-cursive', label: 'Cedarville Cursive', className: 'font-handwriting-15', category: 'Cursive' },
   { value: 'la-belle-aurore', label: 'La Belle Aurore', className: 'font-handwriting-16', category: 'Cursive' },
+  // Custom
+  { value: 'custom', label: 'Custom Style', className: 'font-custom-handwriting', category: 'AI Generated' },
 ];
 
 export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string; description: string }[] = [
