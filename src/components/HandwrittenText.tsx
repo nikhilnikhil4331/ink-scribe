@@ -76,10 +76,63 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
   const pageStyleClass = `paper-${settings.pageStyle}`;
   const lines = text.split('\n');
 
+  const paperStyle = useMemo<React.CSSProperties>(() => {
+    switch (settings.pageStyle) {
+      case 'ruled':
+        return {
+          backgroundColor: 'hsl(var(--paper-ruled))',
+          backgroundImage:
+            'repeating-linear-gradient(transparent, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px)',
+          backgroundPosition: '0 0',
+        };
+      case 'single-line':
+        return {
+          backgroundColor: 'hsl(var(--paper))',
+          backgroundImage:
+            'repeating-linear-gradient(transparent, transparent 47px, hsl(var(--line-color)) 47px, hsl(var(--line-color)) 48px)',
+          backgroundPosition: '0 0',
+        };
+      case 'graph':
+        return {
+          backgroundColor: 'hsl(var(--paper))',
+          backgroundImage:
+            'repeating-linear-gradient(0deg, transparent, transparent 19px, hsl(var(--line-color) / 0.5) 19px, hsl(var(--line-color) / 0.5) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, hsl(var(--line-color) / 0.5) 19px, hsl(var(--line-color) / 0.5) 20px)',
+          backgroundPosition: '0 0',
+        };
+      case 'dotted':
+        return {
+          backgroundColor: 'hsl(var(--paper))',
+          backgroundImage: 'radial-gradient(circle, hsl(var(--line-color)) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+        };
+      case 'college':
+        return {
+          backgroundColor: 'hsl(var(--paper-ruled))',
+          backgroundImage:
+            'repeating-linear-gradient(transparent, transparent 23px, hsl(var(--line-color)) 23px, hsl(var(--line-color)) 24px)',
+          backgroundPosition: '0 0',
+        };
+      case 'legal':
+        return {
+          backgroundColor: 'hsl(50 80% 88%)',
+          backgroundImage:
+            'repeating-linear-gradient(transparent, transparent 31px, hsl(210 40% 70%) 31px, hsl(210 40% 70%) 32px)',
+          backgroundPosition: '0 0',
+        };
+      case 'plain':
+      default:
+        return {
+          backgroundColor: 'hsl(var(--paper))',
+        };
+    }
+  }, [settings.pageStyle]);
+
   return (
     <div 
       className={`w-full aspect-[210/297] ${pageStyleClass} paper-shadow relative overflow-hidden`}
       style={{
+        ...paperStyle,
+        color: `hsl(var(--ink-${settings.inkColor}))`,
         paddingTop: `${settings.margins.top}px`,
         paddingRight: `${settings.margins.right}px`,
         paddingBottom: `${settings.margins.bottom}px`,

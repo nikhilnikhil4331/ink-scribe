@@ -199,7 +199,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       <button
                         key={ink.value}
                         type="button"
-                        onClick={() => updateSettings({ inkColor: ink.value })}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          updateSettings({ inkColor: ink.value });
+                        }}
                         className={`
                           selection-btn
                           ${settings.inkColor === ink.value 
@@ -225,7 +229,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       <button
                         key={style.value}
                         type="button"
-                        onClick={() => updateSettings({ pageStyle: style.value })}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          updateSettings({ pageStyle: style.value });
+                        }}
                         className={`
                           flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left
                           ${settings.pageStyle === style.value 
