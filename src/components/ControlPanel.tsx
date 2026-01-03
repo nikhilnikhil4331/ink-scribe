@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { FontPreviewPanel } from './FontPreviewPanel';
 import { TableConfigPanel } from './TableConfigPanel';
 import { DiagramImport } from './DiagramImport';
+import { HandwritingAnalyzer } from './HandwritingAnalyzer';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Accordion,
@@ -18,7 +19,6 @@ import {
 import { 
   Type, 
   Palette, 
-  AlignLeft, 
   FileText, 
   Sparkles,
   User,
@@ -26,10 +26,22 @@ import {
   BookOpen,
   ImageIcon,
   Table2,
-  Pen,
   Layout,
-  Settings
+  Settings,
+  Wand2
 } from 'lucide-react';
+
+// Map ink colors to CSS color values for the swatches
+const INK_COLOR_MAP: Record<string, string> = {
+  blue: 'hsl(215 85% 40%)',
+  black: 'hsl(220 20% 12%)',
+  red: 'hsl(0 72% 50%)',
+  green: 'hsl(145 65% 38%)',
+  purple: 'hsl(265 60% 50%)',
+  brown: 'hsl(25 55% 38%)',
+  teal: 'hsl(175 60% 38%)',
+  orange: 'hsl(28 92% 52%)',
+};
 
 interface ControlPanelProps {
   settings: NoteSettings;
@@ -70,7 +82,35 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </div>
 
-        <Accordion type="multiple" defaultValue={["typography", "ink-paper"]} className="space-y-2">
+        <Accordion type="multiple" defaultValue={["ai-analyzer", "typography", "ink-paper"]} className="space-y-2">
+          {/* AI Handwriting Analyzer */}
+          <AccordionItem value="ai-analyzer" className="border border-border/50 rounded-xl px-4 overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5">
+            <AccordionTrigger className="py-3 hover:no-underline">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Wand2 className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="font-medium text-sm">AI Style Matcher</span>
+                  <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-accent/20 text-accent rounded-full">New</span>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <p className="text-xs text-muted-foreground mb-3">
+                Upload your handwriting and AI will analyze it to create a matching style.
+              </p>
+              <HandwritingAnalyzer 
+                onApplyStyle={(newSettings) => {
+                  Object.entries(newSettings).forEach(([key, value]) => {
+                    if (value !== undefined) {
+                      updateSettings({ [key]: value } as Partial<NoteSettings>);
+                    }
+                  });
+                }} 
+              />
+            </AccordionContent>
+          </AccordionItem>
           {/* Typography */}
           <AccordionItem value="typography" className="border border-border/50 rounded-xl px-4 overflow-hidden bg-secondary/20">
             <AccordionTrigger className="py-3 hover:no-underline">
@@ -170,7 +210,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       >
                         <div 
                           className="w-5 h-5 rounded-full shadow-inner ring-1 ring-black/5"
-                          style={{ backgroundColor: `hsl(var(--ink-${ink.value}))` }}
+                          style={{ backgroundColor: INK_COLOR_MAP[ink.value] || ink.value }}
                         />
                         <span className="text-[10px] text-muted-foreground font-medium">{ink.label}</span>
                       </button>
