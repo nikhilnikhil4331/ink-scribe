@@ -17,9 +17,23 @@ export type HandwritingFont =
   | 'la-belle-aurore'
   | 'custom';
 
-export type PageStyle = 'plain' | 'ruled' | 'single-line' | 'graph' | 'dotted' | 'college' | 'legal';
+export type PageStyle = 
+  | 'plain' 
+  | 'ruled' 
+  | 'single-line' 
+  | 'graph' 
+  | 'dotted' 
+  | 'college' 
+  | 'legal'
+  | 'spiral'
+  | 'hole-punched'
+  | 'vintage'
+  | 'kraft'
+  | 'blueprint'
+  | 'music-sheet'
+  | 'cornell';
 
-export type InkColor = 'blue' | 'black' | 'red' | 'green' | 'purple' | 'brown' | 'teal' | 'orange';
+export type InkColor = 'blue' | 'black' | 'red' | 'green' | 'purple' | 'brown' | 'teal' | 'orange' | 'pink' | 'gold' | 'navy' | 'burgundy';
 
 export interface PageMargins {
   top: number;
@@ -138,23 +152,41 @@ export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: s
   { value: 'custom', label: 'Custom Style', className: 'font-custom-handwriting', category: 'AI Generated' },
 ];
 
-export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string; description: string }[] = [
-  { value: 'plain', label: 'Plain', description: 'No lines' },
-  { value: 'ruled', label: 'Ruled', description: 'Horizontal lines' },
-  { value: 'single-line', label: 'Wide Ruled', description: 'Spaced lines' },
-  { value: 'graph', label: 'Graph Paper', description: 'Grid squares' },
-  { value: 'dotted', label: 'Dotted', description: 'Dot grid' },
-  { value: 'college', label: 'College', description: 'Narrow ruled' },
-  { value: 'legal', label: 'Legal Pad', description: 'Yellow paper' },
+export const PAGE_STYLE_OPTIONS: { value: PageStyle; label: string; description: string; category: string }[] = [
+  // Basic Styles
+  { value: 'plain', label: 'Plain', description: 'No lines', category: 'Basic' },
+  { value: 'ruled', label: 'Ruled', description: 'Horizontal lines', category: 'Basic' },
+  { value: 'single-line', label: 'Wide Ruled', description: 'Spaced lines', category: 'Basic' },
+  { value: 'college', label: 'College', description: 'Narrow ruled', category: 'Basic' },
+  // Grid Styles
+  { value: 'graph', label: 'Graph Paper', description: 'Grid squares', category: 'Grid' },
+  { value: 'dotted', label: 'Dotted', description: 'Dot grid', category: 'Grid' },
+  // Notebook Styles
+  { value: 'spiral', label: 'Spiral Notebook', description: 'With spiral binding', category: 'Notebook' },
+  { value: 'hole-punched', label: 'Hole Punched', description: '3-hole binder paper', category: 'Notebook' },
+  { value: 'cornell', label: 'Cornell Notes', description: 'Study note format', category: 'Notebook' },
+  // Special Styles
+  { value: 'legal', label: 'Legal Pad', description: 'Yellow legal paper', category: 'Special' },
+  { value: 'vintage', label: 'Vintage', description: 'Aged paper effect', category: 'Special' },
+  { value: 'kraft', label: 'Kraft Paper', description: 'Brown craft paper', category: 'Special' },
+  { value: 'blueprint', label: 'Blueprint', description: 'Technical blue paper', category: 'Special' },
+  { value: 'music-sheet', label: 'Music Sheet', description: 'Staff lines', category: 'Special' },
 ];
 
-export const INK_COLOR_OPTIONS: { value: InkColor; label: string; colorClass: string }[] = [
-  { value: 'blue', label: 'Blue', colorClass: 'bg-ink-blue' },
-  { value: 'black', label: 'Black', colorClass: 'bg-ink-black' },
-  { value: 'red', label: 'Red', colorClass: 'bg-ink-red' },
-  { value: 'green', label: 'Green', colorClass: 'bg-ink-green' },
-  { value: 'purple', label: 'Purple', colorClass: 'bg-ink-purple' },
-  { value: 'brown', label: 'Brown', colorClass: 'bg-ink-brown' },
-  { value: 'teal', label: 'Teal', colorClass: 'bg-ink-teal' },
-  { value: 'orange', label: 'Orange', colorClass: 'bg-ink-orange' },
+export const INK_COLOR_OPTIONS: { value: InkColor; label: string; colorClass: string; hex: string }[] = [
+  // Classic
+  { value: 'black', label: 'Black', colorClass: 'bg-ink-black', hex: '#1a1a2e' },
+  { value: 'blue', label: 'Blue', colorClass: 'bg-ink-blue', hex: '#1565c0' },
+  { value: 'red', label: 'Red', colorClass: 'bg-ink-red', hex: '#d32f2f' },
+  { value: 'green', label: 'Green', colorClass: 'bg-ink-green', hex: '#2e7d32' },
+  // Extended
+  { value: 'purple', label: 'Purple', colorClass: 'bg-ink-purple', hex: '#7b1fa2' },
+  { value: 'brown', label: 'Brown', colorClass: 'bg-ink-brown', hex: '#795548' },
+  { value: 'teal', label: 'Teal', colorClass: 'bg-ink-teal', hex: '#00897b' },
+  { value: 'orange', label: 'Orange', colorClass: 'bg-ink-orange', hex: '#ef6c00' },
+  // Premium
+  { value: 'pink', label: 'Pink', colorClass: 'bg-ink-pink', hex: '#d81b60' },
+  { value: 'navy', label: 'Navy', colorClass: 'bg-ink-navy', hex: '#1a237e' },
+  { value: 'burgundy', label: 'Burgundy', colorClass: 'bg-ink-burgundy', hex: '#880e4f' },
+  { value: 'gold', label: 'Gold', colorClass: 'bg-ink-gold', hex: '#ff8f00' },
 ];

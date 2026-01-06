@@ -48,7 +48,7 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
         <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
           Ink Colors
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-1.5 max-h-[180px] overflow-y-auto scrollbar-hide p-1">
           <TooltipProvider>
             {LINE_INK_COLORS.map((ink) => (
               <Tooltip key={ink.value}>
@@ -60,7 +60,7 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
                       onColorChange(ink.value);
                     }}
                     className={`
-                      relative flex items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200
+                      relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-200
                       ${currentColor === ink.value 
                         ? 'border-primary bg-primary/5 shadow-sm scale-105' 
                         : 'border-transparent hover:border-border hover:bg-muted/50'
@@ -68,22 +68,14 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
                     `}
                   >
                     <div 
-                      className="w-6 h-6 rounded-full shadow-inner flex items-center justify-center"
+                      className="w-7 h-7 rounded-full shadow-inner flex items-center justify-center"
                       style={{ backgroundColor: ink.hex }}
                     >
                       {currentColor === ink.value && (
-                        <div className="w-2 h-2 rounded-full bg-white/80" />
+                        <Pen className="w-3 h-3 text-white/90" />
                       )}
                     </div>
-                    <span className="text-xs font-medium text-foreground">{ink.label}</span>
-                    
-                    {/* Pen tip indicator */}
-                    {currentColor === ink.value && (
-                      <Pen 
-                        className="w-3.5 h-3.5 absolute top-1 right-1"
-                        style={{ color: ink.hex }}
-                      />
-                    )}
+                    <span className="text-[10px] font-medium text-foreground truncate w-full text-center">{ink.label}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="left">

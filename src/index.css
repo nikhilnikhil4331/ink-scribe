@@ -25,10 +25,19 @@
     --ink-brown: 25 55% 38%;
     --ink-teal: 175 60% 38%;
     --ink-orange: 28 92% 52%;
+    --ink-pink: 340 82% 48%;
+    --ink-navy: 230 70% 30%;
+    --ink-burgundy: 340 85% 30%;
+    --ink-gold: 38 95% 50%;
     
     /* Ruled lines */
     --line-color: 210 35% 82%;
     --margin-color: 0 55% 65%;
+    
+    /* Special paper colors */
+    --paper-vintage: 35 40% 85%;
+    --paper-kraft: 30 35% 65%;
+    --paper-blueprint: 210 60% 25%;
 
     /* Card - Clean white with subtle warmth */
     --card: 0 0% 100%;
@@ -95,9 +104,17 @@
     --ink-brown: 25 50% 58%;
     --ink-teal: 175 55% 58%;
     --ink-orange: 28 85% 62%;
+    --ink-pink: 340 75% 65%;
+    --ink-navy: 230 60% 55%;
+    --ink-burgundy: 340 75% 55%;
+    --ink-gold: 38 85% 60%;
     
     --line-color: 222 18% 22%;
     --margin-color: 0 45% 45%;
+    
+    --paper-vintage: 35 30% 25%;
+    --paper-kraft: 30 25% 35%;
+    --paper-blueprint: 210 50% 15%;
 
     --card: 222 22% 11%;
     --card-foreground: 40 15% 92%;
