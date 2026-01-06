@@ -1,16 +1,18 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { PageSize, PAGE_SIZE_OPTIONS } from '@/types/notes';
 
 export async function exportToPDF(
   elements: HTMLElement[],
-  filename: string = 'handwritten-notes'
+  filename: string = 'handwritten-notes',
+  pageSize: PageSize = 'a4'
 ): Promise<void> {
   if (elements.length === 0) return;
 
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'px',
-    format: 'a4',
+    format: pageSize,
   });
 
   const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -22,7 +24,7 @@ export async function exportToPDF(
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: null,
+      backgroundColor: '#FFFFFF', // Pure white background
       logging: false,
     });
 
@@ -33,6 +35,10 @@ export async function exportToPDF(
     if (i > 0) {
       pdf.addPage();
     }
+
+    // Fill page with white background first
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
 
     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
   }
@@ -48,7 +54,7 @@ export async function exportToImage(
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,
-    backgroundColor: null,
+    backgroundColor: '#FFFFFF', // Pure white background
     logging: false,
   });
 

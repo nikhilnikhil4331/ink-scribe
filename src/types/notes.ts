@@ -35,6 +35,15 @@ export type PageStyle =
 
 export type InkColor = 'blue' | 'black' | 'red' | 'green' | 'purple' | 'brown' | 'teal' | 'orange' | 'pink' | 'gold' | 'navy' | 'burgundy';
 
+export type PageSize = 'a4' | 'a3' | 'a2' | 'a1';
+
+export const PAGE_SIZE_OPTIONS: { value: PageSize; label: string; width: number; height: number; description: string }[] = [
+  { value: 'a4', label: 'A4', width: 595, height: 842, description: '210 × 297 mm' },
+  { value: 'a3', label: 'A3', width: 842, height: 1191, description: '297 × 420 mm' },
+  { value: 'a2', label: 'A2', width: 1191, height: 1684, description: '420 × 594 mm' },
+  { value: 'a1', label: 'A1', width: 1684, height: 2384, description: '594 × 841 mm' },
+];
+
 export interface PageMargins {
   top: number;
   right: number;
@@ -87,6 +96,7 @@ export interface NoteSettings {
   lineSpacing: number;
   wordSpacing: number;
   pageStyle: PageStyle;
+  pageSize: PageSize;
   inkColor: InkColor;
   margins: PageMargins;
   headerFooter: HeaderFooter;
@@ -102,6 +112,7 @@ export const DEFAULT_SETTINGS: NoteSettings = {
   lineSpacing: 32,
   wordSpacing: 4,
   pageStyle: 'ruled',
+  pageSize: 'a4',
   inkColor: 'blue',
   margins: {
     top: 40,

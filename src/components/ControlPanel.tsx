@@ -1,5 +1,5 @@
 import React from 'react';
-import { NoteSettings, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS, DiagramImage } from '@/types/notes';
+import { NoteSettings, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS, DiagramImage, PAGE_SIZE_OPTIONS } from '@/types/notes';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -28,7 +28,8 @@ import {
   Table2,
   Layout,
   Settings,
-  Wand2
+  Wand2,
+  FileBox
 } from 'lucide-react';
 
 // Map ink colors to CSS color values for the swatches
@@ -267,6 +268,43 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     ))}
                   </div>
                 </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Page Size */}
+          <AccordionItem value="page-size" className="border border-border/50 rounded-xl px-4 overflow-hidden bg-secondary/20">
+            <AccordionTrigger className="py-3 hover:no-underline">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <FileBox className="w-3.5 h-3.5 text-accent" />
+                </div>
+                <span className="font-medium text-sm">Page Size</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <div className="grid grid-cols-2 gap-2">
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <button
+                    key={size.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      updateSettings({ pageSize: size.value });
+                    }}
+                    className={`
+                      flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left
+                      ${settings.pageSize === size.value 
+                        ? 'border-primary bg-primary/5 shadow-sm' 
+                        : 'border-border/50 hover:border-primary/40 hover:bg-secondary/50'
+                      }
+                    `}
+                  >
+                    <span className="text-sm font-semibold text-foreground">{size.label}</span>
+                    <span className="text-[10px] text-muted-foreground mt-0.5">{size.description}</span>
+                  </button>
+                ))}
               </div>
             </AccordionContent>
           </AccordionItem>
