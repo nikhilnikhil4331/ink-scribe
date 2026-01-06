@@ -1,4 +1,4 @@
-export type LineInkColor = 'black' | 'blue' | 'red' | 'green';
+export type LineInkColor = 'black' | 'blue' | 'red' | 'green' | 'purple' | 'brown' | 'teal' | 'orange' | 'pink' | 'navy' | 'burgundy' | 'gold';
 
 export interface NoteLine {
   id: string;
@@ -19,10 +19,21 @@ export interface RealPenVariation {
 }
 
 export const LINE_INK_COLORS: { value: LineInkColor; label: string; hex: string; hsl: string }[] = [
+  // Classic
   { value: 'black', label: 'Black', hex: '#1a1a2e', hsl: '220 20% 12%' },
   { value: 'blue', label: 'Blue', hex: '#1565c0', hsl: '215 85% 40%' },
   { value: 'red', label: 'Red', hex: '#d32f2f', hsl: '0 72% 50%' },
   { value: 'green', label: 'Green', hex: '#2e7d32', hsl: '145 65% 38%' },
+  // Extended
+  { value: 'purple', label: 'Purple', hex: '#7b1fa2', hsl: '265 60% 50%' },
+  { value: 'brown', label: 'Brown', hex: '#795548', hsl: '25 55% 38%' },
+  { value: 'teal', label: 'Teal', hex: '#00897b', hsl: '175 60% 38%' },
+  { value: 'orange', label: 'Orange', hex: '#ef6c00', hsl: '28 92% 52%' },
+  // Premium
+  { value: 'pink', label: 'Pink', hex: '#d81b60', hsl: '340 82% 48%' },
+  { value: 'navy', label: 'Navy', hex: '#1a237e', hsl: '230 70% 30%' },
+  { value: 'burgundy', label: 'Burgundy', hex: '#880e4f', hsl: '340 85% 30%' },
+  { value: 'gold', label: 'Gold', hex: '#ff8f00', hsl: '38 95% 50%' },
 ];
 
 export const generateLineId = (): string => {

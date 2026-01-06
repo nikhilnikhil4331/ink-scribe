@@ -41,7 +41,19 @@ const INK_COLOR_MAP: Record<string, string> = {
   brown: 'hsl(25 55% 38%)',
   teal: 'hsl(175 60% 38%)',
   orange: 'hsl(28 92% 52%)',
+  pink: 'hsl(340 82% 48%)',
+  navy: 'hsl(230 70% 30%)',
+  burgundy: 'hsl(340 85% 30%)',
+  gold: 'hsl(38 95% 50%)',
 };
+
+// Group page styles by category
+const groupedPageStyles = PAGE_STYLE_OPTIONS.reduce((acc, style) => {
+  const category = style.category || 'Other';
+  if (!acc[category]) acc[category] = [];
+  acc[category].push(style);
+  return acc;
+}, {} as Record<string, typeof PAGE_STYLE_OPTIONS>);
 
 interface ControlPanelProps {
   settings: NoteSettings;
@@ -224,27 +236,34 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
                 <div>
                   <Label className="control-label">Page Style</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {PAGE_STYLE_OPTIONS.map((style) => (
-                      <button
-                        key={style.value}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          updateSettings({ pageStyle: style.value });
-                        }}
-                        className={`
-                          flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left
-                          ${settings.pageStyle === style.value 
-                            ? 'border-primary bg-primary/5 shadow-sm' 
-                            : 'border-border/50 hover:border-primary/40 hover:bg-secondary/50'
-                          }
-                        `}
-                      >
-                        <span className="text-xs font-semibold text-foreground">{style.label}</span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">{style.description}</span>
-                      </button>
+                  <div className="space-y-3 mt-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+                    {Object.entries(groupedPageStyles).map(([category, styles]) => (
+                      <div key={category}>
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{category}</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {styles.map((style) => (
+                            <button
+                              key={style.value}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateSettings({ pageStyle: style.value });
+                              }}
+                              className={`
+                                flex flex-col items-start p-2.5 rounded-xl border-2 transition-all text-left
+                                ${settings.pageStyle === style.value 
+                                  ? 'border-primary bg-primary/5 shadow-sm' 
+                                  : 'border-border/50 hover:border-primary/40 hover:bg-secondary/50'
+                                }
+                              `}
+                            >
+                              <span className="text-xs font-semibold text-foreground">{style.label}</span>
+                              <span className="text-[9px] text-muted-foreground mt-0.5">{style.description}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
