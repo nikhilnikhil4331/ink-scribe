@@ -65,7 +65,7 @@ const Index = () => {
 
     setIsExporting(true);
     try {
-      await exportToPDF(elements, 'handwritten-notes');
+      await exportToPDF(elements, 'handwritten-notes', settings.pageSize);
       toast.success('PDF exported successfully!');
     } catch (error) {
       toast.error('Failed to export PDF');
@@ -73,7 +73,7 @@ const Index = () => {
     } finally {
       setIsExporting(false);
     }
-  }, [getPlainText, settings.table.enabled, diagrams.length]);
+  }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length]);
 
   const handleExportImages = useCallback(async (format: 'png' | 'jpeg') => {
     const text = getPlainText();

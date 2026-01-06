@@ -1,6 +1,6 @@
 import React, { useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
 import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
-import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
+import { NoteSettings, FONT_OPTIONS, PAGE_SIZE_OPTIONS } from '@/types/notes';
 
 interface NotebookPreviewProps {
   lines: NoteLine[];
@@ -14,7 +14,13 @@ export interface NotebookPreviewHandle {
   getPageElements: () => HTMLElement[];
 }
 
-const LINES_PER_PAGE = 22;
+// Calculate lines per page based on page size and line spacing
+const getLinesPerPage = (pageSize: string, lineSpacing: number): number => {
+  const sizeConfig = PAGE_SIZE_OPTIONS.find(s => s.value === pageSize);
+  const height = sizeConfig?.height || 842; // A4 default
+  const usableHeight = height - 100; // Account for margins
+  return Math.floor(usableHeight / lineSpacing);
+};
 
 export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreviewProps>(
   ({ lines, settings, realPenMode, pageNumber = 1, totalPages = 1 }, ref) => {
@@ -22,14 +28,16 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     const fontClass = FONT_OPTIONS.find(f => f.value === settings.font)?.className || 'font-handwriting-1';
+    const sizeConfig = PAGE_SIZE_OPTIONS.find(s => s.value === settings.pageSize) || PAGE_SIZE_OPTIONS[0];
+    const linesPerPage = getLinesPerPage(settings.pageSize, settings.lineSpacing);
 
     const pages = useMemo(() => {
       const result: NoteLine[][] = [];
-      for (let i = 0; i < lines.length; i += LINES_PER_PAGE) {
-        result.push(lines.slice(i, i + LINES_PER_PAGE));
+      for (let i = 0; i < lines.length; i += linesPerPage) {
+        result.push(lines.slice(i, i + linesPerPage));
       }
       return result.length > 0 ? result : [[]];
-    }, [lines]);
+    }, [lines, linesPerPage]);
 
     useImperativeHandle(ref, () => ({
       getPageElements: () => {
@@ -45,77 +53,81 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
     const isVintage = settings.pageStyle === 'vintage';
 
     const paperStyle = useMemo<React.CSSProperties>(() => {
+      // Use pure white (#FFFFFF) as base for all paper styles to ensure clean exports
+      const pureWhite = '#FFFFFF';
+      const lineColor = 'hsl(210, 35%, 85%)'; // Light blue-gray for ruled lines
+      
       switch (settings.pageStyle) {
         case 'ruled':
           return {
-            backgroundColor: 'hsl(var(--paper-ruled))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 31px, ${lineColor} 31px, ${lineColor} 32px)`,
           };
         case 'single-line':
           return {
-            backgroundColor: 'hsl(var(--paper))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 47px, hsl(var(--line-color)) 47px, hsl(var(--line-color)) 48px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 47px, ${lineColor} 47px, ${lineColor} 48px)`,
           };
         case 'graph':
           return {
-            backgroundColor: 'hsl(var(--paper))',
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, hsl(var(--line-color) / 0.5) 19px, hsl(var(--line-color) / 0.5) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, hsl(var(--line-color) / 0.5) 19px, hsl(var(--line-color) / 0.5) 20px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 19px, ${lineColor} 19px, ${lineColor} 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, ${lineColor} 19px, ${lineColor} 20px)`,
           };
         case 'dotted':
           return {
-            backgroundColor: 'hsl(var(--paper))',
-            backgroundImage: 'radial-gradient(circle, hsl(var(--line-color)) 1px, transparent 1px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `radial-gradient(circle, ${lineColor} 1px, transparent 1px)`,
             backgroundSize: '20px 20px',
           };
         case 'college':
           return {
-            backgroundColor: 'hsl(var(--paper-ruled))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 23px, hsl(var(--line-color)) 23px, hsl(var(--line-color)) 24px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 23px, ${lineColor} 23px, ${lineColor} 24px)`,
           };
         case 'legal':
           return {
-            backgroundColor: 'hsl(50 80% 88%)',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(210 40% 70%) 31px, hsl(210 40% 70%) 32px)',
+            backgroundColor: '#FFFDE7', // Very light yellow for legal pad
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(210, 40%, 70%) 31px, hsl(210, 40%, 70%) 32px)',
           };
         case 'spiral':
           return {
-            backgroundColor: 'hsl(var(--paper-ruled))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 31px, ${lineColor} 31px, ${lineColor} 32px)`,
           };
         case 'hole-punched':
           return {
-            backgroundColor: 'hsl(var(--paper))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 31px, ${lineColor} 31px, ${lineColor} 32px)`,
           };
         case 'vintage':
           return {
-            backgroundColor: 'hsl(35 40% 85%)',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(25 30% 65% / 0.4) 31px, hsl(25 30% 65% / 0.4) 32px)',
+            backgroundColor: '#F5E6D3', // Warm vintage paper
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(25, 30%, 70%) 31px, hsl(25, 30%, 70%) 32px)',
           };
         case 'kraft':
           return {
-            backgroundColor: 'hsl(30 35% 55%)',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(30 25% 40% / 0.5) 31px, hsl(30 25% 40% / 0.5) 32px)',
+            backgroundColor: '#C4A77D', // Kraft brown
+            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(30, 25%, 45%) 31px, hsl(30, 25%, 45%) 32px)',
           };
         case 'blueprint':
           return {
-            backgroundColor: 'hsl(210 60% 25%)',
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, hsl(210 50% 45% / 0.6) 19px, hsl(210 50% 45% / 0.6) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, hsl(210 50% 45% / 0.6) 19px, hsl(210 50% 45% / 0.6) 20px)',
+            backgroundColor: '#1E3A5F', // Blueprint blue
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, hsl(210, 50%, 45%) 19px, hsl(210, 50%, 45%) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, hsl(210, 50%, 45%) 19px, hsl(210, 50%, 45%) 20px)',
           };
         case 'music-sheet':
           return {
-            backgroundColor: 'hsl(var(--paper))',
-            backgroundImage: 'repeating-linear-gradient(transparent 0px, transparent 7px, hsl(var(--line-color)) 7px, hsl(var(--line-color)) 8px, transparent 8px, transparent 15px, hsl(var(--line-color)) 15px, hsl(var(--line-color)) 16px, transparent 16px, transparent 23px, hsl(var(--line-color)) 23px, hsl(var(--line-color)) 24px, transparent 24px, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px, transparent 32px, transparent 39px, hsl(var(--line-color)) 39px, hsl(var(--line-color)) 40px, transparent 40px, transparent 60px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent 0px, transparent 7px, ${lineColor} 7px, ${lineColor} 8px, transparent 8px, transparent 15px, ${lineColor} 15px, ${lineColor} 16px, transparent 16px, transparent 23px, ${lineColor} 23px, ${lineColor} 24px, transparent 24px, transparent 31px, ${lineColor} 31px, ${lineColor} 32px, transparent 32px, transparent 39px, ${lineColor} 39px, ${lineColor} 40px, transparent 40px, transparent 60px)`,
           };
         case 'cornell':
           return {
-            backgroundColor: 'hsl(var(--paper-ruled))',
-            backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, hsl(var(--line-color)) 31px, hsl(var(--line-color)) 32px)',
+            backgroundColor: pureWhite,
+            backgroundImage: `repeating-linear-gradient(transparent, transparent 31px, ${lineColor} 31px, ${lineColor} 32px)`,
           };
         case 'plain':
         default:
           return {
-            backgroundColor: 'hsl(var(--paper))',
+            backgroundColor: pureWhite,
           };
       }
     }, [settings.pageStyle]);
@@ -160,13 +172,18 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
             <div
               key={pageIndex}
               ref={(el) => { pageRefs.current[pageIndex] = el; }}
-              className="w-full max-w-[595px] animate-scale-in hover-lift"
-              style={{ animationDelay: `${pageIndex * 50}ms` }}
+              className="animate-scale-in hover-lift"
+              style={{ 
+                width: `${sizeConfig.width}px`,
+                maxWidth: '100%',
+                animationDelay: `${pageIndex * 50}ms`,
+              }}
             >
               <div
-                className={`w-full aspect-[210/297] paper-shadow relative overflow-hidden ${isBlueprint ? 'rounded-none' : ''}`}
+                className={`w-full paper-shadow relative overflow-hidden ${isBlueprint ? 'rounded-none' : ''}`}
                 style={{
                   ...paperStyle,
+                  aspectRatio: `${sizeConfig.width}/${sizeConfig.height}`,
                   paddingTop: `${settings.margins.top}px`,
                   paddingRight: `${settings.margins.right}px`,
                   paddingBottom: `${settings.margins.bottom}px`,
@@ -236,7 +253,7 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
                 {/* Lines content */}
                 <div className={`${fontClass} leading-relaxed`} style={{ fontSize: `${settings.fontSize}px`, marginLeft: showCornellLayout ? '26%' : 0 }}>
                   {pageLines.map((line, lineIndex) => {
-                    const globalLineIndex = pageIndex * LINES_PER_PAGE + lineIndex;
+                    const globalLineIndex = pageIndex * linesPerPage + lineIndex;
                     const lineStyle = { ...getLineStyle(line, globalLineIndex) };
                     
                     if (isBlueprint) lineStyle.color = 'hsl(200 80% 85%)';
