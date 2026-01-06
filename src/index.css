@@ -181,66 +181,92 @@
   /* Handwriting fonts */
   .font-handwriting-1 {
     font-family: 'Caveat', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-2 {
     font-family: 'Kalam', cursive;
+    letter-spacing: 0.01em;
   }
   
   .font-handwriting-3 {
     font-family: 'Patrick Hand', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-4 {
     font-family: 'Shadows Into Light', cursive;
+    letter-spacing: 0.03em;
   }
   
   .font-handwriting-5 {
     font-family: 'Indie Flower', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-6 {
     font-family: 'Dancing Script', cursive;
+    letter-spacing: 0.01em;
   }
   
   .font-handwriting-7 {
     font-family: 'Architects Daughter', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-8 {
     font-family: 'Satisfy', cursive;
+    letter-spacing: 0.01em;
   }
   
   .font-handwriting-9 {
     font-family: 'Gloria Hallelujah', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-10 {
     font-family: 'Covered By Your Grace', cursive;
+    letter-spacing: 0.03em;
   }
   
   .font-handwriting-11 {
     font-family: 'Rock Salt', cursive;
+    letter-spacing: 0.04em;
   }
   
   .font-handwriting-12 {
     font-family: 'Reenie Beanie', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-13 {
     font-family: 'Homemade Apple', cursive;
+    letter-spacing: 0.01em;
   }
   
   .font-handwriting-14 {
     font-family: 'Nothing You Could Do', cursive;
+    letter-spacing: 0.02em;
   }
   
   .font-handwriting-15 {
     font-family: 'Cedarville Cursive', cursive;
+    letter-spacing: 0.01em;
   }
   
   .font-handwriting-16 {
     font-family: 'La Belle Aurore', cursive;
+    letter-spacing: 0.02em;
+  }
+
+  /* Notebook-style background for editor */
+  .bg-paper {
+    background-color: hsl(var(--paper));
+  }
+
+  /* Margin line color */
+  .bg-margin {
+    background-color: hsl(var(--margin-color));
   }
 
   /* Paper styles */
@@ -453,5 +479,55 @@
   /* Focus ring */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2;
+  }
+
+  /* Pen writing animation for inputs */
+  @keyframes pen-flow {
+    0% {
+      opacity: 0.7;
+      transform: translateY(1px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0.95;
+      transform: translateY(0.5px);
+    }
+  }
+
+  .animate-pen-flow {
+    animation: pen-flow 0.15s ease-out;
+  }
+
+  /* Line highlight pulse */
+  @keyframes line-pulse {
+    0%, 100% {
+      background-color: transparent;
+    }
+    50% {
+      background-color: hsl(var(--primary) / 0.05);
+    }
+  }
+
+  .animate-line-pulse {
+    animation: line-pulse 2s ease-in-out infinite;
+  }
+
+  /* Ink spread effect */
+  @keyframes ink-spread {
+    0% {
+      letter-spacing: -0.02em;
+      opacity: 0.8;
+    }
+    100% {
+      letter-spacing: 0.02em;
+      opacity: 1;
+    }
+  }
+
+  .animate-ink-spread {
+    animation: ink-spread 0.1s ease-out forwards;
   }
 }

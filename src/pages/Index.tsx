@@ -1,29 +1,57 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { TextEditor } from '@/components/TextEditor';
-import { PagePreview, PagePreviewHandle } from '@/components/PagePreview';
+import { LineBasedEditor } from '@/components/LineBasedEditor';
+import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
+import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
 import { Toolbar } from '@/components/Toolbar';
 import { useNoteSettings } from '@/hooks/useNoteSettings';
+import { useNoteLines } from '@/hooks/useNoteLines';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useDiagrams } from '@/hooks/useDiagrams';
 import { useTableData } from '@/hooks/useTableData';
 import { exportToPDF, exportAllPagesToImages } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight, FileDown, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
-  const [text, setText] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const { settings, updateSettings, updateMargins, updateHeaderFooter, resetSettings } = useNoteSettings();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { diagrams, addDiagram, removeDiagram, updateDiagram } = useDiagrams();
   const { tableData, updateTableData } = useTableData(settings.table.rows, settings.table.columns);
-  const previewRef = useRef<PagePreviewHandle>(null);
+  const previewRef = useRef<NotebookPreviewHandle>(null);
+
+  const {
+    lines,
+    selectedLines,
+    currentColor,
+    realPenMode,
+    setRealPenMode,
+    setCurrentColor,
+    updateLineText,
+    updateLineColor,
+    updateSelectedLinesColor,
+    addLine,
+    removeLine,
+    selectLine,
+    clearSelection,
+    handlePaste,
+    undoLine,
+    redoLine,
+    canUndo,
+    canRedo,
+    getPlainText,
+    mergeLinesUp,
+  } = useNoteLines();
+
+  // Get first selected line for undo/redo
+  const firstSelectedLineId = selectedLines.size > 0 ? Array.from(selectedLines)[0] : null;
 
   const handleExportPDF = useCallback(async () => {
+    const text = getPlainText();
     if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
       toast.error('Please add some content first');
       return;
@@ -45,9 +73,10 @@ const Index = () => {
     } finally {
       setIsExporting(false);
     }
-  }, [text, settings.table.enabled, diagrams.length]);
+  }, [getPlainText, settings.table.enabled, diagrams.length]);
 
   const handleExportImages = useCallback(async (format: 'png' | 'jpeg') => {
+    const text = getPlainText();
     if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
       toast.error('Please add some content first');
       return;
@@ -69,12 +98,31 @@ const Index = () => {
     } finally {
       setIsExporting(false);
     }
-  }, [text, settings.table.enabled, diagrams.length]);
+  }, [getPlainText, settings.table.enabled, diagrams.length]);
 
   const handleReset = useCallback(() => {
     resetSettings();
     toast.success('Settings reset to defaults');
   }, [resetSettings]);
+
+  const handleColorChange = useCallback((color: typeof currentColor) => {
+    if (selectedLines.size > 0) {
+      updateSelectedLinesColor(color);
+    }
+    setCurrentColor(color);
+  }, [selectedLines, updateSelectedLinesColor, setCurrentColor]);
+
+  const handleUndo = useCallback(() => {
+    if (firstSelectedLineId) {
+      undoLine(firstSelectedLineId);
+    }
+  }, [firstSelectedLineId, undoLine]);
+
+  const handleRedo = useCallback(() => {
+    if (firstSelectedLineId) {
+      redoLine(firstSelectedLineId);
+    }
+  }, [firstSelectedLineId, redoLine]);
 
   const controlPanelProps = {
     settings,
@@ -100,7 +148,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="font-bold text-lg text-foreground tracking-tight">Nikhil Note</h1>
-              <p className="text-[11px] text-muted-foreground font-medium">Handwritten notes made easy</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Realistic handwritten notes</p>
             </div>
           </div>
 
@@ -133,35 +181,75 @@ const Index = () => {
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4 p-1 h-12 bg-secondary/50 rounded-2xl">
-              <TabsTrigger value="editor" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsList className="grid w-full grid-cols-4 mb-4 p-1 h-12 bg-secondary/50 rounded-2xl">
+              <TabsTrigger value="editor" className="gap-1 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Edit3 className="w-4 h-4" />
-                <span className="text-sm font-medium">Editor</span>
+                <span className="text-xs font-medium">Write</span>
               </TabsTrigger>
-              <TabsTrigger value="preview" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="preview" className="gap-1 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Eye className="w-4 h-4" />
-                <span className="text-sm font-medium">Preview</span>
+                <span className="text-xs font-medium">Preview</span>
               </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="colors" className="gap-1 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <PenLine className="w-4 h-4" />
+                <span className="text-xs font-medium">Pens</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Settings2 className="w-4 h-4" />
-                <span className="text-sm font-medium">Settings</span>
+                <span className="text-xs font-medium">Style</span>
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="editor" className="mt-0">
-              <div className="panel-card p-5 animate-fade-in">
-                <TextEditor value={text} onChange={setText} />
+              <div className="panel-card p-4 animate-fade-in">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="section-icon">
+                    <Edit3 className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-foreground">Notebook</h3>
+                    <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Click to select</p>
+                  </div>
+                </div>
+                <LineBasedEditor
+                  lines={lines}
+                  selectedLines={selectedLines}
+                  currentColor={currentColor}
+                  realPenMode={realPenMode}
+                  onLineTextChange={updateLineText}
+                  onLineColorChange={updateLineColor}
+                  onSelectLine={selectLine}
+                  onAddLine={addLine}
+                  onRemoveLine={removeLine}
+                  onPaste={handlePaste}
+                  onMergeLinesUp={mergeLinesUp}
+                />
               </div>
             </TabsContent>
             
             <TabsContent value="preview" className="mt-0">
               <div className="bg-muted/30 rounded-2xl border border-border/50 min-h-[500px] animate-fade-in overflow-hidden">
-                <PagePreview 
+                <NotebookPreview 
                   ref={previewRef} 
-                  text={text} 
+                  lines={lines}
                   settings={settings}
-                  tableData={tableData}
-                  diagrams={diagrams}
+                  realPenMode={realPenMode}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="colors" className="mt-0">
+              <div className="animate-fade-in">
+                <PenPalette
+                  currentColor={currentColor}
+                  onColorChange={handleColorChange}
+                  selectedCount={selectedLines.size}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false}
+                  canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false}
+                  realPenMode={realPenMode}
+                  onRealPenModeChange={setRealPenMode}
                 />
               </div>
             </TabsContent>
@@ -174,44 +262,109 @@ const Index = () => {
           </Tabs>
         </div>
 
-        {/* Desktop Layout */}
+        {/* Desktop Layout - Notebook Left, Preview Center, Palette Right */}
         <div className="hidden lg:grid lg:grid-cols-12 gap-5">
-          {/* Editor */}
+          {/* Notebook Editor */}
           <div className="col-span-4 animate-fade-in">
-            <div className="panel-card p-5 sticky top-24">
-              <TextEditor value={text} onChange={setText} />
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className={`${showControls ? 'col-span-5' : 'col-span-8'} animate-fade-in transition-all duration-500 ease-out`}>
-            <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-inner">
-              <PagePreview 
-                ref={previewRef} 
-                text={text} 
-                settings={settings}
-                tableData={tableData}
-                diagrams={diagrams}
+            <div className="panel-card p-4 sticky top-24">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="section-icon">
+                    <Edit3 className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-foreground">Notebook</h3>
+                    <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Ctrl+click to multi-select</p>
+                  </div>
+                </div>
+              </div>
+              <LineBasedEditor
+                lines={lines}
+                selectedLines={selectedLines}
+                currentColor={currentColor}
+                realPenMode={realPenMode}
+                onLineTextChange={updateLineText}
+                onLineColorChange={updateLineColor}
+                onSelectLine={selectLine}
+                onAddLine={addLine}
+                onRemoveLine={removeLine}
+                onPaste={handlePaste}
+                onMergeLinesUp={mergeLinesUp}
               />
             </div>
           </div>
 
-          {/* Controls */}
-          {showControls && (
-            <div className="col-span-3 animate-slide-in-right">
-              <div className="panel-card sticky top-24 max-h-[calc(100vh-8rem)] overflow-hidden">
-                <ControlPanel {...controlPanelProps} />
-              </div>
+          {/* Preview */}
+          <div className={`${showControls ? 'col-span-5' : 'col-span-6'} animate-fade-in transition-all duration-500 ease-out`}>
+            <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-inner">
+              <NotebookPreview 
+                ref={previewRef} 
+                lines={lines}
+                settings={settings}
+                realPenMode={realPenMode}
+              />
             </div>
-          )}
+          </div>
+
+          {/* Pen Palette + Controls */}
+          <div className={`${showControls ? 'col-span-3' : 'col-span-2'} animate-slide-in-right space-y-4`}>
+            {/* Pen Palette */}
+            <div className="sticky top-24">
+              <PenPalette
+                currentColor={currentColor}
+                onColorChange={handleColorChange}
+                selectedCount={selectedLines.size}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false}
+                canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false}
+                realPenMode={realPenMode}
+                onRealPenModeChange={setRealPenMode}
+              />
+
+              {/* Quick Export Buttons */}
+              <div className="mt-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Export</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                    className="gap-1.5 rounded-xl text-xs"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleExportImages('png')}
+                    disabled={isExporting}
+                    className="gap-1.5 rounded-xl text-xs"
+                  >
+                    <Image className="w-3.5 h-3.5" />
+                    PNG
+                  </Button>
+                </div>
+              </div>
+
+              {/* Advanced Controls toggle */}
+              {showControls && (
+                <div className="mt-4 panel-card max-h-[400px] overflow-y-auto">
+                  <ControlPanel {...controlPanelProps} />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </main>
 
       {/* Floating hint for first-time users */}
-      {!text && (
+      {lines.length === 1 && lines[0].text === '' && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 animate-fade-in hidden lg:flex items-center gap-2 bg-card border border-border/80 shadow-lg rounded-full px-5 py-3">
           <Sparkles className="w-4 h-4 text-accent" />
-          <span className="text-sm text-muted-foreground">Start typing in the editor to see your handwritten notes</span>
+          <span className="text-sm text-muted-foreground">Start typing in the notebook to see your handwritten notes</span>
         </div>
       )}
     </div>
