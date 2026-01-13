@@ -47,12 +47,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52 rounded-xl p-2">
           <DropdownMenuItem onClick={onExportPDF} className="gap-3 cursor-pointer rounded-lg p-3 focus:bg-secondary">
-            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-red-500" />
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <FileImage className="w-4 h-4 text-purple-500" />
             </div>
             <div>
-              <p className="font-medium text-sm">PDF Document</p>
-              <p className="text-[10px] text-muted-foreground">Best for printing</p>
+              <p className="font-medium text-sm">Export Page</p>
+              <p className="text-[10px] text-muted-foreground">PNG (multi-page = ZIP)</p>
             </div>
           </DropdownMenuItem>
           <DropdownMenuSeparator className="my-1" />

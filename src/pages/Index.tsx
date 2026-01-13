@@ -404,7 +404,7 @@ const Index = () => {
                     className="gap-1.5 rounded-xl text-xs"
                   >
                     <FileDown className="w-3.5 h-3.5" />
-                    PDF
+                    Export
                   </Button>
                   <Button
                     variant="outline"
