@@ -111,7 +111,7 @@ export const DEFAULT_SETTINGS: NoteSettings = {
   fontSize: 24,
   lineSpacing: 32,
   wordSpacing: 4,
-  pageStyle: 'ruled',
+  pageStyle: 'plain',
   pageSize: 'a4',
   inkColor: 'blue',
   margins: {
