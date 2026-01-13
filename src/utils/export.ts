@@ -2,6 +2,14 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { PageSize, PAGE_SIZE_OPTIONS } from '@/types/notes';
 
+export type ExportProgress = {
+  current: number;
+  total: number;
+  percentage: number;
+};
+
+export type ProgressCallback = (progress: ExportProgress) => void;
+
 // Get page dimensions in points for jsPDF
 const getPageDimensions = (pageSize: PageSize): { width: number; height: number } => {
   const sizeOption = PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize);
@@ -19,11 +27,13 @@ const getPageDimensions = (pageSize: PageSize): { width: number; height: number 
 export async function exportToPDF(
   elements: HTMLElement[],
   filename: string = 'handwritten-notes',
-  pageSize: PageSize = 'a4'
+  pageSize: PageSize = 'a4',
+  onProgress?: ProgressCallback
 ): Promise<void> {
   if (elements.length === 0) return;
 
   const dimensions = getPageDimensions(pageSize);
+  const total = elements.length;
   
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -37,10 +47,17 @@ export async function exportToPDF(
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i];
     
+    // Report progress before processing each page
+    onProgress?.({
+      current: i + 1,
+      total,
+      percentage: Math.round(((i + 1) / total) * 100)
+    });
+    
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#FFFFFF', // Pure white background
+      backgroundColor: '#FFFFFF',
       logging: false,
     });
 
@@ -70,7 +87,7 @@ export async function exportToImage(
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,
-    backgroundColor: '#FFFFFF', // Pure white background
+    backgroundColor: '#FFFFFF',
     logging: false,
   });
 
@@ -83,9 +100,18 @@ export async function exportToImage(
 export async function exportAllPagesToImages(
   elements: HTMLElement[],
   format: 'png' | 'jpeg' = 'png',
-  baseFilename: string = 'handwritten-note'
+  baseFilename: string = 'handwritten-note',
+  onProgress?: ProgressCallback
 ): Promise<void> {
+  const total = elements.length;
+  
   for (let i = 0; i < elements.length; i++) {
+    onProgress?.({
+      current: i + 1,
+      total,
+      percentage: Math.round(((i + 1) / total) * 100)
+    });
+    
     await exportToImage(elements[i], format, `${baseFilename}-page-${i + 1}`);
   }
 }

@@ -9,7 +9,7 @@ import { useNoteLines } from '@/hooks/useNoteLines';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useDiagrams } from '@/hooks/useDiagrams';
 import { useTableData } from '@/hooks/useTableData';
-import { exportToPDF, exportAllPagesToImages } from '@/utils/export';
+import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
 import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight, FileDown, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [showControls, setShowControls] = useState(true);
   const { settings, updateSettings, updateMargins, updateHeaderFooter, resetSettings } = useNoteSettings();
   const { isDark, toggle: toggleDark } = useDarkMode();
@@ -64,14 +65,39 @@ const Index = () => {
     }
 
     setIsExporting(true);
+    setExportProgress(null);
+    
+    const toastId = elements.length > 1 
+      ? toast.loading(`Exporting PDF: Page 1 of ${elements.length}...`)
+      : undefined;
+    
     try {
-      await exportToPDF(elements, 'handwritten-notes', settings.pageSize);
-      toast.success('PDF exported successfully!');
+      await exportToPDF(
+        elements, 
+        'handwritten-notes', 
+        settings.pageSize,
+        (progress) => {
+          setExportProgress(progress);
+          if (toastId && elements.length > 1) {
+            toast.loading(`Exporting PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
+          }
+        }
+      );
+      if (toastId) {
+        toast.success('PDF exported successfully!', { id: toastId });
+      } else {
+        toast.success('PDF exported successfully!');
+      }
     } catch (error) {
-      toast.error('Failed to export PDF');
+      if (toastId) {
+        toast.error('Failed to export PDF', { id: toastId });
+      } else {
+        toast.error('Failed to export PDF');
+      }
       console.error(error);
     } finally {
       setIsExporting(false);
+      setExportProgress(null);
     }
   }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length]);
 
@@ -89,14 +115,39 @@ const Index = () => {
     }
 
     setIsExporting(true);
+    setExportProgress(null);
+    
+    const toastId = elements.length > 1 
+      ? toast.loading(`Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...`)
+      : undefined;
+    
     try {
-      await exportAllPagesToImages(elements, format, 'handwritten-note');
-      toast.success(`${format.toUpperCase()} images exported successfully!`);
+      await exportAllPagesToImages(
+        elements, 
+        format, 
+        'handwritten-note',
+        (progress) => {
+          setExportProgress(progress);
+          if (toastId && elements.length > 1) {
+            toast.loading(`Exporting ${format.toUpperCase()}: Image ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
+          }
+        }
+      );
+      if (toastId) {
+        toast.success(`${format.toUpperCase()} images exported successfully!`, { id: toastId });
+      } else {
+        toast.success(`${format.toUpperCase()} image exported successfully!`);
+      }
     } catch (error) {
-      toast.error(`Failed to export ${format.toUpperCase()}`);
+      if (toastId) {
+        toast.error(`Failed to export ${format.toUpperCase()}`, { id: toastId });
+      } else {
+        toast.error(`Failed to export ${format.toUpperCase()}`);
+      }
       console.error(error);
     } finally {
       setIsExporting(false);
+      setExportProgress(null);
     }
   }, [getPlainText, settings.table.enabled, diagrams.length]);
 
