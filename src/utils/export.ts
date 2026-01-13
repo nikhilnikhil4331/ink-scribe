@@ -1,6 +1,20 @@
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { PageSize, PAGE_SIZE_OPTIONS } from '@/types/notes';
+
+// Get page dimensions in points for jsPDF
+const getPageDimensions = (pageSize: PageSize): { width: number; height: number } => {
+  const sizeOption = PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize);
+  if (sizeOption) {
+    // Convert mm to points (1mm = 2.83465 points)
+    return {
+      width: sizeOption.width * 2.83465,
+      height: sizeOption.height * 2.83465
+    };
+  }
+  // Default A4 in points
+  return { width: 595.28, height: 841.89 };
+};
 
 export async function exportToPDF(
   elements: HTMLElement[],
@@ -9,14 +23,16 @@ export async function exportToPDF(
 ): Promise<void> {
   if (elements.length === 0) return;
 
+  const dimensions = getPageDimensions(pageSize);
+  
   const pdf = new jsPDF({
     orientation: 'portrait',
-    unit: 'px',
-    format: pageSize,
+    unit: 'pt',
+    format: [dimensions.width, dimensions.height],
   });
 
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const pdfWidth = dimensions.width;
+  const pdfHeight = dimensions.height;
 
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i];
