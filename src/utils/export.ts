@@ -63,8 +63,25 @@ export async function exportToPDF(
       foreignObjectRendering: false,
     });
 
-    // Use JPEG format for better mobile compatibility (avoids PNG signature issues)
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    // Convert canvas to blob and then to base64 for reliable cross-browser support
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => {
+          if (b) resolve(b);
+          else reject(new Error('Failed to create image blob'));
+        },
+        'image/jpeg',
+        0.92
+      );
+    });
+    
+    const imgData = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
     const imgWidth = pdfWidth;
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
