@@ -57,7 +57,7 @@ const Index = () => {
       toast.error('Please add some content first');
       return;
     }
-    
+
     const elements = previewRef.current?.getPageElements();
     if (!elements || elements.length === 0) {
       toast.error('No pages to export');
@@ -66,33 +66,41 @@ const Index = () => {
 
     setIsExporting(true);
     setExportProgress(null);
-    
-    const toastId = elements.length > 1 
+
+    const toastId = elements.length > 1
       ? toast.loading(`Exporting PDF: Page 1 of ${elements.length}...`)
       : undefined;
-    
+
     try {
-      await exportToPDF(
-        elements, 
-        'handwritten-notes', 
-        settings.pageSize,
-        (progress) => {
-          setExportProgress(progress);
-          if (toastId && elements.length > 1) {
-            toast.loading(`Exporting PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
-          }
+      await exportToPDF(elements, 'handwritten-notes', settings.pageSize, (progress) => {
+        setExportProgress(progress);
+        if (toastId && elements.length > 1) {
+          toast.loading(
+            `Exporting PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`,
+            { id: toastId }
+          );
         }
-      );
+      });
+
       if (toastId) {
         toast.success('PDF exported successfully!', { id: toastId });
       } else {
         toast.success('PDF exported successfully!');
       }
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'Unknown error';
+
+      const text = `Failed to export PDF${message ? `: ${message}` : ''}`;
+
       if (toastId) {
-        toast.error('Failed to export PDF', { id: toastId });
+        toast.error(text, { id: toastId });
       } else {
-        toast.error('Failed to export PDF');
+        toast.error(text);
       }
       console.error(error);
     } finally {
@@ -101,55 +109,66 @@ const Index = () => {
     }
   }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length]);
 
-  const handleExportImages = useCallback(async (format: 'png' | 'jpeg') => {
-    const text = getPlainText();
-    if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
-      toast.error('Please add some content first');
-      return;
-    }
+  const handleExportImages = useCallback(
+    async (format: 'png' | 'jpeg') => {
+      const text = getPlainText();
+      if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
+        toast.error('Please add some content first');
+        return;
+      }
 
-    const elements = previewRef.current?.getPageElements();
-    if (!elements || elements.length === 0) {
-      toast.error('No pages to export');
-      return;
-    }
+      const elements = previewRef.current?.getPageElements();
+      if (!elements || elements.length === 0) {
+        toast.error('No pages to export');
+        return;
+      }
 
-    setIsExporting(true);
-    setExportProgress(null);
-    
-    const toastId = elements.length > 1 
-      ? toast.loading(`Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...`)
-      : undefined;
-    
-    try {
-      await exportAllPagesToImages(
-        elements, 
-        format, 
-        'handwritten-note',
-        (progress) => {
+      setIsExporting(true);
+      setExportProgress(null);
+
+      const toastId = elements.length > 1
+        ? toast.loading(`Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...`)
+        : undefined;
+
+      try {
+        await exportAllPagesToImages(elements, format, 'handwritten-note', (progress) => {
           setExportProgress(progress);
           if (toastId && elements.length > 1) {
-            toast.loading(`Exporting ${format.toUpperCase()}: Image ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
+            toast.loading(
+              `Exporting ${format.toUpperCase()}: Image ${progress.current} of ${progress.total} (${progress.percentage}%)`,
+              { id: toastId }
+            );
           }
+        });
+
+        if (toastId) {
+          toast.success(`${format.toUpperCase()} images exported successfully!`, { id: toastId });
+        } else {
+          toast.success(`${format.toUpperCase()} image exported successfully!`);
         }
-      );
-      if (toastId) {
-        toast.success(`${format.toUpperCase()} images exported successfully!`, { id: toastId });
-      } else {
-        toast.success(`${format.toUpperCase()} image exported successfully!`);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : 'Unknown error';
+
+        const text = `Failed to export ${format.toUpperCase()}${message ? `: ${message}` : ''}`;
+
+        if (toastId) {
+          toast.error(text, { id: toastId });
+        } else {
+          toast.error(text);
+        }
+        console.error(error);
+      } finally {
+        setIsExporting(false);
+        setExportProgress(null);
       }
-    } catch (error) {
-      if (toastId) {
-        toast.error(`Failed to export ${format.toUpperCase()}`, { id: toastId });
-      } else {
-        toast.error(`Failed to export ${format.toUpperCase()}`);
-      }
-      console.error(error);
-    } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-    }
-  }, [getPlainText, settings.table.enabled, diagrams.length]);
+    },
+    [getPlainText, settings.table.enabled, diagrams.length]
+  );
 
   const handleReset = useCallback(() => {
     resetSettings();
