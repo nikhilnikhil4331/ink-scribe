@@ -59,9 +59,12 @@ export async function exportToPDF(
       useCORS: true,
       backgroundColor: '#FFFFFF',
       logging: false,
+      allowTaint: false,
+      foreignObjectRendering: false,
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    // Use JPEG format for better mobile compatibility (avoids PNG signature issues)
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const imgWidth = pdfWidth;
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
@@ -73,7 +76,7 @@ export async function exportToPDF(
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
 
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
+    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
   }
 
   pdf.save(`${filename}.pdf`);
