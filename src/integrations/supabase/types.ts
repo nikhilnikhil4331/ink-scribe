@@ -14,7 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          rating: number | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          rating?: number | null
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          rating?: number | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      handwriting_models: {
+        Row: {
+          analysis_notes: string | null
+          baseline_jitter: boolean
+          created_at: string
+          font_size: number
+          id: string
+          ink_color: string
+          is_default: boolean
+          line_spacing: number
+          name: string
+          pen_pressure_feel: number | null
+          sample_image_url: string | null
+          slant: number | null
+          stroke_randomness: boolean
+          stroke_thickness: number | null
+          suggested_font: string
+          updated_at: string
+          user_id: string
+          word_spacing: number
+        }
+        Insert: {
+          analysis_notes?: string | null
+          baseline_jitter?: boolean
+          created_at?: string
+          font_size?: number
+          id?: string
+          ink_color?: string
+          is_default?: boolean
+          line_spacing?: number
+          name?: string
+          pen_pressure_feel?: number | null
+          sample_image_url?: string | null
+          slant?: number | null
+          stroke_randomness?: boolean
+          stroke_thickness?: number | null
+          suggested_font?: string
+          updated_at?: string
+          user_id: string
+          word_spacing?: number
+        }
+        Update: {
+          analysis_notes?: string | null
+          baseline_jitter?: boolean
+          created_at?: string
+          font_size?: number
+          id?: string
+          ink_color?: string
+          is_default?: boolean
+          line_spacing?: number
+          name?: string
+          pen_pressure_feel?: number | null
+          sample_image_url?: string | null
+          slant?: number | null
+          stroke_randomness?: boolean
+          stroke_thickness?: number | null
+          suggested_font?: string
+          updated_at?: string
+          user_id?: string
+          word_spacing?: number
+        }
+        Relationships: []
+      }
+      notebooks: {
+        Row: {
+          cover_color: string
+          created_at: string
+          description: string | null
+          handwriting_model_id: string | null
+          id: string
+          page_size: string
+          page_style: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_color?: string
+          created_at?: string
+          description?: string | null
+          handwriting_model_id?: string | null
+          id?: string
+          page_size?: string
+          page_style?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_color?: string
+          created_at?: string
+          description?: string | null
+          handwriting_model_id?: string | null
+          id?: string
+          page_size?: string
+          page_style?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notebooks_handwriting_model_id_fkey"
+            columns: ["handwriting_model_id"]
+            isOneToOne: false
+            referencedRelation: "handwriting_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pages: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          notebook_id: string
+          page_number: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          notebook_id: string
+          page_number?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          notebook_id?: string
+          page_number?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: false
+            referencedRelation: "notebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
