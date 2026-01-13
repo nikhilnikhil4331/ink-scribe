@@ -2,6 +2,8 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { PageSize, PAGE_SIZE_OPTIONS } from '@/types/notes';
 
+type PdfImageType = 'JPEG' | 'PNG';
+
 export type ExportProgress = {
   current: number;
   total: number;
@@ -10,14 +12,49 @@ export type ExportProgress = {
 
 export type ProgressCallback = (progress: ExportProgress) => void;
 
+const isMobileBrowser = () =>
+  typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+const blobToDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read image data'));
+    reader.readAsDataURL(blob);
+  });
+
+const canvasToImageDataUrl = async (
+  canvas: HTMLCanvasElement
+): Promise<{ dataUrl: string; type: PdfImageType }> => {
+  // Prefer JPEG for mobile stability; sniff actual output type to avoid jsPDF mismatch.
+  try {
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => {
+          if (b) resolve(b);
+          else reject(new Error('Failed to create image blob'));
+        },
+        'image/jpeg',
+        0.92
+      );
+    });
+
+    return { dataUrl: await blobToDataUrl(blob), type: 'JPEG' };
+  } catch {
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const type: PdfImageType = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+    return { dataUrl, type };
+  }
+};
+
 // Get page dimensions in points for jsPDF
 const getPageDimensions = (pageSize: PageSize): { width: number; height: number } => {
-  const sizeOption = PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize);
+  const sizeOption = PAGE_SIZE_OPTIONS.find((opt) => opt.value === pageSize);
   if (sizeOption) {
     // Convert mm to points (1mm = 2.83465 points)
     return {
       width: sizeOption.width * 2.83465,
-      height: sizeOption.height * 2.83465
+      height: sizeOption.height * 2.83465,
     };
   }
   // Default A4 in points
@@ -34,7 +71,7 @@ export async function exportToPDF(
 
   const dimensions = getPageDimensions(pageSize);
   const total = elements.length;
-  
+
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'pt',
@@ -43,19 +80,19 @@ export async function exportToPDF(
 
   const pdfWidth = dimensions.width;
   const pdfHeight = dimensions.height;
+  const scale = isMobileBrowser() ? 1.5 : 2;
 
   for (let i = 0; i < elements.length; i++) {
     const element = elements[i];
-    
-    // Report progress before processing each page
+
     onProgress?.({
       current: i + 1,
       total,
-      percentage: Math.round(((i + 1) / total) * 100)
+      percentage: Math.round(((i + 1) / total) * 100),
     });
-    
+
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale,
       useCORS: true,
       backgroundColor: '#FFFFFF',
       logging: false,
@@ -63,24 +100,7 @@ export async function exportToPDF(
       foreignObjectRendering: false,
     });
 
-    // Convert canvas to blob and then to base64 for reliable cross-browser support
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (b) => {
-          if (b) resolve(b);
-          else reject(new Error('Failed to create image blob'));
-        },
-        'image/jpeg',
-        0.92
-      );
-    });
-    
-    const imgData = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    const { dataUrl: imgData, type: imgType } = await canvasToImageDataUrl(canvas);
 
     const imgWidth = pdfWidth;
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -89,14 +109,22 @@ export async function exportToPDF(
       pdf.addPage();
     }
 
-    // Fill page with white background first
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
 
-    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
+    pdf.addImage(imgData, imgType, 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
   }
 
-  pdf.save(`${filename}.pdf`);
+  // More reliable on mobile than pdf.save() (avoids some gesture/download restrictions)
+  const pdfBlob = pdf.output('blob');
+  const url = URL.createObjectURL(pdfBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export async function exportToImage(
