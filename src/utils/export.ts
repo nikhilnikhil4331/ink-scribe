@@ -1,8 +1,6 @@
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { PageSize, PAGE_SIZE_OPTIONS } from '@/types/notes';
-
-type PdfImageType = 'JPEG' | 'PNG';
+import { PageSize } from '@/types/notes';
 
 export type ExportProgress = {
   current: number;
@@ -12,119 +10,79 @@ export type ExportProgress = {
 
 export type ProgressCallback = (progress: ExportProgress) => void;
 
-const isMobileBrowser = () =>
-  typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-const blobToDataUrl = (blob: Blob) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Failed to read image data'));
-    reader.readAsDataURL(blob);
-  });
-
-const canvasToImageDataUrl = async (
-  canvas: HTMLCanvasElement
-): Promise<{ dataUrl: string; type: PdfImageType }> => {
-  // Prefer JPEG for mobile stability; sniff actual output type to avoid jsPDF mismatch.
-  try {
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (b) => {
-          if (b) resolve(b);
-          else reject(new Error('Failed to create image blob'));
-        },
-        'image/jpeg',
-        0.92
-      );
-    });
-
-    return { dataUrl: await blobToDataUrl(blob), type: 'JPEG' };
-  } catch {
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-    const type: PdfImageType = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-    return { dataUrl, type };
-  }
-};
-
-// Get page dimensions in points for jsPDF
-const getPageDimensions = (pageSize: PageSize): { width: number; height: number } => {
-  const sizeOption = PAGE_SIZE_OPTIONS.find((opt) => opt.value === pageSize);
-  if (sizeOption) {
-    // Convert mm to points (1mm = 2.83465 points)
-    return {
-      width: sizeOption.width * 2.83465,
-      height: sizeOption.height * 2.83465,
-    };
-  }
-  // Default A4 in points
-  return { width: 595.28, height: 841.89 };
-};
+// A4 dimensions in mm
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
 
 export async function exportToPDF(
   elements: HTMLElement[],
   filename: string = 'handwritten-notes',
-  pageSize: PageSize = 'a4',
+  _pageSize: PageSize = 'a4',
   onProgress?: ProgressCallback
 ): Promise<void> {
   if (elements.length === 0) return;
 
-  const dimensions = getPageDimensions(pageSize);
   const total = elements.length;
 
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'pt',
-    format: [dimensions.width, dimensions.height],
-  });
-
-  const pdfWidth = dimensions.width;
-  const pdfHeight = dimensions.height;
-  const scale = isMobileBrowser() ? 1.5 : 2;
-
-  for (let i = 0; i < elements.length; i++) {
-    const element = elements[i];
-
-    onProgress?.({
-      current: i + 1,
-      total,
-      percentage: Math.round(((i + 1) / total) * 100),
+  try {
+    // Create PDF with fixed A4 size in mm - NO scale operations
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
     });
 
-    const canvas = await html2canvas(element, {
-      scale,
-      useCORS: true,
-      backgroundColor: '#FFFFFF',
-      logging: false,
-      allowTaint: false,
-      foreignObjectRendering: false,
-    });
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
 
-    const { dataUrl: imgData, type: imgType } = await canvasToImageDataUrl(canvas);
+      onProgress?.({
+        current: i + 1,
+        total,
+        percentage: Math.round(((i + 1) / total) * 100),
+      });
 
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Render to canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#FFFFFF',
+        logging: false,
+        allowTaint: false,
+        foreignObjectRendering: false,
+      });
 
-    if (i > 0) {
-      pdf.addPage();
+      // Get image data as JPEG
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+      // Calculate dimensions manually - pageWidth is fixed A4
+      const pageWidth = A4_WIDTH_MM;
+      const pageHeight = (canvas.height * pageWidth) / canvas.width;
+
+      if (i > 0) {
+        pdf.addPage();
+      }
+
+      // Add image WITHOUT any scale calls - just position and size
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, Math.min(pageHeight, A4_HEIGHT_MM));
     }
 
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-
-    pdf.addImage(imgData, imgType, 0, 0, imgWidth, Math.min(imgHeight, pdfHeight));
+    // Download PDF
+    const pdfBlob = pdf.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error('PDF export failed, falling back to PNG:', error);
+    // Fallback: export first page as PNG
+    if (elements.length > 0) {
+      await exportToImage(elements[0], 'png', filename);
+    }
   }
-
-  // More reliable on mobile than pdf.save() (avoids some gesture/download restrictions)
-  const pdfBlob = pdf.output('blob');
-  const url = URL.createObjectURL(pdfBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${filename}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export async function exportToImage(
