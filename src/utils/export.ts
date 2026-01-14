@@ -9,13 +9,78 @@ export type ExportProgress = {
 
 export type ProgressCallback = (progress: ExportProgress) => void;
 
-// Convert canvas to blob
-const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob> => {
+// Convert canvas to blob (mobile-safe)
+const dataUrlToBlob = (dataUrl: string): Blob => {
+  const [header, data] = dataUrl.split(',');
+  const mime = header?.match(/data:(.*?);/)?.[1] ?? 'application/octet-stream';
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+};
+
+const downscaleCanvas = (canvas: HTMLCanvasElement, maxDim: number): HTMLCanvasElement => {
+  const { width, height } = canvas;
+  const largest = Math.max(width, height);
+  if (largest <= maxDim) return canvas;
+
+  const ratio = maxDim / largest;
+  const next = document.createElement('canvas');
+  next.width = Math.max(1, Math.round(width * ratio));
+  next.height = Math.max(1, Math.round(height * ratio));
+
+  const ctx = next.getContext('2d');
+  if (!ctx) return canvas;
+  ctx.drawImage(canvas, 0, 0, next.width, next.height);
+  return next;
+};
+
+const canvasToBlob = (
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality?: number
+): Promise<Blob> => {
   return new Promise((resolve, reject) => {
+    if (!canvas.width || !canvas.height) {
+      reject(new Error('Nothing to export (canvas is empty)'));
+      return;
+    }
+
+    const tryToDataUrl = () => {
+      try {
+        const dataUrl = canvas.toDataURL(type, quality);
+        resolve(dataUrlToBlob(dataUrl));
+      } catch {
+        // As a last resort, downscale to avoid mobile memory limits and retry.
+        try {
+          const smaller = downscaleCanvas(canvas, 4096);
+          if (smaller !== canvas && smaller.toBlob) {
+            smaller.toBlob(
+              (blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error('Failed to create blob'));
+              },
+              type,
+              quality
+            );
+            return;
+          }
+        } catch {
+          // ignore
+        }
+        reject(new Error('Failed to create blob'));
+      }
+    };
+
+    if (!canvas.toBlob) {
+      tryToDataUrl();
+      return;
+    }
+
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob);
-        else reject(new Error('Failed to create blob'));
+        else tryToDataUrl();
       },
       type,
       quality
