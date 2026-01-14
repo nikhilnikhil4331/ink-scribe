@@ -67,42 +67,31 @@ const Index = () => {
     setIsExporting(true);
     setExportProgress(null);
 
-    const toastId = elements.length > 1
-      ? toast.loading(`Exporting PDF: Page 1 of ${elements.length}...`)
-      : undefined;
+    const toastId = toast.loading(
+      elements.length > 1 
+        ? `Exporting: Page 1 of ${elements.length}...` 
+        : 'Exporting page...'
+    );
 
     try {
       await exportToPDF(elements, 'handwritten-notes', settings.pageSize, (progress) => {
         setExportProgress(progress);
-        if (toastId && elements.length > 1) {
+        if (elements.length > 1) {
           toast.loading(
-            `Exporting PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`,
+            `Exporting: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`,
             { id: toastId }
           );
         }
       });
 
-      if (toastId) {
-        toast.success('PDF exported successfully!', { id: toastId });
-      } else {
-        toast.success('PDF exported successfully!');
-      }
+      const successMsg = elements.length > 1 
+        ? 'Pages exported as ZIP successfully!' 
+        : 'Page exported as PNG successfully!';
+      toast.success(successMsg, { id: toastId });
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Unknown error';
-
-      const text = `Failed to export PDF${message ? `: ${message}` : ''}`;
-
-      if (toastId) {
-        toast.error(text, { id: toastId });
-      } else {
-        toast.error(text);
-      }
-      console.error(error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Export failed: ${message}`, { id: toastId });
+      console.error('Export error:', error);
     } finally {
       setIsExporting(false);
       setExportProgress(null);
@@ -126,14 +115,16 @@ const Index = () => {
       setIsExporting(true);
       setExportProgress(null);
 
-      const toastId = elements.length > 1
-        ? toast.loading(`Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...`)
-        : undefined;
+      const toastId = toast.loading(
+        elements.length > 1 
+          ? `Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...` 
+          : `Exporting ${format.toUpperCase()}...`
+      );
 
       try {
         await exportAllPagesToImages(elements, format, 'handwritten-note', (progress) => {
           setExportProgress(progress);
-          if (toastId && elements.length > 1) {
+          if (elements.length > 1) {
             toast.loading(
               `Exporting ${format.toUpperCase()}: Image ${progress.current} of ${progress.total} (${progress.percentage}%)`,
               { id: toastId }
@@ -141,27 +132,11 @@ const Index = () => {
           }
         });
 
-        if (toastId) {
-          toast.success(`${format.toUpperCase()} images exported successfully!`, { id: toastId });
-        } else {
-          toast.success(`${format.toUpperCase()} image exported successfully!`);
-        }
+        toast.success(`${format.toUpperCase()} exported successfully!`, { id: toastId });
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : typeof error === 'string'
-              ? error
-              : 'Unknown error';
-
-        const text = `Failed to export ${format.toUpperCase()}${message ? `: ${message}` : ''}`;
-
-        if (toastId) {
-          toast.error(text, { id: toastId });
-        } else {
-          toast.error(text);
-        }
-        console.error(error);
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        toast.error(`Export failed: ${message}`, { id: toastId });
+        console.error('Export error:', error);
       } finally {
         setIsExporting(false);
         setExportProgress(null);
