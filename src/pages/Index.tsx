@@ -539,12 +539,12 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Page Navigator - Fixed at bottom */}
+      {/* Page Navigator - Fixed at bottom center */}
       <motion.div 
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.4 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
+        className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-40 flex justify-center px-4"
       >
         <PageNavigator
           currentPage={currentPageIndex + 1}
@@ -558,7 +558,7 @@ const Index = () => {
       </motion.div>
 
       {/* Mobile Floating Buttons */}
-      <div className="fixed bottom-24 right-4 z-30 flex flex-col gap-2 lg:hidden">
+      <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-4 z-30 flex flex-col gap-2 lg:hidden">
         <motion.div whileTap={{ scale: 0.9 }}>
           <AnimatedButton
             variant="outline"
@@ -613,7 +613,7 @@ const Index = () => {
       </SlidePanel>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 lg:px-6 py-6 pb-32">
+      <main className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-32">
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
