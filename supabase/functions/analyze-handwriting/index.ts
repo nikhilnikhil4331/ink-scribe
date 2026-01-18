@@ -1,34 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Allowed origins for CORS
-const allowedOrigins = [
-  'https://ievggapvfidhygkhtkug.lovableproject.com',
-  'https://lovable.dev',
-  'http://localhost:5173',
-  'http://localhost:8080',
-];
-
-const getCorsHeaders = (origin: string | null) => {
-  const allowedOrigin = origin && allowedOrigins.some(allowed => 
-    origin === allowed || origin.endsWith('.lovable.dev') || origin.endsWith('.lovableproject.com')
-  ) ? origin : allowedOrigins[0];
-  
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
-
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { imageBase64, analysisType = 'full' } = await req.json();
     
     if (!imageBase64) {
       return new Response(
@@ -55,82 +38,138 @@ serve(async (req) => {
       );
     }
 
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) {
-      console.error("OPENROUTER_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
       return new Response(
         JSON.stringify({ error: "Service configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Calling OpenRouter API for handwriting analysis...");
+    console.log("Calling Lovable AI for advanced handwriting analysis...");
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const systemPrompt = `You are an expert forensic handwriting analyst and typography specialist with 30+ years of experience. Your task is to analyze handwriting samples with EXTREME precision to enable PERFECT digital recreation that is INDISTINGUISHABLE from real handwriting.
+
+ANALYSIS REQUIREMENTS:
+1. STROKE ANALYSIS
+   - Pen pressure patterns (where pressure increases/decreases)
+   - Stroke start and end characteristics (flicks, hooks, trails)
+   - Connection patterns between letters
+   - Pen lift frequency within words
+
+2. LETTER FORMATION
+   - Individual character proportions (width/height ratios)
+   - Loop sizes in letters like 'a', 'o', 'e', 'd', 'b', 'g', 'p', 'q'
+   - Ascender heights (b, d, f, h, k, l)
+   - Descender depths (g, j, p, q, y)
+   - X-height consistency
+
+3. SPATIAL ANALYSIS
+   - Letter spacing patterns (tight, normal, loose)
+   - Word spacing consistency
+   - Line spacing and baseline drift
+   - Margin behavior
+
+4. STYLISTIC ELEMENTS
+   - Slant angle (measure in degrees)
+   - Curvature vs angular strokes
+   - Unique letter formations (how they write specific letters)
+   - Personal quirks and identifying characteristics
+
+5. NATURAL IMPERFECTIONS (CRITICAL)
+   - Baseline waviness patterns
+   - Size inconsistency between repeated letters
+   - Pressure variations
+   - Speed indicators (rushed vs careful)
+
+RESPOND WITH THIS EXACT JSON STRUCTURE:
+{
+  "suggestedFont": "font-name",
+  "fontSize": number,
+  "lineSpacing": number,
+  "wordSpacing": number,
+  "letterSpacing": number,
+  "baselineJitter": boolean,
+  "baselineJitterAmount": number,
+  "strokeRandomness": boolean,
+  "strokeRandomnessAmount": number,
+  "inkColor": "color",
+  "slant": number,
+  "strokeThickness": number,
+  "penPressureFeel": number,
+  "characterVariance": {
+    "sizeVariance": number,
+    "rotationVariance": number,
+    "spacingVariance": number,
+    "yOffsetVariance": number
+  },
+  "strokeCharacteristics": {
+    "startWeight": number,
+    "endWeight": number,
+    "midWeight": number,
+    "flicks": boolean,
+    "hooks": boolean
+  },
+  "naturalImperfections": {
+    "inkBleed": number,
+    "pressureVariation": number,
+    "speedVariation": number,
+    "connectionStrength": number
+  },
+  "analysisNotes": "detailed analysis",
+  "personalityTraits": "what this handwriting reveals about the writer",
+  "confidence": number
+}
+
+FONT OPTIONS (choose the CLOSEST match):
+- "caveat" - casual, slightly rushed, natural flow
+- "kalam" - neat, rounded, consistent
+- "patrick-hand" - clean, friendly, printed style
+- "shadows-into-light" - light, airy, feminine
+- "indie-flower" - youthful, bubbly, playful
+- "dancing-script" - elegant, flowing cursive
+- "architects-daughter" - technical, precise, neat
+- "satisfy" - bold, artistic, confident
+- "gloria-hallelujah" - playful, energetic, casual
+- "covered-by-your-grace" - delicate, flowing
+- "rock-salt" - rough, textured, bold
+- "reenie-beanie" - quick, informal, natural
+- "homemade-apple" - rustic, authentic
+- "nothing-you-could-do" - loose, casual, fast
+- "cedarville-cursive" - classic cursive, connected
+- "la-belle-aurore" - vintage, romantic, elegant
+
+CRITICAL: The goal is to make digital notes COMPLETELY INDISTINGUISHABLE from real handwriting. Every subtle variation matters.`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://lovable.dev",
-        "X-Title": "Handwriting Analyzer"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.0-flash-001",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
-            content: `You are an expert handwriting analyst and calligraphy specialist. Your task is to analyze handwriting samples with extreme precision to enable perfect digital recreation.
-
-Analyze every aspect of the handwriting including:
-- Letter formation patterns and stroke directions
-- Pen pressure variations (light, medium, heavy)
-- Slant angle (vertical, right-leaning, left-leaning)
-- Letter spacing consistency
-- Word spacing patterns
-- Baseline stability or natural waviness
-- Letter size variations
-- Ascender and descender characteristics
-- Connection styles between letters
-- Overall rhythm and flow
-- Unique personal quirks in letter formation
-
-You must respond with a JSON object containing these properties:
-- suggestedFont: one of these values based on best match: "caveat", "kalam", "patrick-hand", "shadows-into-light", "indie-flower", "dancing-script", "architects-daughter", "satisfy", "gloria-hallelujah", "covered-by-your-grace", "rock-salt", "reenie-beanie", "homemade-apple", "nothing-you-could-do", "cedarville-cursive", "la-belle-aurore"
-- fontSize: number between 18-36 (match apparent size)
-- lineSpacing: number between 24-50 (match line height)
-- wordSpacing: number between 2-10 (match word gaps)
-- baselineJitter: boolean (true if baseline is wavy/uneven)
-- strokeRandomness: boolean (true if letter sizes/angles vary)
-- inkColor: one of "blue", "black", "red", "green", "purple", "brown", "teal", "orange" (detected or default "blue")
-- slant: number between -15 and 15 (negative = left lean, positive = right lean, 0 = vertical)
-- strokeThickness: number between 1-5 (pen stroke weight)
-- penPressureFeel: number between 1-10 (1 = very light, 10 = very heavy pressure)
-- analysisNotes: string (detailed description of handwriting characteristics, personality traits it might indicate, and why you chose the specific settings)
-
-Font selection guide:
-- "caveat" - casual, slightly rushed cursive
-- "kalam" - neat, rounded handwriting
-- "patrick-hand" - clean, friendly print
-- "shadows-into-light" - light, airy cursive
-- "indie-flower" - youthful, bubbly
-- "dancing-script" - elegant, flowing cursive
-- "architects-daughter" - technical, precise
-- "satisfy" - bold, artistic cursive
-- "gloria-hallelujah" - playful, energetic
-- "covered-by-your-grace" - delicate, feminine
-- "rock-salt" - rough, textured
-- "reenie-beanie" - quick, informal
-- "homemade-apple" - rustic, natural
-- "nothing-you-could-do" - loose, casual
-- "cedarville-cursive" - classic cursive
-- "la-belle-aurore" - vintage, romantic`
+            content: systemPrompt
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Analyze this handwriting sample in detail and provide precise settings to recreate this exact handwriting style digitally. Look at every aspect - the pressure, slant, spacing, letter formation, and any unique characteristics. Respond with only the JSON object, no markdown formatting."
+                text: `Analyze this handwriting sample with EXTREME precision. Look at EVERY detail:
+- How each letter is formed
+- Pressure variations throughout strokes
+- Natural imperfections and variations
+- Spacing patterns
+- Baseline behavior
+- Any unique characteristics
+
+The goal is to recreate this EXACT handwriting digitally so it's IMPOSSIBLE to tell apart from the original.
+Respond ONLY with the JSON object, no markdown or explanations.`
               },
               {
                 type: "image_url",
@@ -141,14 +180,14 @@ Font selection guide:
             ]
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.3,
+        max_tokens: 3000,
+        temperature: 0.2,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenRouter API error:", response.status, errorText);
+      console.error("Lovable AI error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -156,10 +195,10 @@ Font selection guide:
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402 || response.status === 401) {
+      if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "API authentication error. Please check your API key." }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "API credits required. Please add credits to continue." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
@@ -170,7 +209,7 @@ Font selection guide:
     }
 
     const data = await response.json();
-    console.log("OpenRouter response received");
+    console.log("Lovable AI response received");
     
     const content = data.choices?.[0]?.message?.content;
 
@@ -188,7 +227,47 @@ Font selection guide:
       // Remove any markdown code blocks if present
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysisResult = JSON.parse(cleanContent);
-      console.log("Successfully parsed analysis result");
+      
+      // Ensure all required fields have defaults
+      analysisResult = {
+        suggestedFont: analysisResult.suggestedFont || 'caveat',
+        fontSize: analysisResult.fontSize || 24,
+        lineSpacing: analysisResult.lineSpacing || 32,
+        wordSpacing: analysisResult.wordSpacing || 4,
+        letterSpacing: analysisResult.letterSpacing || 0,
+        baselineJitter: analysisResult.baselineJitter ?? true,
+        baselineJitterAmount: analysisResult.baselineJitterAmount || 2,
+        strokeRandomness: analysisResult.strokeRandomness ?? true,
+        strokeRandomnessAmount: analysisResult.strokeRandomnessAmount || 1,
+        inkColor: analysisResult.inkColor || 'blue',
+        slant: analysisResult.slant || 0,
+        strokeThickness: analysisResult.strokeThickness || 1,
+        penPressureFeel: analysisResult.penPressureFeel || 5,
+        characterVariance: {
+          sizeVariance: analysisResult.characterVariance?.sizeVariance || 0.05,
+          rotationVariance: analysisResult.characterVariance?.rotationVariance || 1,
+          spacingVariance: analysisResult.characterVariance?.spacingVariance || 0.5,
+          yOffsetVariance: analysisResult.characterVariance?.yOffsetVariance || 1,
+        },
+        strokeCharacteristics: {
+          startWeight: analysisResult.strokeCharacteristics?.startWeight || 1,
+          endWeight: analysisResult.strokeCharacteristics?.endWeight || 0.8,
+          midWeight: analysisResult.strokeCharacteristics?.midWeight || 1,
+          flicks: analysisResult.strokeCharacteristics?.flicks ?? false,
+          hooks: analysisResult.strokeCharacteristics?.hooks ?? false,
+        },
+        naturalImperfections: {
+          inkBleed: analysisResult.naturalImperfections?.inkBleed || 0,
+          pressureVariation: analysisResult.naturalImperfections?.pressureVariation || 0.1,
+          speedVariation: analysisResult.naturalImperfections?.speedVariation || 0.1,
+          connectionStrength: analysisResult.naturalImperfections?.connectionStrength || 0.5,
+        },
+        analysisNotes: analysisResult.analysisNotes || '',
+        personalityTraits: analysisResult.personalityTraits || '',
+        confidence: analysisResult.confidence || 0.85,
+      };
+      
+      console.log("Successfully parsed advanced analysis result");
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
       return new Response(
