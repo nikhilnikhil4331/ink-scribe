@@ -1,6 +1,7 @@
-import React, { useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { useMemo, forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
 import { NoteSettings, FONT_OPTIONS, PAGE_SIZE_OPTIONS } from '@/types/notes';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NotebookPreviewProps {
   lines: NoteLine[];
@@ -26,10 +27,37 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
   ({ lines, settings, realPenMode, pageNumber = 1, totalPages = 1 }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const isMobile = useIsMobile();
+    const [containerWidth, setContainerWidth] = useState(0);
 
     const fontClass = FONT_OPTIONS.find(f => f.value === settings.font)?.className || 'font-handwriting-1';
     const sizeConfig = PAGE_SIZE_OPTIONS.find(s => s.value === settings.pageSize) || PAGE_SIZE_OPTIONS[0];
     const linesPerPage = getLinesPerPage(settings.pageSize, settings.lineSpacing);
+
+    // Calculate scale to fit page in container
+    useEffect(() => {
+      const updateWidth = () => {
+        if (containerRef.current) {
+          setContainerWidth(containerRef.current.clientWidth);
+        }
+      };
+      updateWidth();
+      window.addEventListener('resize', updateWidth);
+      return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    // Calculate the scale factor to fit the page within container
+    const scale = useMemo(() => {
+      if (!containerWidth || containerWidth <= 0) return 1;
+      const padding = isMobile ? 24 : 48; // Account for container padding
+      const availableWidth = containerWidth - padding;
+      const pageWidth = sizeConfig.width;
+      
+      if (availableWidth < pageWidth) {
+        return Math.max(0.4, availableWidth / pageWidth);
+      }
+      return 1;
+    }, [containerWidth, sizeConfig.width, isMobile]);
 
     const pages = useMemo(() => {
       const result: NoteLine[][] = [];
@@ -166,16 +194,18 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
     };
 
     return (
-      <div ref={containerRef} className="h-full overflow-y-auto p-6 scroll-smooth relative">
-        <div className="flex flex-col items-center gap-6">
+      <div ref={containerRef} className="h-full overflow-y-auto p-3 sm:p-6 scroll-smooth relative">
+        <div className="flex flex-col items-center gap-4 sm:gap-6">
           {pages.map((pageLines, pageIndex) => (
             <div
               key={pageIndex}
               ref={(el) => { pageRefs.current[pageIndex] = el; }}
-              className="animate-scale-in hover-lift"
+              className="animate-scale-in hover-lift origin-top"
               style={{ 
                 width: `${sizeConfig.width}px`,
-                maxWidth: '100%',
+                transform: scale < 1 ? `scale(${scale})` : undefined,
+                transformOrigin: 'top center',
+                marginBottom: scale < 1 ? `${-(sizeConfig.height * (1 - scale))}px` : undefined,
                 animationDelay: `${pageIndex * 50}ms`,
               }}
             >
