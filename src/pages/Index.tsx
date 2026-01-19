@@ -599,6 +599,8 @@ const Index = () => {
           canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false}
           realPenMode={realPenMode}
           onRealPenModeChange={setRealPenMode}
+          currentText={getPlainText()}
+          onInsertText={(text) => handlePaste(text)}
         />
       </SlidePanel>
 
@@ -652,6 +654,16 @@ const Index = () => {
                     animate="center"
                     exit="exit"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x > 80 || info.velocity.x > 400) {
+                        handlePrevPage();
+                      } else if (info.offset.x < -80 || info.velocity.x < -400) {
+                        handleNextPage();
+                      }
+                    }}
                   >
                     <LineBasedEditor
                       lines={lines}
@@ -686,6 +698,16 @@ const Index = () => {
                     animate="center"
                     exit="exit"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x > 80 || info.velocity.x > 400) {
+                        handlePrevPage();
+                      } else if (info.offset.x < -80 || info.velocity.x < -400) {
+                        handleNextPage();
+                      }
+                    }}
                   >
                     <NotebookPreview 
                       ref={previewRef} 
@@ -769,6 +791,16 @@ const Index = () => {
                   exit="exit"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   className="h-full"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.x > 80 || info.velocity.x > 400) {
+                      handlePrevPage();
+                    } else if (info.offset.x < -80 || info.velocity.x < -400) {
+                      handleNextPage();
+                    }
+                  }}
                 >
                   <NotebookPreview 
                     ref={previewRef} 
@@ -801,6 +833,8 @@ const Index = () => {
                 canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false}
                 realPenMode={realPenMode}
                 onRealPenModeChange={setRealPenMode}
+                currentText={getPlainText()}
+                onInsertText={(text) => handlePaste(text)}
               />
 
               {/* Quick Export Buttons */}
