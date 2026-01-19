@@ -2,3 +2,6 @@ project_id = "ievggapvfidhygkhtkug"
 
 [functions.analyze-handwriting]
 verify_jwt = false
+
+[functions.ai-writing-assist]
+verify_jwt = false

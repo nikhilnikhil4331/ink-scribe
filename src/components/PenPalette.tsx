@@ -4,6 +4,7 @@ import { Pen, Undo2, Redo2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AIWritingAssistant } from './AIWritingAssistant';
 
 interface PenPaletteProps {
   currentColor: LineInkColor;
@@ -15,6 +16,8 @@ interface PenPaletteProps {
   canRedo?: boolean;
   realPenMode: boolean;
   onRealPenModeChange: (enabled: boolean) => void;
+  currentText?: string;
+  onInsertText?: (text: string) => void;
 }
 
 export const PenPalette: React.FC<PenPaletteProps> = ({
@@ -27,6 +30,8 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   canRedo = false,
   realPenMode,
   onRealPenModeChange,
+  currentText = '',
+  onInsertText,
 }) => {
   return (
     <div className="flex flex-col gap-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
@@ -146,6 +151,14 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
           <strong>Tip:</strong> Hold <kbd className="px-1 py-0.5 bg-muted rounded text-[9px]">Ctrl</kbd> + click to select multiple lines
         </p>
       </div>
+
+      {/* AI Writing Assistant */}
+      {onInsertText && (
+        <AIWritingAssistant 
+          currentText={currentText} 
+          onInsertText={onInsertText} 
+        />
+      )}
     </div>
   );
 };

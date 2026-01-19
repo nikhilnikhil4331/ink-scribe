@@ -171,46 +171,47 @@ export const HandwritingAnalyzer: React.FC<HandwritingAnalyzerProps> = ({ onAppl
           {/* Analysis Results */}
           {analysisResult && (
             <Card className="p-4 bg-primary/5 border-primary/20">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">Analysis Complete</h4>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {analysisResult.analysisNotes}
-                  </p>
-                  
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-background/50 rounded-lg p-2">
-                      <span className="text-muted-foreground">Font: </span>
-                      <span className="font-medium capitalize">
-                        {analysisResult.suggestedFont.replace(/-/g, ' ')}
-                      </span>
-                    </div>
-                    <div className="bg-background/50 rounded-lg p-2">
-                      <span className="text-muted-foreground">Size: </span>
-                      <span className="font-medium">{analysisResult.fontSize}px</span>
-                    </div>
-                    <div className="bg-background/50 rounded-lg p-2">
-                      <span className="text-muted-foreground">Ink: </span>
-                      <span className="font-medium capitalize">{analysisResult.inkColor}</span>
-                    </div>
-                    <div className="bg-background/50 rounded-lg p-2">
-                      <span className="text-muted-foreground">Spacing: </span>
-                      <span className="font-medium">{analysisResult.lineSpacing}px</span>
-                    </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-primary" />
                   </div>
-
-                  <Button
-                    onClick={handleApplyStyle}
-                    className="w-full mt-3 gap-2"
-                    size="sm"
-                  >
-                    <Check className="w-4 h-4" />
-                    Apply This Style
-                  </Button>
+                  <h4 className="font-medium text-sm">Analysis Complete</h4>
                 </div>
+                
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {analysisResult.analysisNotes}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-background/50 rounded-lg p-2 flex flex-col">
+                    <span className="text-muted-foreground text-[10px]">Font</span>
+                    <span className="font-medium capitalize truncate">
+                      {analysisResult.suggestedFont.replace(/-/g, ' ')}
+                    </span>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-2 flex flex-col">
+                    <span className="text-muted-foreground text-[10px]">Size</span>
+                    <span className="font-medium">{analysisResult.fontSize}px</span>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-2 flex flex-col">
+                    <span className="text-muted-foreground text-[10px]">Ink Color</span>
+                    <span className="font-medium capitalize">{analysisResult.inkColor}</span>
+                  </div>
+                  <div className="bg-background/50 rounded-lg p-2 flex flex-col">
+                    <span className="text-muted-foreground text-[10px]">Line Spacing</span>
+                    <span className="font-medium">{analysisResult.lineSpacing}px</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleApplyStyle}
+                  className="w-full gap-2"
+                  size="sm"
+                >
+                  <Check className="w-4 h-4" />
+                  Apply This Style
+                </Button>
               </div>
             </Card>
           )}
