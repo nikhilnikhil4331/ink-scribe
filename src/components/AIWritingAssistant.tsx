@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Sparkles, Wand2, FileText, BookOpen, PenTool, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Loader2, Sparkles, Wand2, FileText, BookOpen, PenTool, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface AIWritingAssistantProps {
   onInsertText: (text: string) => void;
@@ -17,18 +17,21 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
   onInsertText,
   currentText = '',
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [result, setResult] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
   const [selectedMode, setSelectedMode] = useState<AssistMode>('generate');
 
-  const modes = [
-    { id: 'generate' as const, label: 'Generate', icon: Wand2, desc: 'Create new content' },
-    { id: 'expand' as const, label: 'Expand', icon: FileText, desc: 'Add more details' },
-    { id: 'summarize' as const, label: 'Summarize', icon: BookOpen, desc: 'Make it shorter' },
-    { id: 'improve' as const, label: 'Improve', icon: PenTool, desc: 'Enhance writing' },
-  ];
+  const modes = useMemo(
+    () => [
+      { id: 'generate' as const, label: 'Generate', icon: Wand2, desc: 'Create new content from a topic' },
+      { id: 'expand' as const, label: 'Expand', icon: FileText, desc: 'Add more detail to your notes' },
+      { id: 'summarize' as const, label: 'Summarize', icon: BookOpen, desc: 'Turn text into short notes' },
+      { id: 'improve' as const, label: 'Improve', icon: PenTool, desc: 'Fix grammar and clarity' },
+    ],
+    []
+  );
 
   const getSystemPrompt = (mode: AssistMode): string => {
     switch (mode) {
@@ -39,17 +42,15 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
       case 'improve':
         return 'You are a writing assistant. Improve the given text by fixing grammar, enhancing clarity, and making it flow better. Keep it natural and suitable for handwritten notes.';
       case 'generate':
-        return 'You are a creative writing assistant. Generate content based on the user\'s prompt. Write naturally, as if creating handwritten notes. Keep paragraphs short and scannable.';
+        return "You are a creative writing assistant. Generate content based on the user's prompt. Write naturally, as if creating handwritten notes. Keep paragraphs short and scannable.";
     }
   };
 
   const handleAssist = async () => {
     const inputText = selectedMode === 'generate' ? prompt : currentText;
-    
+
     if (!inputText.trim()) {
-      toast.error(selectedMode === 'generate' 
-        ? 'Please enter a topic or prompt' 
-        : 'No text to work with - write something first');
+      toast.error(selectedMode === 'generate' ? 'Please enter a topic or prompt' : 'No text to work with — write something first');
       return;
     }
 
@@ -57,28 +58,24 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
     setResult('');
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-writing-assist`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            mode: selectedMode,
-            text: inputText,
-            systemPrompt: getSystemPrompt(selectedMode),
-          }),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-writing-assist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: selectedMode,
+          text: inputText,
+          systemPrompt: getSystemPrompt(selectedMode),
+        }),
+      });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({}));
         throw new Error(error.error || 'AI request failed');
       }
 
-      // Handle streaming response
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response stream');
 
@@ -93,27 +90,24 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
         const lines = chunk.split('\n');
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                fullText += content;
-                setResult(fullText);
-              }
-            } catch {
-              // Ignore parse errors for partial chunks
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setResult(fullText);
             }
+          } catch {
+            // Ignore parse errors for partial chunks
           }
         }
       }
 
-      if (fullText) {
-        toast.success('AI content generated!');
-      }
+      if (fullText) toast.success('AI content generated!');
     } catch (error) {
       console.error('AI assist error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to get AI assistance');
@@ -123,132 +117,120 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
   };
 
   const handleInsert = () => {
-    if (result) {
-      onInsertText(result);
-      setResult('');
-      setPrompt('');
-      toast.success('Text inserted into notes!');
-    }
+    if (!result) return;
+
+    onInsertText(result);
+    setResult('');
+    setPrompt('');
+    toast.success('Text inserted into notes!');
+    setIsOpen(false);
   };
 
   return (
-    <Card className="p-3 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between gap-2 text-left"
-      >
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-sm">AI Writing Assistant</h4>
-            <p className="text-[10px] text-muted-foreground">Get help with your notes</p>
-          </div>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon" className="rounded-xl" title="AI Writing Assistant">
+          <Sparkles className="w-4 h-4 text-accent" />
+          <span className="sr-only">AI Writing Assistant</span>
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </span>
+            AI Writing Assistant
+          </DialogTitle>
+          <DialogDescription>Generate, expand, summarize, or improve text — then insert it into your handwritten notes.</DialogDescription>
+        </DialogHeader>
+
+        {/* Mode Selection */}
+        <div className="grid grid-cols-2 gap-2">
+          {modes.map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              onClick={() => setSelectedMode(mode.id)}
+              className={
+                `
+                flex items-start gap-3 rounded-xl border p-3 text-left transition-all
+                ${selectedMode === mode.id ? 'border-primary bg-primary/5' : 'border-border/60 hover:bg-muted/40'}
+              `
+              }
+            >
+              <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-muted">
+                <mode.icon className="h-4 w-4 text-foreground" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-foreground">{mode.label}</span>
+                <span className="block text-[11px] leading-snug text-muted-foreground">{mode.desc}</span>
+              </span>
+            </button>
+          ))}
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        )}
-      </button>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="pt-4 space-y-3">
-              {/* Mode Selection */}
-              <div className="grid grid-cols-4 gap-1.5">
-                {modes.map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setSelectedMode(mode.id)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] transition-all ${
-                      selectedMode === mode.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50 hover:bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    <mode.icon className="w-3.5 h-3.5" />
-                    <span className="font-medium">{mode.label}</span>
-                  </button>
-                ))}
+        {/* Input */}
+        <div className="space-y-2">
+          {selectedMode === 'generate' ? (
+            <>
+              <p className="text-xs font-medium text-foreground">Topic / prompt</p>
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Example: Explain photosynthesis in simple bullet points"
+                className="min-h-[90px] text-sm resize-none"
+              />
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-medium text-foreground">Working with</p>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <p className="text-xs whitespace-pre-wrap text-foreground line-clamp-5">{currentText || 'No text yet — write something first.'}</p>
               </div>
+            </>
+          )}
+        </div>
 
-              {/* Input */}
-              {selectedMode === 'generate' && (
-                <Textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="What would you like me to write about?"
-                  className="min-h-[60px] text-sm resize-none bg-background/50"
-                />
-              )}
+        {/* Action */}
+        <Button onClick={handleAssist} disabled={isLoading} className="w-full gap-2">
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          {isLoading ? 'Working…' : `${modes.find((m) => m.id === selectedMode)?.label} with AI`}
+        </Button>
 
-              {selectedMode !== 'generate' && currentText && (
-                <div className="p-2 bg-muted/30 rounded-lg">
-                  <p className="text-[10px] text-muted-foreground mb-1">Working with:</p>
-                  <p className="text-xs line-clamp-2">{currentText}</p>
-                </div>
-              )}
-
-              {/* Generate Button */}
-              <Button
-                onClick={handleAssist}
-                disabled={isLoading}
-                size="sm"
-                className="w-full gap-2"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Wand2 className="w-4 h-4" />
-                )}
-                {isLoading ? 'Generating...' : `${modes.find(m => m.id === selectedMode)?.label} Text`}
-              </Button>
-
-              {/* Result */}
-              <AnimatePresence>
-                {result && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="space-y-2"
-                  >
-                    <div className="p-3 bg-background rounded-lg border border-border/50 max-h-[150px] overflow-y-auto">
-                      <p className="text-sm whitespace-pre-wrap">{result}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleInsert}
-                        size="sm"
-                        className="flex-1 gap-1.5"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        Insert into Notes
-                      </Button>
-                      <Button
-                        onClick={() => setResult('')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </Card>
+        {/* Result */}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-2"
+            >
+              <div className="rounded-xl border border-border/60 bg-background p-3 max-h-[200px] overflow-y-auto">
+                <p className="text-sm whitespace-pre-wrap text-foreground">{result}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleInsert} size="sm" className="flex-1 gap-2">
+                  <FileText className="w-4 h-4" />
+                  Insert into Notes
+                </Button>
+                <Button
+                  onClick={() => setResult('')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  title="Clear"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 };
