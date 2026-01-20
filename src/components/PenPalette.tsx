@@ -1,10 +1,11 @@
 import React from 'react';
 import { LineInkColor, LINE_INK_COLORS } from '@/types/noteLine';
-import { Pen, Undo2, Redo2, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Pen, Redo2, Sparkles, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AIWritingAssistant } from './AIWritingAssistant';
+import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 
 interface PenPaletteProps {
   currentColor: LineInkColor;
@@ -33,6 +34,12 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   currentText = '',
   onInsertText,
 }) => {
+  const dictation = useSpeechDictation({
+    onFinalTranscript: (text) => {
+      onInsertText?.(text);
+    },
+  });
+
   return (
     <div className="flex flex-col gap-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
       {/* Header */}
@@ -47,6 +54,56 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Voice to text */}
+      {onInsertText && (
+        <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-medium text-foreground">Dictation</p>
+              <p className="text-[10px] text-muted-foreground">Speak and we’ll insert the text into your note</p>
+            </div>
+
+            <Button
+              type="button"
+              variant={dictation.isListening ? 'default' : 'outline'}
+              size="sm"
+              className="gap-2 rounded-xl"
+              onClick={async () => {
+                if (!dictation.isSupported) return;
+                if (dictation.isListening) {
+                  dictation.stop();
+                } else {
+                  await dictation.start();
+                }
+              }}
+              disabled={!dictation.isSupported}
+              title={
+                !dictation.isSupported
+                  ? 'Dictation is not supported in this browser'
+                  : dictation.isListening
+                    ? 'Stop dictation'
+                    : 'Start dictation'
+              }
+            >
+              {dictation.isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              <span className="text-xs">{dictation.isListening ? 'Stop' : 'Dictate'}</span>
+            </Button>
+          </div>
+
+          {(dictation.interimTranscript || dictation.errorMessage) && (
+            <div className="mt-2 text-[11px] leading-relaxed">
+              {dictation.errorMessage ? (
+                <p className="text-destructive">{dictation.errorMessage}</p>
+              ) : (
+                <p className="text-muted-foreground">
+                  <span className="font-medium">Listening:</span> {dictation.interimTranscript}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pen Colors */}
       <div className="space-y-2">
@@ -64,21 +121,21 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
                       e.stopPropagation();
                       onColorChange(ink.value);
                     }}
-                    className={`
+                    className={
+                      `
                       relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-200
-                      ${currentColor === ink.value 
-                        ? 'border-primary bg-primary/5 shadow-sm scale-105' 
+                      ${currentColor === ink.value
+                        ? 'border-primary bg-primary/5 shadow-sm scale-105'
                         : 'border-transparent hover:border-border hover:bg-muted/50'
                       }
-                    `}
+                    `
+                    }
                   >
-                    <div 
+                    <div
                       className="w-7 h-7 rounded-full shadow-inner flex items-center justify-center"
                       style={{ backgroundColor: ink.hex }}
                     >
-                      {currentColor === ink.value && (
-                        <Pen className="w-3 h-3 text-white/90" />
-                      )}
+                      {currentColor === ink.value && <Pen className="w-3 h-3 text-white/90" />}
                     </div>
                     <span className="text-[10px] font-medium text-foreground truncate w-full text-center">{ink.label}</span>
                   </button>
@@ -101,8 +158,8 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
             <p className="text-[10px] text-muted-foreground">Varies ink shade & thickness</p>
           </div>
         </div>
-        <Switch 
-          checked={realPenMode} 
+        <Switch
+          checked={realPenMode}
           onCheckedChange={onRealPenModeChange}
           className="data-[state=checked]:bg-accent"
         />
@@ -153,12 +210,7 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
       </div>
 
       {/* AI Writing Assistant */}
-      {onInsertText && (
-        <AIWritingAssistant 
-          currentText={currentText} 
-          onInsertText={onInsertText} 
-        />
-      )}
+      {onInsertText && <AIWritingAssistant currentText={currentText} onInsertText={onInsertText} />}
     </div>
   );
 };
