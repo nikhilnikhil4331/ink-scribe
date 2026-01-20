@@ -19,6 +19,7 @@ interface PenPaletteProps {
   onRealPenModeChange: (enabled: boolean) => void;
   currentText?: string;
   onInsertText?: (text: string) => void;
+  showAiAssistant?: boolean;
 }
 
 export const PenPalette: React.FC<PenPaletteProps> = ({
@@ -33,6 +34,7 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   onRealPenModeChange,
   currentText = '',
   onInsertText,
+  showAiAssistant = true,
 }) => {
   const dictation = useSpeechDictation({
     onFinalTranscript: (text) => {
@@ -43,16 +45,31 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   return (
     <div className="flex flex-col gap-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Pen className="w-4 h-4 text-primary" />
+      <div className="flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Pen className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm text-foreground">Pen Palette</h3>
+            <p className="text-[11px] text-muted-foreground">
+              {selectedCount > 0 ? `${selectedCount} line(s) selected` : 'Select a line'}
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-sm text-foreground">Pen Palette</h3>
-          <p className="text-[11px] text-muted-foreground">
-            {selectedCount > 0 ? `${selectedCount} line(s) selected` : 'Select a line'}
-          </p>
-        </div>
+
+        {showAiAssistant && onInsertText && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <AIWritingAssistant currentText={currentText} onInsertText={onInsertText} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left">AI Writing Assistant</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
       {/* Voice to text */}
@@ -208,9 +225,6 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
           <strong>Tip:</strong> Hold <kbd className="px-1 py-0.5 bg-muted rounded text-[9px]">Ctrl</kbd> + click to select multiple lines
         </p>
       </div>
-
-      {/* AI Writing Assistant */}
-      {onInsertText && <AIWritingAssistant currentText={currentText} onInsertText={onInsertText} />}
     </div>
   );
 };
