@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import { FontPreviewPanel } from './FontPreviewPanel';
 import { TableConfigPanel } from './TableConfigPanel';
 import { DiagramImport } from './DiagramImport';
@@ -29,7 +30,8 @@ import {
   Layout,
   Settings,
   Wand2,
-  FileBox
+  FileBox,
+  Lock
 } from 'lucide-react';
 
 // Map ink colors to CSS color values for the swatches
@@ -67,6 +69,8 @@ interface ControlPanelProps {
   onAddDiagram: (diagram: DiagramImage) => void;
   onRemoveDiagram: (id: string) => void;
   onUpdateDiagram: (id: string, updates: Partial<DiagramImage>) => void;
+  premiumLocked?: boolean;
+  onPremiumTap?: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -80,6 +84,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onAddDiagram,
   onRemoveDiagram,
   onUpdateDiagram,
+  premiumLocked = false,
+  onPremiumTap,
 }) => {
   return (
     <ScrollArea className="h-[calc(100vh-10rem)]">
@@ -113,15 +119,38 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <p className="text-xs text-muted-foreground mb-3">
                 Upload your handwriting and AI will analyze it to create a matching style.
               </p>
-              <HandwritingAnalyzer 
-                onApplyStyle={(newSettings) => {
-                  Object.entries(newSettings).forEach(([key, value]) => {
-                    if (value !== undefined) {
-                      updateSettings({ [key]: value } as Partial<NoteSettings>);
-                    }
-                  });
-                }} 
-              />
+              <div className="relative">
+                {premiumLocked && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center">
+                    <div className="rounded-2xl border border-border/60 bg-background/80 backdrop-blur p-4 w-full">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <Lock className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground">Premium feature</p>
+                          <p className="text-xs text-muted-foreground">Tap to unlock AI Style Matcher</p>
+                        </div>
+                      </div>
+                      <Button onClick={onPremiumTap} className="w-full mt-3 rounded-xl" size="sm">
+                        Unlock Premium
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className={premiumLocked ? 'pointer-events-none opacity-40' : ''}>
+                  <HandwritingAnalyzer
+                    onApplyStyle={(newSettings) => {
+                      Object.entries(newSettings).forEach(([key, value]) => {
+                        if (value !== undefined) {
+                          updateSettings({ [key]: value } as Partial<NoteSettings>);
+                        }
+                      });
+                    }}
+                  />
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
           {/* Typography */}

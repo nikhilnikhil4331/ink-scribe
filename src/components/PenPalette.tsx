@@ -20,6 +20,8 @@ interface PenPaletteProps {
   currentText?: string;
   onInsertText?: (text: string) => void;
   showAiAssistant?: boolean;
+  premiumLocked?: boolean;
+  onPremiumTap?: () => void;
 }
 
 export const PenPalette: React.FC<PenPaletteProps> = ({
@@ -35,6 +37,8 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   currentText = '',
   onInsertText,
   showAiAssistant = true,
+  premiumLocked = false,
+  onPremiumTap,
 }) => {
   const dictation = useSpeechDictation({
     onFinalTranscript: (text) => {
@@ -63,7 +67,12 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <AIWritingAssistant currentText={currentText} onInsertText={onInsertText} />
+                  <AIWritingAssistant
+                    currentText={currentText}
+                    onInsertText={onInsertText}
+                    locked={premiumLocked}
+                    onLockedTap={onPremiumTap}
+                  />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="left">AI Writing Assistant</TooltipContent>
@@ -87,6 +96,10 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
               size="sm"
               className="gap-2 rounded-xl"
               onClick={async () => {
+                if (premiumLocked) {
+                  onPremiumTap?.();
+                  return;
+                }
                 if (!dictation.isSupported) return;
                 if (dictation.isListening) {
                   dictation.stop();
@@ -104,7 +117,9 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
               }
             >
               {dictation.isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span className="text-xs">{dictation.isListening ? 'Stop' : 'Dictate'}</span>
+              <span className="text-xs">
+                {premiumLocked ? 'Premium' : dictation.isListening ? 'Stop' : 'Dictate'}
+              </span>
             </Button>
           </div>
 

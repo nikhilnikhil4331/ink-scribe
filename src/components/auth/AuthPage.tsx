@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +17,7 @@ export const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const { playClick, playSuccess } = useSoundEffects();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,7 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Welcome back!');
+          navigate('/');
         }
       } else {
         const { error } = await signUp(email, password, fullName);
@@ -38,6 +41,7 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Account created! Welcome aboard.');
+          navigate('/');
         }
       }
     } catch (error) {
