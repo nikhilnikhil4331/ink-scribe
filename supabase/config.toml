@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.ai-writing-assist]
 verify_jwt = false
+
+[functions.billing-create-subscription]
+verify_jwt = false
+
+[functions.billing-sync-subscription]
+verify_jwt = false

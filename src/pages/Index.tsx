@@ -17,10 +17,14 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight, FileDown, Image, Palette } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight, FileDown, Image, Palette, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
+import { useSpeechDictation } from '@/hooks/useSpeechDictation';
+import { PaywallModal } from '@/components/premium/PaywallModal';
+import { usePremium, PremiumFeature } from '@/hooks/usePremium';
+import { AIWritingAssistant } from '@/components/AIWritingAssistant';
 
 const Index = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -38,6 +42,21 @@ const Index = () => {
   
   const { triggerHaptic } = useHaptics();
   const { playClick, playSuccess } = useSoundEffects();
+
+  const premium = usePremium();
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [pendingFeature, setPendingFeature] = useState<PremiumFeature | null>(null);
+
+  const requirePremium = useCallback((feature: PremiumFeature) => {
+    setPendingFeature(feature);
+    setPaywallOpen(true);
+  }, []);
+
+  const quickDictation = useSpeechDictation({
+    onFinalTranscript: (text) => {
+      handlePaste(text);
+    },
+  });
 
   // Multi-page system
   const {
@@ -461,6 +480,8 @@ const Index = () => {
     onAddDiagram: addDiagram,
     onRemoveDiagram: removeDiagram,
     onUpdateDiagram: updateDiagram,
+    premiumLocked: !premium.isPremium,
+    onPremiumTap: () => requirePremium('ai_style_matcher'),
   };
 
   // Page transition variants
@@ -559,6 +580,39 @@ const Index = () => {
 
       {/* Mobile Floating Buttons */}
       <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-4 z-30 flex flex-col gap-2 lg:hidden">
+        {/* Premium Quick Actions */}
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <AnimatedButton
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              if (!premium.isPremium) return requirePremium('voice_dictation');
+              if (!quickDictation.isSupported) return;
+              if (quickDictation.isListening) quickDictation.stop();
+              else quickDictation.start();
+            }}
+            className="h-12 w-12 rounded-full shadow-lg bg-card border-border"
+            title={premium.isPremium ? 'Dictation' : 'Premium'}
+          >
+            {quickDictation.isListening ? (
+              <MicOff className="w-5 h-5 text-primary" />
+            ) : (
+              <Mic className="w-5 h-5 text-primary" />
+            )}
+          </AnimatedButton>
+        </motion.div>
+
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <div>
+            <AIWritingAssistant
+              currentText={getPlainText()}
+              onInsertText={(text) => handlePaste(text)}
+              locked={!premium.isPremium}
+              onLockedTap={() => requirePremium('ai_writing')}
+            />
+          </div>
+        </motion.div>
+
         <motion.div whileTap={{ scale: 0.9 }}>
           <AnimatedButton
             variant="outline"
@@ -601,6 +655,8 @@ const Index = () => {
           onRealPenModeChange={setRealPenMode}
           currentText={getPlainText()}
           onInsertText={(text) => handlePaste(text)}
+          premiumLocked={!premium.isPremium}
+          onPremiumTap={() => requirePremium('ai_writing')}
         />
       </SlidePanel>
 
@@ -835,6 +891,8 @@ const Index = () => {
                 onRealPenModeChange={setRealPenMode}
                 currentText={getPlainText()}
                 onInsertText={(text) => handlePaste(text)}
+                  premiumLocked={!premium.isPremium}
+                  onPremiumTap={() => requirePremium('ai_writing')}
               />
 
               {/* Quick Export Buttons */}
@@ -902,6 +960,15 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        onPurchased={async () => {
+          await premium.sync();
+          if (pendingFeature) toast.success('Premium unlocked!');
+        }}
+      />
     </div>
   );
 };

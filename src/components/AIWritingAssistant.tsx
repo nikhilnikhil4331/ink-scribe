@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 interface AIWritingAssistantProps {
   onInsertText: (text: string) => void;
   currentText?: string;
+  locked?: boolean;
+  onLockedTap?: () => void;
 }
 
 type AssistMode = 'expand' | 'summarize' | 'improve' | 'generate';
@@ -16,6 +18,8 @@ type AssistMode = 'expand' | 'summarize' | 'improve' | 'generate';
 export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
   onInsertText,
   currentText = '',
+  locked = false,
+  onLockedTap,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +133,18 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-xl" title="AI Writing Assistant">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-xl"
+          title={locked ? "Premium feature" : "AI Writing Assistant"}
+          onClick={(e) => {
+            if (!locked) return;
+            e.preventDefault();
+            e.stopPropagation();
+            onLockedTap?.();
+          }}
+        >
           <Sparkles className="w-4 h-4 text-accent" />
           <span className="sr-only">AI Writing Assistant</span>
         </Button>
