@@ -965,7 +965,7 @@ const Index = () => {
         open={paywallOpen}
         onOpenChange={setPaywallOpen}
         onPurchased={async () => {
-          await premium.sync();
+          await premium.refresh();
           if (pendingFeature) toast.success('Premium unlocked!');
         }}
       />
