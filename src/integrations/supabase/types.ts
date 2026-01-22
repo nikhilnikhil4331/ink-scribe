@@ -22,7 +22,6 @@ export type Database = {
           interval_count: number
           interval_unit: string
           price_inr: number
-          razorpay_plan_id: string | null
           updated_at: string
         }
         Insert: {
@@ -32,7 +31,6 @@ export type Database = {
           interval_count?: number
           interval_unit: string
           price_inr: number
-          razorpay_plan_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -42,7 +40,6 @@ export type Database = {
           interval_count?: number
           interval_unit?: string
           price_inr?: number
-          razorpay_plan_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -258,8 +255,6 @@ export type Database = {
           current_period_end: string | null
           id: string
           plan_code: string
-          razorpay_customer_id: string | null
-          razorpay_subscription_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -269,8 +264,6 @@ export type Database = {
           current_period_end?: string | null
           id?: string
           plan_code: string
-          razorpay_customer_id?: string | null
-          razorpay_subscription_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -280,8 +273,6 @@ export type Database = {
           current_period_end?: string | null
           id?: string
           plan_code?: string
-          razorpay_customer_id?: string | null
-          razorpay_subscription_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
