@@ -28,31 +28,31 @@ export function usePremium() {
 
     setState((s) => ({ ...s, loading: true }));
 
-    // 1) quick local read
+    // Read from local subscription table
     const { data } = await supabase
       .from("user_subscriptions")
       .select("status, current_period_end")
+      .eq("user_id", user.id)
       .maybeSingle();
 
-    const localStatus = (data as any)?.status ?? null;
-    const localEnd = (data as any)?.current_period_end ?? null;
-    const localPremium = localStatus === "active" || localStatus === "authenticated";
+    const localStatus = data?.status ?? null;
+    const localEnd = data?.current_period_end ?? null;
 
-    setState({ loading: false, isPremium: !!localPremium, status: localStatus, currentPeriodEnd: localEnd });
-  }, [user]);
+    // Premium if active or pending verification (trust-based until manual verification)
+    const isPremium =
+      localStatus === "active" ||
+      localStatus === "authenticated" ||
+      localStatus === "pending_verification";
 
-  const sync = useCallback(async () => {
-    if (!user) return { isPremium: false };
-    const { data, error } = await supabase.functions.invoke("billing-sync-subscription");
-    if (!error && data) {
-      setState({
-        loading: false,
-        isPremium: !!data.isPremium,
-        status: data.status ?? null,
-        currentPeriodEnd: data.currentPeriodEnd ?? null,
-      });
-    }
-    return { isPremium: !!data?.isPremium, error };
+    // Check if subscription has expired
+    const isExpired = localEnd ? new Date(localEnd) < new Date() : false;
+
+    setState({
+      loading: false,
+      isPremium: isPremium && !isExpired,
+      status: localStatus,
+      currentPeriodEnd: localEnd,
+    });
   }, [user]);
 
   useEffect(() => {
@@ -64,8 +64,7 @@ export function usePremium() {
       ...state,
       user,
       refresh,
-      sync,
     }),
-    [state, user, refresh, sync],
+    [state, user, refresh],
   );
 }

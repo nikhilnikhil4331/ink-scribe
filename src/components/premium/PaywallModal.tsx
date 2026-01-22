@@ -1,36 +1,8 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Crown, Loader2 } from "lucide-react";
 
-declare global {
-  interface Window {
-    Razorpay?: any;
-  }
-}
-
-type PlanCode = "weekly" | "monthly";
-
-function ensureRazorpayLoaded() {
-  return new Promise<void>((resolve, reject) => {
-    if (window.Razorpay) return resolve();
-    // If the script tag is blocked for some reason
-    const start = Date.now();
-    const t = setInterval(() => {
-      if (window.Razorpay) {
-        clearInterval(t);
-        resolve();
-      }
-      if (Date.now() - start > 8000) {
-        clearInterval(t);
-        reject(new Error("Razorpay failed to load"));
-      }
-    }, 150);
-  });
-}
+import { Crown, Mic, Sparkles, Wand2 } from "lucide-react";
 
 export interface PaywallModalProps {
   open: boolean;
@@ -38,108 +10,90 @@ export interface PaywallModalProps {
   onPurchased?: () => void;
 }
 
-export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, onPurchased }) => {
-  const { user } = useAuth();
-  const [loadingPlan, setLoadingPlan] = useState<PlanCode | null>(null);
+const features = [
+  { icon: Mic, label: "Voice Dictation", desc: "Speak to write" },
+  { icon: Wand2, label: "AI Writing Assistant", desc: "Smart suggestions" },
+  { icon: Sparkles, label: "AI Style Matcher", desc: "Match any handwriting" },
+];
 
-  const plans = useMemo(
-    () => [
-      { code: "weekly" as const, label: "Weekly", price: "₹49 / week" },
-      { code: "monthly" as const, label: "Monthly", price: "₹99 / month" },
-    ],
-    [],
-  );
+const plans = [
+  { code: "weekly", label: "Weekly", price: "₹49", period: "/week" },
+  { code: "monthly", label: "Monthly", price: "₹99", period: "/month", popular: true },
+];
 
-  const startCheckout = useCallback(
-    async (planCode: PlanCode) => {
-      if (!user) {
-        toast.error("Please sign in to subscribe");
-        onOpenChange(false);
-        window.location.href = "/auth";
-        return;
-      }
+export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }) => {
+  const navigate = useNavigate();
 
-      setLoadingPlan(planCode);
-      try {
-        await ensureRazorpayLoaded();
-
-        const { data, error } = await supabase.functions.invoke("billing-create-subscription", {
-          body: { planCode },
-        });
-
-        if (error) throw error;
-        if (!data?.subscriptionId || !data?.keyId) throw new Error("Subscription init failed");
-
-        const options = {
-          key: data.keyId,
-          subscription_id: data.subscriptionId,
-          name: "NikNote Premium",
-          description: "Unlock AI + Dictation + Style Matcher",
-          prefill: {
-            name: data.name,
-            email: data.email,
-          },
-          theme: {
-            color: "hsl(222 84% 56%)",
-          },
-          handler: async () => {
-            toast.success("Payment received — verifying…");
-            await supabase.functions.invoke("billing-sync-subscription");
-            onOpenChange(false);
-            onPurchased?.();
-          },
-          modal: {
-            ondismiss: () => {
-              setLoadingPlan(null);
-            },
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } catch (e) {
-        console.error(e);
-        toast.error(e instanceof Error ? e.message : "Checkout failed");
-      } finally {
-        setLoadingPlan(null);
-      }
-    },
-    [user, onOpenChange, onPurchased],
-  );
+  const handleSelectPlan = (planCode: string) => {
+    onOpenChange(false);
+    navigate(`/payment?plan=${planCode}`);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
-              <Crown className="h-4 w-4 text-primary" />
-            </span>
-            Go Premium
-          </DialogTitle>
-          <DialogDescription>
-            Unlock Voice Dictation, AI Writing Assistant, and AI Style Matcher (auto-renew).
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-3">
-          {plans.map((p) => (
-            <button
-              key={p.code}
-              type="button"
-              onClick={() => startCheckout(p.code)}
-              className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 p-4 text-left hover:bg-muted/30 transition-colors"
-              disabled={!!loadingPlan}
-            >
-              <div>
-                <div className="text-sm font-semibold text-foreground">{p.label}</div>
-                <div className="text-xs text-muted-foreground">{p.price}</div>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 pb-4">
+          <DialogHeader className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
+                <Crown className="h-6 w-6 text-primary-foreground" />
               </div>
-              <Button size="sm" className="rounded-xl" disabled={loadingPlan === p.code}>
-                {loadingPlan === p.code ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe"}
-              </Button>
-            </button>
-          ))}
+              <div>
+                <DialogTitle className="text-xl">Go Premium</DialogTitle>
+                <DialogDescription className="text-sm">
+                  Unlock all features
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+        </div>
+
+        <div className="p-6 pt-2 space-y-5">
+          {/* Features */}
+          <div className="space-y-2.5">
+            {features.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
+              >
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <f.icon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium">{f.label}</div>
+                  <div className="text-xs text-muted-foreground">{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Plans */}
+          <div className="grid grid-cols-2 gap-3">
+            {plans.map((p) => (
+              <button
+                key={p.code}
+                onClick={() => handleSelectPlan(p.code)}
+                className="relative p-4 rounded-2xl border-2 border-border/50 bg-card hover:border-primary hover:bg-primary/5 transition-all duration-200 text-left group"
+              >
+                {p.popular && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                    Popular
+                  </span>
+                )}
+                <div className="text-xl font-bold group-hover:text-primary transition-colors">
+                  {p.price}
+                </div>
+                <div className="text-xs text-muted-foreground">{p.period}</div>
+                <div className="text-sm font-medium mt-1">{p.label}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <p className="text-center text-xs text-muted-foreground">
+            Pay securely via UPI • Instant activation
+          </p>
         </div>
       </DialogContent>
     </Dialog>
