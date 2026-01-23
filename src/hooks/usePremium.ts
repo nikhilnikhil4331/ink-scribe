@@ -38,11 +38,9 @@ export function usePremium() {
     const localStatus = data?.status ?? null;
     const localEnd = data?.current_period_end ?? null;
 
-    // Premium if active or pending verification (trust-based until manual verification)
-    const isPremium =
-      localStatus === "active" ||
-      localStatus === "authenticated" ||
-      localStatus === "pending_verification";
+    // Premium ONLY if status is 'active' - set by admin after payment verification
+    // 'pending_verification' does NOT grant access - prevents bypass attacks
+    const isPremium = localStatus === "active";
 
     // Check if subscription has expired
     const isExpired = localEnd ? new Date(localEnd) < new Date() : false;
