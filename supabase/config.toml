@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ai-writing-assist]
 verify_jwt = false
+
+[functions.record-payment]
+verify_jwt = false

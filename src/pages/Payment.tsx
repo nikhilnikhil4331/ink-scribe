@@ -86,25 +86,18 @@ export default function PaymentPage() {
   const handlePaymentComplete = async () => {
     if (!user) return;
 
-    // Mark subscription as pending verification
-    const { error } = await supabase.from("user_subscriptions").upsert(
-      {
-        user_id: user.id,
-        plan_code: selectedPlan,
-        status: "pending_verification",
-        current_period_end: new Date(
-          Date.now() + (selectedPlan === "weekly" ? 7 : 30) * 24 * 60 * 60 * 1000
-        ).toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
+    // Call secure edge function to record payment (uses service role)
+    const { error } = await supabase.functions.invoke("record-payment", {
+      body: { planCode: selectedPlan },
+    });
 
     if (error) {
+      console.error("Payment recording error:", error);
       toast.error("Failed to record payment. Please contact support.");
       return;
     }
 
-    toast.success("Payment recorded! Premium features will be activated shortly.");
+    toast.success("Payment recorded! Premium features will be activated after verification.");
     navigate("/");
   };
 
