@@ -81,7 +81,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
         handwriting: {
           1: ['Caveat', 'cursive'],
           2: ['Kalam', 'cursive'],

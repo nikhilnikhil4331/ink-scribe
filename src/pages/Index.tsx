@@ -8,6 +8,7 @@ import { Toolbar } from '@/components/Toolbar';
 import { PageNavigator } from '@/components/PageNavigator';
 import { SlidePanel } from '@/components/SlidePanel';
 import { AnimatedButton } from '@/components/AnimatedButton';
+import { LandingPage } from '@/components/landing/LandingPage';
 import { useNoteSettings } from '@/hooks/useNoteSettings';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useDiagrams } from '@/hooks/useDiagrams';
@@ -17,7 +18,7 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, Sparkles, ChevronRight, FileDown, Image, Palette, Mic, MicOff } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, ChevronRight, FileDown, Image, Palette, Mic, MicOff, ArrowLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -27,6 +28,7 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 import { AIWritingAssistant } from '@/components/AIWritingAssistant';
 
 const Index = () => {
+  const [showLanding, setShowLanding] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [showControls, setShowControls] = useState(true);
@@ -503,6 +505,17 @@ const Index = () => {
     }),
   };
 
+  // Show landing page or editor
+  if (showLanding) {
+    return (
+      <LandingPage 
+        isDark={isDark} 
+        onToggleDark={toggleDark} 
+        onStartWriting={() => setShowLanding(false)} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
@@ -518,6 +531,15 @@ const Index = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
+            {/* Back to Landing Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLanding(true)}
+              className="rounded-xl hover:bg-secondary/80"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/20">
               <PenLine className="w-5 h-5 text-white" />
             </div>
