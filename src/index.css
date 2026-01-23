@@ -6,155 +6,155 @@
 
 @layer base {
   :root {
-    /* Background - Soft warm cream */
-    --background: 40 25% 97%;
-    --foreground: 220 25% 15%;
+    /* Background - Crisp, modern light gray */
+    --background: 220 20% 98%;
+    --foreground: 222 47% 11%;
 
-    /* Paper tones - Elegant cream shades */
-    --paper: 42 35% 95%;
-    --paper-ruled: 40 30% 93%;
-    --paper-foreground: 220 25% 12%;
+    /* Paper tones - Warm, elegant cream */
+    --paper: 45 40% 96%;
+    --paper-ruled: 42 35% 94%;
+    --paper-foreground: 222 47% 11%;
     
     /* Ink colors - Rich, authentic ink tones */
-    --ink-blue: 215 85% 40%;
-    --ink-black: 220 20% 12%;
-    --ink-blue-light: 210 75% 50%;
-    --ink-red: 0 72% 50%;
-    --ink-green: 145 65% 38%;
-    --ink-purple: 265 60% 50%;
+    --ink-blue: 221 83% 53%;
+    --ink-black: 222 47% 11%;
+    --ink-blue-light: 217 91% 60%;
+    --ink-red: 0 84% 60%;
+    --ink-green: 142 71% 45%;
+    --ink-purple: 262 83% 58%;
     --ink-brown: 25 55% 38%;
-    --ink-teal: 175 60% 38%;
-    --ink-orange: 28 92% 52%;
-    --ink-pink: 340 82% 48%;
-    --ink-navy: 230 70% 30%;
-    --ink-burgundy: 340 85% 30%;
-    --ink-gold: 38 95% 50%;
+    --ink-teal: 172 66% 50%;
+    --ink-orange: 25 95% 53%;
+    --ink-pink: 330 81% 60%;
+    --ink-navy: 224 76% 48%;
+    --ink-burgundy: 340 75% 38%;
+    --ink-gold: 38 92% 50%;
     
     /* Ruled lines */
-    --line-color: 210 35% 82%;
-    --margin-color: 0 55% 65%;
+    --line-color: 214 32% 85%;
+    --margin-color: 0 65% 60%;
     
     /* Special paper colors */
-    --paper-vintage: 35 40% 85%;
-    --paper-kraft: 30 35% 65%;
-    --paper-blueprint: 210 60% 25%;
+    --paper-vintage: 35 40% 88%;
+    --paper-kraft: 30 35% 70%;
+    --paper-blueprint: 215 60% 22%;
 
-    /* Card - Clean white with subtle warmth */
+    /* Card - Pure white with premium feel */
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Brand colors - Refined blue palette */
-    --primary: 215 75% 48%;
+    /* Brand colors - Vibrant indigo/blue */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 20% 92%;
-    --secondary-foreground: 220 25% 18%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 40 15% 94%;
-    --muted-foreground: 220 12% 50%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 32 95% 52%;
+    --accent: 262 83% 58%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 88%;
-    --input: 220 18% 92%;
-    --ring: 215 75% 48%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.875rem;
+    --radius: 1rem;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 25% 22%;
-    --sidebar-primary: 215 75% 48%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 20% 96%;
-    --sidebar-accent-foreground: 220 25% 22%;
-    --sidebar-border: 220 18% 92%;
-    --sidebar-ring: 215 75% 48%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 221 83% 53%;
 
     /* Toolbar */
     --toolbar: 0 0% 100%;
-    --toolbar-foreground: 220 25% 22%;
+    --toolbar-foreground: 222 47% 11%;
 
     /* Gradient colors */
-    --gradient-start: 215 75% 48%;
-    --gradient-end: 265 60% 50%;
+    --gradient-start: 221 83% 53%;
+    --gradient-end: 262 83% 58%;
   }
 
   .dark {
-    --background: 222 25% 8%;
-    --foreground: 40 15% 92%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --paper: 222 20% 12%;
-    --paper-ruled: 222 22% 10%;
-    --paper-foreground: 40 15% 90%;
+    --paper: 224 50% 8%;
+    --paper-ruled: 224 55% 7%;
+    --paper-foreground: 213 31% 91%;
     
-    --ink-blue: 210 75% 65%;
-    --ink-black: 40 8% 88%;
-    --ink-blue-light: 210 65% 60%;
-    --ink-red: 0 72% 65%;
-    --ink-green: 145 55% 58%;
-    --ink-purple: 265 55% 65%;
-    --ink-brown: 25 50% 58%;
-    --ink-teal: 175 55% 58%;
-    --ink-orange: 28 85% 62%;
-    --ink-pink: 340 75% 65%;
-    --ink-navy: 230 60% 55%;
-    --ink-burgundy: 340 75% 55%;
-    --ink-gold: 38 85% 60%;
+    --ink-blue: 217 91% 60%;
+    --ink-black: 213 31% 91%;
+    --ink-blue-light: 217 85% 65%;
+    --ink-red: 0 84% 65%;
+    --ink-green: 142 65% 55%;
+    --ink-purple: 262 75% 65%;
+    --ink-brown: 25 55% 55%;
+    --ink-teal: 172 60% 55%;
+    --ink-orange: 25 90% 60%;
+    --ink-pink: 330 75% 65%;
+    --ink-navy: 224 70% 58%;
+    --ink-burgundy: 340 70% 55%;
+    --ink-gold: 38 85% 58%;
     
-    --line-color: 222 18% 22%;
-    --margin-color: 0 45% 45%;
+    --line-color: 224 30% 18%;
+    --margin-color: 0 50% 40%;
     
-    --paper-vintage: 35 30% 25%;
-    --paper-kraft: 30 25% 35%;
-    --paper-blueprint: 210 50% 15%;
+    --paper-vintage: 35 25% 18%;
+    --paper-kraft: 30 20% 28%;
+    --paper-blueprint: 215 55% 12%;
 
-    --card: 222 22% 11%;
-    --card-foreground: 40 15% 92%;
+    --card: 224 55% 7%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 222 22% 11%;
-    --popover-foreground: 40 15% 92%;
+    --popover: 224 55% 7%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 210 72% 58%;
-    --primary-foreground: 222 25% 8%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 224 71% 4%;
 
-    --secondary: 222 18% 18%;
-    --secondary-foreground: 40 15% 92%;
+    --secondary: 224 30% 15%;
+    --secondary-foreground: 213 31% 91%;
 
-    --muted: 222 18% 16%;
-    --muted-foreground: 222 12% 55%;
+    --muted: 224 30% 15%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 32 88% 55%;
-    --accent-foreground: 222 25% 8%;
+    --accent: 262 75% 65%;
+    --accent-foreground: 224 71% 4%;
 
-    --destructive: 0 65% 48%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 18% 20%;
-    --input: 222 18% 18%;
-    --ring: 210 72% 58%;
+    --border: 224 30% 18%;
+    --input: 224 30% 18%;
+    --ring: 217 91% 60%;
 
-    --sidebar-background: 222 22% 10%;
-    --sidebar-foreground: 40 12% 88%;
-    --sidebar-primary: 210 72% 58%;
-    --sidebar-primary-foreground: 222 25% 8%;
-    --sidebar-accent: 222 18% 16%;
-    --sidebar-accent-foreground: 40 12% 88%;
-    --sidebar-border: 222 18% 18%;
-    --sidebar-ring: 210 72% 58%;
+    --sidebar-background: 224 55% 6%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 224 71% 4%;
+    --sidebar-accent: 224 30% 15%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 224 30% 18%;
+    --sidebar-ring: 217 91% 60%;
 
-    --toolbar: 222 22% 12%;
-    --toolbar-foreground: 40 12% 88%;
+    --toolbar: 224 55% 8%;
+    --toolbar-foreground: 213 31% 91%;
 
-    --gradient-start: 210 72% 58%;
-    --gradient-end: 265 55% 65%;
+    --gradient-start: 217 91% 60%;
+    --gradient-end: 262 75% 65%;
   }
 }
 
