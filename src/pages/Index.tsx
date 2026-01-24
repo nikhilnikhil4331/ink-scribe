@@ -1,14 +1,15 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { LineBasedEditor } from '@/components/LineBasedEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
 import { Toolbar } from '@/components/Toolbar';
-import { PageNavigator } from '@/components/PageNavigator';
+import { PageBar } from '@/components/PageBar';
+import { MoodSelector, MoodType } from '@/components/MoodSelector';
 import { SlidePanel } from '@/components/SlidePanel';
 import { AnimatedButton } from '@/components/AnimatedButton';
-import { LandingPage } from '@/components/landing/LandingPage';
 import { useNoteSettings } from '@/hooks/useNoteSettings';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { useDiagrams } from '@/hooks/useDiagrams';
@@ -16,9 +17,10 @@ import { useTableData } from '@/hooks/useTableData';
 import { useNotebookPages } from '@/hooks/useNotebookPages';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useMood } from '@/hooks/useMood';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, ChevronRight, FileDown, Image, Palette, Mic, MicOff, ArrowLeft, Sparkles } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -26,9 +28,12 @@ import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 import { AIWritingAssistant } from '@/components/AIWritingAssistant';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 const Index = () => {
-  const [showLanding, setShowLanding] = useState(true);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [showControls, setShowControls] = useState(true);
@@ -40,6 +45,7 @@ const Index = () => {
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { diagrams, addDiagram, removeDiagram, updateDiagram } = useDiagrams();
   const { tableData, updateTableData } = useTableData(settings.table.rows, settings.table.columns);
+  const { mood, changeMood, styles: moodStyles } = useMood();
   const previewRef = useRef<NotebookPreviewHandle>(null);
   
   const { triggerHaptic } = useHaptics();
@@ -340,6 +346,22 @@ const Index = () => {
     toast.success('New page added!');
   }, [addNewPage, triggerHaptic, playSuccess]);
 
+  const handleDeletePage = useCallback((index: number) => {
+    if (totalPages > 1) {
+      deletePage(index);
+      triggerHaptic('medium');
+      toast.success('Page deleted');
+    }
+  }, [deletePage, totalPages, triggerHaptic]);
+
+  const handleGoToPage = useCallback((index: number) => {
+    const direction = index > currentPageIndex ? 'right' : 'left';
+    setPageDirection(direction);
+    triggerHaptic('light');
+    playClick();
+    goToPage(index);
+  }, [currentPageIndex, goToPage, triggerHaptic, playClick]);
+
   const handleExportPDF = useCallback(async () => {
     const text = getPlainText();
     if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
@@ -505,70 +527,71 @@ const Index = () => {
     }),
   };
 
-  // Show landing page or editor
-  if (showLanding) {
-    return (
-      <LandingPage 
-        isDark={isDark} 
-        onToggleDark={toggleDark} 
-        onStartWriting={() => setShowLanding(false)} 
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background)}>
       {/* Header */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="sticky top-0 z-50 glass border-b border-border/50 shadow-sm"
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
       >
         <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
           <motion.div 
             className="flex items-center gap-3"
             whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
-            {/* Back to Landing Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowLanding(true)}
-              className="rounded-xl hover:bg-secondary/80"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="w-10 h-10 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-primary/20">
-              <PenLine className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
+              <PenLine className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-foreground tracking-tight">Nik Note</h1>
+              <h1 className="font-bold text-lg text-foreground tracking-tight">Nikhil Notes</h1>
               <p className="text-[11px] text-muted-foreground font-medium">Realistic handwritten notes</p>
             </div>
           </motion.div>
 
+          {/* Center: Mood Selector */}
+          <div className="hidden md:block">
+            <MoodSelector currentMood={mood} onMoodChange={changeMood} />
+          </div>
+
+          {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowControls(!showControls);
-                triggerHaptic('light');
-                playClick();
-              }}
-              className="gap-2 hidden lg:flex hover:bg-secondary/80 rounded-xl"
-            >
-              <Settings2 className="w-4 h-4" />
-              <span className="text-sm">{showControls ? 'Hide' : 'Show'} Controls</span>
-              <motion.div
-                animate={{ rotate: showControls ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
+            {!premium.isPremium && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/upgrade')}
+                className="gap-1.5 rounded-xl border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950"
               >
-                <ChevronRight className="w-3 h-3" />
-              </motion.div>
-            </Button>
+                <Crown className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs">Upgrade</span>
+              </Button>
+            )}
+            
+            {user ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/auth')}
+                className="rounded-xl"
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="gap-1.5 rounded-xl"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs">Sign In</span>
+              </Button>
+            )}
+
             <Toolbar
               onExportPDF={handleExportPDF}
               onExportPNG={() => handleExportImages('png')}
@@ -582,27 +605,30 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Page Navigator - Fixed at bottom center */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
-        className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-40 flex justify-center px-4"
-      >
-        <PageNavigator
-          currentPage={currentPageIndex + 1}
-          totalPages={totalPages}
-          onPrevPage={handlePrevPage}
-          onNextPage={handleNextPage}
-          onAddPage={handleAddPage}
-          canGoPrev={canGoPrev}
-          canGoNext={canGoNext}
-        />
-      </motion.div>
+      {/* Page Bar - Fixed at top below header */}
+      <div className="sticky top-16 z-40 bg-background/50 backdrop-blur-sm py-2 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <PageBar
+            currentPage={currentPageIndex + 1}
+            totalPages={totalPages}
+            onPrevPage={handlePrevPage}
+            onNextPage={handleNextPage}
+            onAddPage={handleAddPage}
+            onDeletePage={handleDeletePage}
+            canGoPrev={canGoPrev}
+            canGoNext={canGoNext}
+            onGoToPage={handleGoToPage}
+          />
+        </div>
+      </div>
+
+      {/* Mobile Mood Selector */}
+      <div className="md:hidden px-4 py-2">
+        <MoodSelector currentMood={mood} onMoodChange={changeMood} />
+      </div>
 
       {/* Mobile Floating Buttons */}
-      <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-4 z-30 flex flex-col gap-2 lg:hidden">
-        {/* Premium Quick Actions */}
+      <div className="fixed bottom-6 right-4 z-30 flex flex-col gap-2 lg:hidden">
         <motion.div whileTap={{ scale: 0.9 }}>
           <AnimatedButton
             variant="outline"
@@ -693,7 +719,7 @@ const Index = () => {
       </SlidePanel>
 
       {/* Main Content */}
-      <main className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-32">
+      <main className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-8">
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
@@ -712,10 +738,10 @@ const Index = () => {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="panel-card p-4"
+                className={cn("rounded-2xl border border-border/50 shadow-xl p-4", moodStyles.paper)}
               >
                 <div className="flex items-center gap-2.5 mb-4">
-                  <div className="section-icon">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Edit3 className="w-4 h-4 text-primary" />
                   </div>
                   <div>
@@ -765,7 +791,7 @@ const Index = () => {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-muted/30 rounded-2xl border border-border/50 min-h-[500px] overflow-hidden"
+                className="rounded-2xl border border-border/50 min-h-[500px] overflow-hidden shadow-xl"
               >
                 <AnimatePresence mode="wait" custom={pageDirection}>
                   <motion.div
@@ -811,10 +837,10 @@ const Index = () => {
             transition={{ delay: 0.1 }}
             className="col-span-4"
           >
-            <div className="panel-card p-4 sticky top-24">
+            <div className={cn("rounded-2xl border border-border/50 shadow-xl p-4 sticky top-36", moodStyles.paper)}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="section-icon">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Edit3 className="w-4 h-4 text-primary" />
                   </div>
                   <div>
@@ -858,7 +884,7 @@ const Index = () => {
             transition={{ delay: 0.2 }}
             className={`${showControls ? 'col-span-5' : 'col-span-6'} transition-all duration-500 ease-out`}
           >
-            <div className="bg-gradient-to-b from-muted/20 to-muted/40 rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-inner">
+            <div className="rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-2xl">
               <AnimatePresence mode="wait" custom={pageDirection}>
                 <motion.div
                   key={currentPage.id}
@@ -900,7 +926,7 @@ const Index = () => {
             transition={{ delay: 0.3 }}
             className={`${showControls ? 'col-span-3' : 'col-span-2'} space-y-4`}
           >
-            <div className="sticky top-24">
+            <div className="sticky top-36">
               <PenPalette
                 currentColor={currentColor}
                 onColorChange={handleColorChange}
@@ -913,11 +939,11 @@ const Index = () => {
                 onRealPenModeChange={setRealPenMode}
                 currentText={getPlainText()}
                 onInsertText={(text) => handlePaste(text)}
-                  premiumLocked={!premium.isPremium}
-                  onPremiumTap={() => requirePremium('ai_writing')}
+                premiumLocked={!premium.isPremium}
+                onPremiumTap={() => requirePremium('ai_writing')}
               />
 
-              {/* Quick Export Buttons */}
+              {/* Quick Export */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -937,59 +963,48 @@ const Index = () => {
                     Export
                   </AnimatedButton>
                   <AnimatedButton
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={() => handleExportImages('png')}
                     disabled={isExporting}
                     className="gap-1.5 rounded-xl text-xs"
                   >
-                    <Image className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     PNG
                   </AnimatedButton>
                 </div>
               </motion.div>
 
-              {/* Advanced Controls */}
-              <AnimatePresence>
-                {showControls && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-4 panel-card max-h-[400px] overflow-y-auto overflow-hidden"
-                  >
-                    <ControlPanel {...controlPanelProps} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Settings Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowControls(!showControls)}
+                className="w-full mt-3 gap-2 rounded-xl"
+              >
+                <Settings2 className="w-4 h-4" />
+                {showControls ? 'Hide' : 'Show'} Controls
+              </Button>
+
+              {showControls && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4"
+                >
+                  <ControlPanel {...controlPanelProps} />
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </div>
       </main>
 
-      {/* Floating hint for first-time users */}
-      <AnimatePresence>
-        {lines.length === 1 && lines[0].text === '' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-28 left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-2 bg-card border border-border/80 shadow-lg rounded-full px-5 py-3"
-          >
-            <Sparkles className="w-4 h-4 text-accent" />
-            <span className="text-sm text-muted-foreground">Start typing in the notebook to see your handwritten notes</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* Paywall Modal */}
       <PaywallModal
         open={paywallOpen}
         onOpenChange={setPaywallOpen}
-        onPurchased={async () => {
-          await premium.refresh();
-          if (pendingFeature) toast.success('Premium unlocked!');
-        }}
       />
     </div>
   );
