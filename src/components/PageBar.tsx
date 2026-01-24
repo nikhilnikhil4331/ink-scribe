@@ -1,0 +1,193 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Trash2, ChevronLeft, ChevronRight, FileText, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
+
+interface PageBarProps {
+  currentPage: number;
+  totalPages: number;
+  onPrevPage: () => void;
+  onNextPage: () => void;
+  onAddPage: () => void;
+  onDeletePage: (index: number) => void;
+  canGoPrev: boolean;
+  canGoNext: boolean;
+  onGoToPage: (index: number) => void;
+}
+
+export const PageBar: React.FC<PageBarProps> = ({
+  currentPage,
+  totalPages,
+  onPrevPage,
+  onNextPage,
+  onAddPage,
+  onDeletePage,
+  canGoPrev,
+  canGoNext,
+  onGoToPage,
+}) => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pageToDelete, setPageToDelete] = useState<number | null>(null);
+
+  const handleDeleteClick = () => {
+    if (totalPages > 1) {
+      setPageToDelete(currentPage - 1);
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (pageToDelete !== null) {
+      onDeletePage(pageToDelete);
+      setShowDeleteConfirm(false);
+      setPageToDelete(null);
+    }
+  };
+
+  // Generate page thumbnails (show max 5 pages around current)
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(0, currentPage - 1 - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible);
+    
+    if (end - start < maxVisible) {
+      start = Math.max(0, end - maxVisible);
+    }
+
+    for (let i = start; i < end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between gap-2 p-2 bg-card/80 backdrop-blur-md rounded-2xl border border-border/50 shadow-lg"
+      >
+        {/* Left: Navigation */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onPrevPage}
+            disabled={!canGoPrev}
+            className="h-9 w-9 rounded-xl hover:bg-secondary"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+
+          {/* Page Thumbnails */}
+          <div className="flex items-center gap-1 px-2">
+            <AnimatePresence mode="popLayout">
+              {getVisiblePages().map((pageIndex) => (
+                <motion.button
+                  key={pageIndex}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onGoToPage(pageIndex)}
+                  className={cn(
+                    "w-8 h-10 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 border",
+                    pageIndex === currentPage - 1
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  )}
+                >
+                  {pageIndex + 1}
+                </motion.button>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNextPage}
+            disabled={!canGoNext}
+            className="h-9 w-9 rounded-xl hover:bg-secondary"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Center: Page Info */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/50 rounded-lg">
+          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-foreground tabular-nums">
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddPage}
+              className="h-9 gap-1.5 rounded-xl border-dashed border-primary/50 text-primary hover:bg-primary/10 hover:border-primary"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs">New Page</span>
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDeleteClick}
+              disabled={totalPages <= 1}
+              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-40"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <AlertDialogTitle>Delete Page {pageToDelete !== null ? pageToDelete + 1 : ''}?</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              This action cannot be undone. All content on this page will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="rounded-xl bg-destructive hover:bg-destructive/90"
+            >
+              Delete Page
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
