@@ -77,24 +77,24 @@ export const PageBar: React.FC<PageBarProps> = ({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between gap-2 p-2 bg-card/80 backdrop-blur-md rounded-2xl border border-border/50 shadow-lg"
+        className="flex items-center justify-between gap-1 sm:gap-2 p-1.5 sm:p-2 bg-card/80 backdrop-blur-md rounded-xl sm:rounded-2xl border border-border/50 shadow-lg h-10 sm:h-12 w-full overflow-hidden"
       >
         {/* Left: Navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"
             onClick={onPrevPage}
             disabled={!canGoPrev}
-            className="h-9 w-9 rounded-xl hover:bg-secondary"
+            className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl hover:bg-secondary"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
 
-          {/* Page Thumbnails */}
-          <div className="flex items-center gap-1 px-2">
+          {/* Page Thumbnails - Simplified for mobile */}
+          <div className="flex items-center gap-0.5 sm:gap-1 px-1 sm:px-2 overflow-hidden">
             <AnimatePresence mode="popLayout">
-              {getVisiblePages().map((pageIndex) => (
+              {getVisiblePages().slice(0, window.innerWidth < 640 ? 3 : 5).map((pageIndex) => (
                 <motion.button
                   key={pageIndex}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -104,7 +104,7 @@ export const PageBar: React.FC<PageBarProps> = ({
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onGoToPage(pageIndex)}
                   className={cn(
-                    "w-8 h-10 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 border",
+                    "w-6 h-7 sm:w-8 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-medium transition-all duration-200 border flex-shrink-0",
                     pageIndex === currentPage - 1
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -121,31 +121,31 @@ export const PageBar: React.FC<PageBarProps> = ({
             size="icon"
             onClick={onNextPage}
             disabled={!canGoNext}
-            className="h-9 w-9 rounded-xl hover:bg-secondary"
+            className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl hover:bg-secondary"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
         </div>
 
-        {/* Center: Page Info */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/50 rounded-lg">
-          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium text-foreground tabular-nums">
-            Page {currentPage} of {totalPages}
+        {/* Center: Page Info - Fixed width */}
+        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-secondary/50 rounded-md sm:rounded-lg flex-shrink-0">
+          <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground hidden sm:block" />
+          <span className="text-[10px] sm:text-xs font-medium text-foreground tabular-nums whitespace-nowrap">
+            {currentPage}/{totalPages}
           </span>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1">
+        {/* Right: Actions - Compact */}
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="outline"
               size="sm"
               onClick={onAddPage}
-              className="h-9 gap-1.5 rounded-xl border-dashed border-primary/50 text-primary hover:bg-primary/10 hover:border-primary"
+              className="h-7 sm:h-9 gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl border-dashed border-primary/50 text-primary hover:bg-primary/10 hover:border-primary px-1.5 sm:px-2"
             >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs">New Page</span>
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline text-xs">New</span>
             </Button>
           </motion.div>
 
@@ -155,9 +155,9 @@ export const PageBar: React.FC<PageBarProps> = ({
               size="icon"
               onClick={handleDeleteClick}
               disabled={totalPages <= 1}
-              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-40"
+              className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-40"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </motion.div>
         </div>

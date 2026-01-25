@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Shield, Users, CreditCard, BarChart3, Crown, 
+  Shield, Users, BarChart3, Crown, 
   CheckCircle2, XCircle, RefreshCw, LogOut, Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,11 +120,13 @@ const Admin: React.FC = () => {
 
   const togglePremium = async (userId: string, currentStatus: boolean) => {
     try {
+      const newStatus = currentStatus ? 'cancelled' : 'active';
+      
       const { error } = await supabase.functions.invoke('record-payment', {
         body: {
           userId,
-          planCode: currentStatus ? 'free' : 'premium_monthly',
-          status: currentStatus ? 'cancelled' : 'active',
+          planCode: 'admin_granted',
+          status: newStatus,
         },
       });
 
