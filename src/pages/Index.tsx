@@ -7,7 +7,7 @@ import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
 import { Toolbar } from '@/components/Toolbar';
 import { PageBar } from '@/components/PageBar';
-import { MoodSelector, MoodType } from '@/components/MoodSelector';
+import { MoodSelector } from '@/components/MoodSelector';
 import { SlidePanel } from '@/components/SlidePanel';
 import { AnimatedButton } from '@/components/AnimatedButton';
 import { useNoteSettings } from '@/hooks/useNoteSettings';
@@ -529,26 +529,26 @@ const Index = () => {
 
   return (
     <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background)}>
-      {/* Header */}
+      {/* Header - Fixed height to prevent mobile overflow */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm"
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm h-14 sm:h-16 flex-shrink-0"
       >
-        <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-full flex items-center justify-between overflow-hidden">
           {/* Logo */}
           <motion.div 
-            className="flex items-center gap-3"
+            className="flex items-center gap-2 sm:gap-3 flex-shrink-0"
             whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
-              <PenLine className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
+              <PenLine className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-bold text-lg text-foreground tracking-tight">Nikhil Notes</h1>
-              <p className="text-[11px] text-muted-foreground font-medium">Realistic handwritten notes</p>
+            <div className="hidden xs:block">
+              <h1 className="font-bold text-base sm:text-lg text-foreground tracking-tight leading-tight">Nikhil Notes</h1>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight">Handwritten notes</p>
             </div>
           </motion.div>
 
@@ -558,15 +558,15 @@ const Index = () => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {!premium.isPremium && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate('/upgrade')}
-                className="gap-1.5 rounded-xl border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950"
+                onClick={() => navigate('/payment')}
+                className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 h-8 sm:h-9 px-2 sm:px-3"
               >
-                <Crown className="w-4 h-4" />
+                <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline text-xs">Upgrade</span>
               </Button>
             )}
@@ -576,18 +576,18 @@ const Index = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/auth')}
-                className="rounded-xl"
+                className="rounded-lg sm:rounded-xl h-8 w-8 sm:h-9 sm:w-9"
               >
-                <User className="w-5 h-5" />
+                <User className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             ) : (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="gap-1.5 rounded-xl"
+                className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl h-8 sm:h-9 px-2 sm:px-3"
               >
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline text-xs">Sign In</span>
               </Button>
             )}
@@ -605,9 +605,9 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Page Bar - Fixed at top below header */}
-      <div className="sticky top-16 z-40 bg-background/50 backdrop-blur-sm py-2 px-4">
-        <div className="container mx-auto max-w-4xl">
+      {/* Page Bar - Fixed height to prevent mobile overflow */}
+      <div className="sticky top-14 sm:top-16 z-40 bg-background/50 backdrop-blur-sm py-1.5 sm:py-2 px-2 sm:px-4 h-14 sm:h-16 flex-shrink-0 overflow-hidden">
+        <div className="container mx-auto max-w-4xl h-full flex items-center">
           <PageBar
             currentPage={currentPageIndex + 1}
             totalPages={totalPages}

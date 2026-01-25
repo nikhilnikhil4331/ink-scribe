@@ -41,17 +41,63 @@ serve(async (req) => {
       );
     }
 
-    const userId = userData.user.id;
-    if (!userId) {
+    const callerId = userData.user.id;
+    
+    // Parse request body
+    const body = await req.json();
+    const { planCode, userId, status } = body;
+
+    // Use service role client for all DB operations
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if caller is admin (for admin operations)
+    const { data: adminCheck } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isAdmin = !!adminCheck;
+
+    // Admin operation: toggle premium for another user
+    if (userId && isAdmin) {
+      console.log(`Admin ${callerId} updating user ${userId} to status: ${status || 'active'}`);
+      
+      const newStatus = status || "active";
+      const periodDays = newStatus === "active" ? 30 : 0;
+      const periodEnd = newStatus === "active" 
+        ? new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
+        : null;
+
+      const { error: upsertError } = await adminClient
+        .from("user_subscriptions")
+        .upsert(
+          {
+            user_id: userId,
+            plan_code: planCode || "admin_granted",
+            status: newStatus,
+            current_period_end: periodEnd,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      if (upsertError) {
+        console.error("Failed to update subscription:", upsertError);
+        return new Response(
+          JSON.stringify({ error: "Failed to update subscription" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: true, message: `User subscription ${newStatus}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Parse request body
-    const { planCode, transactionId } = await req.json();
-
+    // Regular user operation: record their own payment
     if (!planCode || !["weekly", "monthly"].includes(planCode)) {
       return new Response(
         JSON.stringify({ error: "Invalid plan code" }),
@@ -59,10 +105,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Recording payment for user ${userId}, plan: ${planCode}, txn: ${transactionId || "manual"}`);
-
-    // Use service role to write subscription data
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    console.log(`Recording payment for user ${callerId}, plan: ${planCode}`);
 
     const periodDays = planCode === "weekly" ? 7 : 30;
     const periodEnd = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString();
@@ -71,7 +114,7 @@ serve(async (req) => {
       .from("user_subscriptions")
       .upsert(
         {
-          user_id: userId,
+          user_id: callerId,
           plan_code: planCode,
           status: "pending_verification", // Admin will manually verify and set to 'active'
           current_period_end: periodEnd,
@@ -88,7 +131,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Payment recorded successfully for user ${userId}`);
+    console.log(`Payment recorded successfully for user ${callerId}`);
 
     return new Response(
       JSON.stringify({ success: true, message: "Payment recorded. Awaiting verification." }),
