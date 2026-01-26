@@ -10,6 +10,7 @@ import { AuthPage } from "@/components/auth/AuthPage";
 import Upgrade from "./pages/Upgrade";
 import Payment from "./pages/Payment";
 import Admin from "./pages/Admin";
+import AdminPanelNikhil from "./pages/AdminPanelNikhil";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

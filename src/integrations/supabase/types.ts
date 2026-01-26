@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          category: string
+          created_at: string
+          details: Json | null
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          page_url: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          category?: string
+          created_at?: string
+          details?: Json | null
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          page_url?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          category?: string
+          created_at?: string
+          details?: Json | null
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          page_url?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       billing_plans: {
         Row: {
           code: string
@@ -41,6 +110,51 @@ export type Database = {
           interval_unit?: string
           price_inr?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      error_logs: {
+        Row: {
+          component: string | null
+          created_at: string
+          device_type: string | null
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          id: string
+          page_url: string | null
+          resolved: boolean | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component?: string | null
+          created_at?: string
+          device_type?: string | null
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          id?: string
+          page_url?: string | null
+          resolved?: boolean | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component?: string | null
+          created_at?: string
+          device_type?: string | null
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          page_url?: string | null
+          resolved?: boolean | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
