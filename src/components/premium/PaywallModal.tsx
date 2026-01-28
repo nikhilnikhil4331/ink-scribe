@@ -1,7 +1,6 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
 import { Crown, Mic, Sparkles, Wand2 } from "lucide-react";
 
 export interface PaywallModalProps {
@@ -21,15 +20,16 @@ const plans = [
   { code: "monthly", label: "Monthly", price: "₹99", period: "/month", popular: true },
 ];
 
-export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }) => {
-  const navigate = useNavigate();
+export const PaywallModal = forwardRef<HTMLDivElement, PaywallModalProps>(
+  function PaywallModal({ open, onOpenChange }, _ref) {
+    const navigate = useNavigate();
 
-  const handleSelectPlan = (planCode: string) => {
-    onOpenChange(false);
-    navigate(`/payment?plan=${planCode}`);
-  };
+    const handleSelectPlan = (planCode: string) => {
+      onOpenChange(false);
+      navigate(`/payment?plan=${planCode}`);
+    };
 
-  return (
+    return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl">
         {/* Header */}
@@ -95,7 +95,8 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }
             Pay securely via UPI • Instant activation
           </p>
         </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
+        </DialogContent>
+      </Dialog>
+    );
+  }
+);

@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.record-payment]
 verify_jwt = false
+
+[functions.process-document]
+verify_jwt = false
