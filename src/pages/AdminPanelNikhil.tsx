@@ -108,6 +108,8 @@ const AdminPanelNikhil: React.FC = () => {
     conversionRate: 0,
     avgSessionDuration: '0m',
     totalNotebooks: 0,
+    aiRequests: 0,
+    totalUploads: 0,
   });
 
   // Chart Data
@@ -314,6 +316,8 @@ const AdminPanelNikhil: React.FC = () => {
     const todayUniqueUsers = new Set(todayActivities?.filter(a => a.user_id).map(a => a.user_id)).size;
     const activeNow = new Set(recentActivities?.filter(a => a.user_id).map(a => a.user_id)).size;
     const totalExports = allActivities?.filter(a => a.action?.includes('export')).length || 0;
+    const aiRequests = allActivities?.filter(a => a.action?.includes('ai_') || a.action === 'ai_document_process').length || 0;
+    const totalUploads = allActivities?.filter(a => a.action?.includes('upload')).length || 0;
     const totalRevenue = premiumUsers * 99; // Estimated based on monthly plan
     const conversionRate = totalUsers ? Math.round((premiumUsers / (totalUsers || 1)) * 100) : 0;
 
@@ -328,6 +332,8 @@ const AdminPanelNikhil: React.FC = () => {
       conversionRate,
       avgSessionDuration: '12m', // Would need more complex calculation
       totalNotebooks: totalNotebooks || 0,
+      aiRequests,
+      totalUploads,
     });
   };
 

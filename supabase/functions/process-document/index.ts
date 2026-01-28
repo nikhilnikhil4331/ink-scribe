@@ -1,0 +1,204 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+type ProcessMode = 'solve' | 'improve' | 'summarize' | 'rewrite' | 'explain' | 'template' | 'notes';
+type UserMode = 'student' | 'college' | 'professional';
+
+interface ProcessRequest {
+  content: string;
+  processMode: ProcessMode;
+  userMode: UserMode;
+  title?: string;
+  additionalInstructions?: string;
+}
+
+function getSystemPrompt(processMode: ProcessMode, userMode: UserMode): string {
+  const toneGuide = {
+    student: "Use simple, clear language suitable for school students (grades 6-12). Be friendly and educational. Include examples when helpful.",
+    college: "Use academic language appropriate for university students. Be thorough and include relevant references or context.",
+    professional: "Use formal, business-appropriate language. Be concise and action-oriented. Focus on key insights.",
+  };
+
+  const modePrompts: Record<ProcessMode, string> = {
+    solve: `You are an expert tutor and problem solver. Analyze the given homework/assignment problem and provide:
+1. Clear step-by-step solution
+2. Explanation of the concepts involved
+3. The final answer highlighted
+4. Tips for similar problems
+
+${toneGuide[userMode]}`,
+    
+    improve: `You are a professional writing assistant. Improve the given text by:
+1. Fixing grammar, spelling, and punctuation
+2. Enhancing clarity and readability
+3. Improving flow and structure
+4. Maintaining the original meaning
+
+${toneGuide[userMode]}`,
+    
+    summarize: `You are an expert at creating concise summaries. Create a summary that:
+1. Captures all key points
+2. Is organized with bullet points or numbered lists
+3. Highlights the most important information
+4. Is easy to scan and review
+
+${toneGuide[userMode]}`,
+    
+    rewrite: `You are a skilled rewriter. Rewrite the given content to:
+1. Express the same ideas in fresh language
+2. Improve readability and engagement
+3. Maintain factual accuracy
+4. Match the requested tone
+
+${toneGuide[userMode]}`,
+    
+    explain: `You are a patient teacher. Explain the given content by:
+1. Breaking down complex concepts
+2. Using analogies and examples
+3. Defining key terms
+4. Building understanding step by step
+
+${toneGuide[userMode]}`,
+    
+    template: `You are an expert at creating well-formatted documents. Create a properly structured assignment/document with:
+1. Appropriate title and headings
+2. Introduction paragraph
+3. Main content sections
+4. Conclusion
+5. Professional formatting
+
+${toneGuide[userMode]}`,
+    
+    notes: `You are a study notes expert. Convert the content into organized study notes with:
+1. Clear headings and subheadings
+2. Bullet points for key facts
+3. Highlighted definitions
+4. Quick reference summaries
+5. Memory aids where helpful
+
+${toneGuide[userMode]}`,
+  };
+
+  return modePrompts[processMode];
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify user JWT
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error("JWT verification failed:", userError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = userData.user.id;
+    console.log(`Document processing request from user: ${userId}`);
+
+    const { content, processMode, userMode, title, additionalInstructions }: ProcessRequest = await req.json();
+
+    if (!content) {
+      return new Response(
+        JSON.stringify({ error: "Content is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const systemPrompt = getSystemPrompt(processMode, userMode);
+    let userPrompt = content;
+    
+    if (title) {
+      userPrompt = `Title: ${title}\n\n${content}`;
+    }
+    
+    if (additionalInstructions) {
+      userPrompt += `\n\nAdditional Instructions: ${additionalInstructions}`;
+    }
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        stream: true,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const errorText = await response.text();
+      console.error("AI Gateway error:", response.status, errorText);
+      throw new Error("AI service error");
+    }
+
+    // Log this activity
+    await supabase.from('activity_logs').insert({
+      user_id: userId,
+      action: 'ai_document_process',
+      category: 'ai',
+      details: { processMode, userMode, contentLength: content.length },
+      page_url: '/ai-solver',
+    });
+
+    return new Response(response.body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    });
+  } catch (error) {
+    console.error("Document processing error:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

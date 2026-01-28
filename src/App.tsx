@@ -11,6 +11,7 @@ import Upgrade from "./pages/Upgrade";
 import Payment from "./pages/Payment";
 import Admin from "./pages/Admin";
 import AdminPanelNikhil from "./pages/AdminPanelNikhil";
+import { AISolverPage } from "@/components/ai/AISolverPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/payment" element={<Payment />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
+            <Route path="/ai-solver" element={<AISolverPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

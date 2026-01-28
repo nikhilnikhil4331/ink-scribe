@@ -20,7 +20,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, User, LogIn } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, User, LogIn, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -559,6 +559,17 @@ const Index = () => {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {/* AI Solver Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/ai-solver')}
+              className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl border-primary/50 text-primary hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3"
+            >
+              <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline text-xs">AI Solver</span>
+            </Button>
+            
             {!premium.isPremium && (
               <Button
                 variant="outline"
