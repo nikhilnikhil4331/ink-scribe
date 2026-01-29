@@ -11,6 +11,7 @@ import Upgrade from "./pages/Upgrade";
 import Payment from "./pages/Payment";
 import Admin from "./pages/Admin";
 import AdminPanelNikhil from "./pages/AdminPanelNikhil";
+import AdminLogin from "./pages/AdminLogin";
 import { AISolverPage } from "@/components/ai/AISolverPage";
 import History from "./pages/History";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
             <Route path="/ai-solver" element={<AISolverPage />} />
             <Route path="/history" element={<History />} />
