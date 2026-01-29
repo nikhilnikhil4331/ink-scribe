@@ -20,7 +20,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, User, LogIn, Brain } from 'lucide-react';
+import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, LogIn, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -30,6 +30,7 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 import { AIWritingAssistant } from '@/components/AIWritingAssistant';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -583,14 +584,7 @@ const Index = () => {
             )}
             
             {user ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/auth')}
-                className="rounded-lg sm:rounded-xl h-8 w-8 sm:h-9 sm:w-9"
-              >
-                <User className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
+              <UserProfileDropdown />
             ) : (
               <Button
                 variant="ghost"
