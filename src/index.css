@@ -463,9 +463,20 @@
     @apply transition-all duration-300 ease-out;
   }
 
-  /* Glass effect */
+  /* Glass effect - Apple style */
   .glass {
-    @apply bg-white/85 dark:bg-black/50 backdrop-blur-xl border-white/20 dark:border-white/5;
+    @apply bg-white/80 dark:bg-black/60 backdrop-blur-2xl border-white/30 dark:border-white/10;
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+  }
+
+  .glass-subtle {
+    @apply bg-white/60 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/5;
+  }
+
+  .glass-card {
+    @apply bg-card/95 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20;
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 
   /* Gradient text */
@@ -478,9 +489,39 @@
     background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
   }
 
-  /* Hover lift effect */
+  /* Premium gradient */
+  .gradient-premium {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Hover lift effect - iOS style */
   .hover-lift {
-    @apply transition-transform duration-200 hover:-translate-y-0.5;
+    @apply transition-all duration-200;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px hsl(var(--primary) / 0.3);
+  }
+
+  .hover-lift:active {
+    transform: translateY(0);
+  }
+
+  /* iOS-style button press */
+  .btn-press {
+    @apply transition-transform duration-100;
+  }
+
+  .btn-press:active {
+    transform: scale(0.96);
   }
 
   /* Hide scrollbar but allow scrolling */
@@ -493,11 +534,103 @@
     display: none;
   }
 
-  /* Focus ring */
+  /* Focus ring - Apple style */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 
+  /* Soft shadow - Apple style */
+  .shadow-soft {
+    box-shadow: 
+      0 2px 8px -2px hsl(var(--foreground) / 0.08),
+      0 4px 16px -4px hsl(var(--foreground) / 0.06);
+  }
+
+  .shadow-soft-lg {
+    box-shadow: 
+      0 4px 12px -4px hsl(var(--foreground) / 0.1),
+      0 8px 32px -8px hsl(var(--foreground) / 0.08),
+      0 16px 48px -12px hsl(var(--foreground) / 0.06);
+  }
+
+  .shadow-primary-soft {
+    box-shadow: 0 8px 30px -8px hsl(var(--primary) / 0.25);
+  }
+
+  /* Apple-style card */
+  .card-apple {
+    @apply rounded-3xl border border-border/50 bg-card/95 backdrop-blur-xl;
+    box-shadow: 
+      0 1px 1px hsl(var(--foreground) / 0.02),
+      0 2px 2px hsl(var(--foreground) / 0.02),
+      0 4px 4px hsl(var(--foreground) / 0.02),
+      0 8px 8px hsl(var(--foreground) / 0.02),
+      0 16px 16px hsl(var(--foreground) / 0.02);
+  }
+
+  /* Floating element - iOS style */
+  .floating {
+    @apply fixed shadow-2xl shadow-black/20;
+    animation: float-in 0.3s ease-out;
+  }
+
+  @keyframes float-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Slide up animation */
+  .slide-up {
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Pill button style */
+  .btn-pill {
+    @apply rounded-full px-6 py-2.5 font-medium transition-all duration-200;
+  }
+
+  /* iOS-style input */
+  .input-ios {
+    @apply rounded-2xl border-0 bg-secondary/80 px-4 py-3 text-sm;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-secondary;
+  }
+
+  /* Premium badge */
+  .badge-premium {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold;
+    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(25 95% 53%));
+    color: white;
+    box-shadow: 0 2px 8px hsl(38 92% 50% / 0.3);
+  }
+
+  /* Glow effect */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.4);
+  }
+}
+
+@layer utilities {
   /* Pen writing animation for inputs */
   @keyframes pen-flow {
     0% {
@@ -546,5 +679,60 @@
 
   .animate-ink-spread {
     animation: ink-spread 0.1s ease-out forwards;
+  }
+
+  /* Spring animation for modals */
+  @keyframes spring-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+    50% {
+      transform: scale(1.02) translateY(-2px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-spring-in {
+    animation: spring-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Shimmer effect for loading */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Success checkmark animation */
+  @keyframes checkmark {
+    0% {
+      stroke-dashoffset: 50;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-checkmark {
+    stroke-dasharray: 50;
+    animation: checkmark 0.5s ease-out forwards;
   }
 }
