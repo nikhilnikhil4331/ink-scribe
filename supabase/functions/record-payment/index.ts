@@ -1,37 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     // Verify authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
+      console.error("Missing or invalid Authorization header");
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create client with user's token to verify identity
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Use service role client to verify user token
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify the user's JWT using getUser
-    const { data: userData, error: userError } = await userClient.auth.getUser();
+    // Extract token and verify it using getUser with the token
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
 
     if (userError || !userData?.user) {
       console.error("JWT verification failed:", userError);
@@ -42,13 +41,11 @@ serve(async (req) => {
     }
 
     const callerId = userData.user.id;
+    console.log(`Authenticated user: ${callerId}`);
     
     // Parse request body
     const body = await req.json();
     const { planCode, userId, status } = body;
-
-    // Use service role client for all DB operations
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if caller is admin (for admin operations)
     const { data: adminCheck } = await adminClient
@@ -59,6 +56,7 @@ serve(async (req) => {
       .maybeSingle();
 
     const isAdmin = !!adminCheck;
+    console.log(`User ${callerId} is admin: ${isAdmin}`);
 
     // Admin operation: toggle premium for another user
     if (userId && isAdmin) {
@@ -91,9 +89,19 @@ serve(async (req) => {
         );
       }
 
+      console.log(`Successfully updated subscription for ${userId}`);
       return new Response(
         JSON.stringify({ success: true, message: `User subscription ${newStatus}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Admin trying to update user but not admin
+    if (userId && !isAdmin) {
+      console.error(`Non-admin ${callerId} tried to update user ${userId}`);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -116,7 +124,7 @@ serve(async (req) => {
         {
           user_id: callerId,
           plan_code: planCode,
-          status: "pending_verification", // Admin will manually verify and set to 'active'
+          status: "pending_verification",
           current_period_end: periodEnd,
           updated_at: new Date().toISOString(),
         },
