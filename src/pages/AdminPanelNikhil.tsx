@@ -143,15 +143,30 @@ const AdminPanelNikhil: React.FC = () => {
     avgSessionDuration: '0m',
   });
 
-  // Check admin status
+  // Check admin status - supports both database roles AND hardcoded session
   useEffect(() => {
     checkAdminStatus();
   }, [user]);
 
   const checkAdminStatus = async () => {
+    // First check for hardcoded admin session
+    const adminToken = sessionStorage.getItem('admin_token');
+    const expiresAt = sessionStorage.getItem('admin_expires');
+    
+    if (adminToken && expiresAt && Date.now() < parseInt(expiresAt)) {
+      console.log('Admin access via hardcoded credentials');
+      setIsAdmin(true);
+      setLoading(false);
+      await loadAllData();
+      return;
+    }
+
+    // Fall back to database role check
     if (!user) {
+      // Redirect to admin login if no session
       setIsAdmin(false);
       setLoading(false);
+      navigate('/admin-login');
       return;
     }
 
@@ -169,10 +184,14 @@ const AdminPanelNikhil: React.FC = () => {
       
       if (data) {
         await loadAllData();
+      } else {
+        // Not an admin via database, redirect to admin login
+        navigate('/admin-login');
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
+      navigate('/admin-login');
     } finally {
       setLoading(false);
     }

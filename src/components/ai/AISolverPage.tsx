@@ -15,7 +15,7 @@ import ReactMarkdown from 'react-markdown';
 import { FileUploadZone } from './FileUploadZone';
 import { supabase } from '@/integrations/supabase/client';
 
-type ProcessMode = 'solve' | 'improve' | 'summarize' | 'rewrite' | 'explain' | 'template' | 'notes';
+type ProcessMode = 'solve' | 'improve' | 'summarize' | 'rewrite' | 'explain' | 'template' | 'notes' | 'essay';
 type UserMode = 'student' | 'college' | 'professional';
 
 const userModes = [
@@ -26,10 +26,11 @@ const userModes = [
 
 const processModes = [
   { id: 'solve' as const, label: 'Solve', icon: Brain, desc: 'Solve problems & questions', color: 'text-red-500' },
+  { id: 'explain' as const, label: 'Explain', icon: Lightbulb, desc: 'Break down complex topics', color: 'text-yellow-500' },
   { id: 'improve' as const, label: 'Improve', icon: PenLine, desc: 'Fix grammar & enhance writing', color: 'text-green-500' },
   { id: 'summarize' as const, label: 'Summarize', icon: FileOutput, desc: 'Create concise summaries', color: 'text-blue-500' },
   { id: 'rewrite' as const, label: 'Rewrite', icon: RefreshCw, desc: 'Fresh take, same meaning', color: 'text-purple-500' },
-  { id: 'explain' as const, label: 'Explain', icon: Lightbulb, desc: 'Break down complex topics', color: 'text-yellow-500' },
+  { id: 'essay' as const, label: 'Essay', icon: FileText, desc: 'Generate full essays', color: 'text-orange-500' },
   { id: 'template' as const, label: 'Template', icon: FileText, desc: 'Format as assignment', color: 'text-pink-500' },
   { id: 'notes' as const, label: 'Quick Notes', icon: BookMarked, desc: 'Convert to study notes', color: 'text-cyan-500' },
 ];
@@ -68,17 +69,18 @@ export const AISolverPage: React.FC = () => {
     setOutputContent('');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-document`, {
+      // Use the new OpenAI brain endpoint
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openai-brain`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          action: processMode,
           content: inputContent,
-          processMode,
-          userMode,
-          title: title.trim() || undefined,
+          mode: userMode,
+          stream: true,
         }),
       });
 
@@ -359,7 +361,7 @@ Examples:
           className="mt-8"
         >
           <p className="text-sm font-medium text-muted-foreground mb-4">What should I do?</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {processModes.map((mode, index) => (
               <motion.button
                 key={mode.id}

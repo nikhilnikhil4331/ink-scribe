@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.process-document]
 verify_jwt = false
+
+[functions.openai-brain]
+verify_jwt = false
+
+[functions.admin-auth]
+verify_jwt = false
