@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, LogOut, Crown, History, ChevronDown, Brain, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/hooks/usePremium';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-export const UserProfileDropdown: React.FC = () => {
+export const UserProfileDropdown = forwardRef<HTMLDivElement>((_, ref) => {
   const { user, signOut } = useAuth();
   const { isPremium } = usePremium();
   const navigate = useNavigate();
@@ -42,54 +41,62 @@ export const UserProfileDropdown: React.FC = () => {
   ];
 
   return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
+    <div className="relative" ref={ref}>
+      <motion.button
+        whileTap={{ scale: 0.96 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="gap-2 rounded-xl h-9 px-3 hover:bg-primary/10"
+        className="flex items-center gap-2 h-9 px-3 rounded-2xl bg-secondary/80 hover:bg-secondary border border-border/50 transition-all duration-200"
       >
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center shadow-sm">
           <User className="w-3.5 h-3.5 text-primary-foreground" />
         </div>
         <span className="hidden sm:inline text-sm font-medium max-w-[100px] truncate">
           {displayName}
         </span>
         {isPremium && <Crown className="w-3.5 h-3.5 text-amber-500" />}
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </Button>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </motion.button>
 
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop with blur */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40"
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm"
               onClick={() => setIsOpen(false)}
             />
             
-            {/* Dropdown Menu */}
+            {/* Dropdown Menu - Ultra high z-index */}
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full mt-2 w-64 z-50 rounded-2xl border bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              transition={{ 
+                type: 'spring', 
+                stiffness: 500, 
+                damping: 30,
+                mass: 0.8
+              }}
+              className="fixed right-4 sm:absolute sm:right-0 top-[60px] sm:top-full sm:mt-2 w-[calc(100vw-2rem)] sm:w-72 z-[101] rounded-3xl border border-border/50 bg-card/98 backdrop-blur-2xl shadow-2xl shadow-black/20 overflow-hidden"
             >
               {/* User Info Header */}
-              <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary-foreground" />
-                  </div>
+              <div className="p-5 border-b border-border/50 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent">
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center shadow-lg shadow-primary/25"
+                  >
+                    <User className="w-7 h-7 text-primary-foreground" />
+                  </motion.div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground truncate">{displayName}</p>
                     <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                     {isPremium && (
-                      <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-1">
+                      <span className="inline-flex items-center gap-1 text-xs text-amber-600 mt-1 font-medium">
                         <Crown className="w-3 h-3" />
                         Premium Member
                       </span>
@@ -101,32 +108,40 @@ export const UserProfileDropdown: React.FC = () => {
               {/* Menu Items */}
               <div className="p-2">
                 {menuItems.map((item, index) => (
-                  <button
+                  <motion.button
                     key={index}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => { setIsOpen(false); item.onClick(); }}
                     className={`
-                      w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors
+                      w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all
                       ${item.highlight 
-                        ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20' 
-                        : 'hover:bg-muted/50 text-foreground'
+                        ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 text-amber-600 hover:from-amber-500/20 hover:to-amber-500/10' 
+                        : 'hover:bg-muted/60 text-foreground'
                       }
                     `}
                   >
-                    <item.icon className="w-4 h-4" />
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.highlight ? 'bg-amber-500/10' : 'bg-muted'}`}>
+                      <item.icon className="w-4 h-4" />
+                    </div>
                     {item.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
               {/* Sign Out */}
-              <div className="p-2 border-t">
-                <button
+              <div className="p-2 border-t border-border/50">
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-red-500 hover:bg-red-500/10 transition-all"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center">
+                    <LogOut className="w-4 h-4" />
+                  </div>
                   Sign Out
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </>
@@ -134,4 +149,6 @@ export const UserProfileDropdown: React.FC = () => {
       </AnimatePresence>
     </div>
   );
-};
+});
+
+UserProfileDropdown.displayName = 'UserProfileDropdown';

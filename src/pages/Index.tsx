@@ -530,25 +530,26 @@ const Index = () => {
 
   return (
     <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background)}>
-      {/* Header - Fixed height to prevent mobile overflow */}
+      {/* Header - Apple-style glassmorphism */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm h-14 sm:h-16 flex-shrink-0"
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="sticky top-0 z-50 glass border-b border-border/30 h-14 sm:h-16 flex-shrink-0"
       >
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-full flex items-center justify-between overflow-hidden">
-          {/* Logo */}
+          {/* Logo - Premium design */}
           <motion.div 
             className="flex items-center gap-2 sm:gap-3 flex-shrink-0"
             whileHover={{ scale: 1.02 }}
-            transition={{ type: 'spring', stiffness: 400 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
               <PenLine className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
             <div className="hidden xs:block">
-              <h1 className="font-bold text-base sm:text-lg text-foreground tracking-tight leading-tight">Nikhil Notes</h1>
+              <h1 className="font-display font-bold text-base sm:text-lg text-foreground tracking-tight leading-tight">Nikhil Notes</h1>
               <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium leading-tight">Handwritten notes</p>
             </div>
           </motion.div>
@@ -558,43 +559,49 @@ const Index = () => {
             <MoodSelector currentMood={mood} onMoodChange={changeMood} />
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Right: Actions - iOS-style buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {/* AI Solver Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/ai-solver')}
-              className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl border-primary/50 text-primary hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3"
-            >
-              <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline text-xs">AI Solver</span>
-            </Button>
-            
-            {!premium.isPremium && (
+            <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate('/payment')}
-                className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl border-amber-500/50 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 h-8 sm:h-9 px-2 sm:px-3"
+                onClick={() => navigate('/ai-solver')}
+                className="gap-1.5 rounded-full border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 h-9 px-3 sm:px-4 shadow-sm transition-all duration-200"
               >
-                <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline text-xs">Upgrade</span>
+                <Brain className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs font-medium">AI Solver</span>
               </Button>
+            </motion.div>
+            
+            {!premium.isPremium && (
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/payment')}
+                  className="gap-1.5 rounded-full border-amber-500/30 bg-amber-500/5 text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/50 h-9 px-3 sm:px-4 shadow-sm transition-all duration-200"
+                >
+                  <Crown className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs font-medium">Upgrade</span>
+                </Button>
+              </motion.div>
             )}
             
             {user ? (
               <UserProfileDropdown />
             ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl h-8 sm:h-9 px-2 sm:px-3"
-              >
-                <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline text-xs">Sign In</span>
-              </Button>
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="gap-1.5 rounded-full hover:bg-secondary h-9 px-3 sm:px-4 transition-all duration-200"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden sm:inline text-xs font-medium">Sign In</span>
+                </Button>
+              </motion.div>
             )}
 
             <Toolbar
@@ -632,9 +639,15 @@ const Index = () => {
         <MoodSelector currentMood={mood} onMoodChange={changeMood} />
       </div>
 
-      {/* Mobile Floating Buttons */}
-      <div className="fixed bottom-6 right-4 z-30 flex flex-col gap-2 lg:hidden">
-        <motion.div whileTap={{ scale: 0.9 }}>
+      {/* Mobile Floating Buttons - iOS-style FAB stack */}
+      <div className="fixed bottom-6 right-4 z-30 flex flex-col gap-3 lg:hidden">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 400, damping: 25 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.05 }}
+        >
           <AnimatedButton
             variant="outline"
             size="icon"
@@ -644,7 +657,7 @@ const Index = () => {
               if (quickDictation.isListening) quickDictation.stop();
               else quickDictation.start();
             }}
-            className="h-12 w-12 rounded-full shadow-lg bg-card border-border"
+            className="h-14 w-14 rounded-2xl shadow-soft-lg glass-card border-border/50"
             title={premium.isPremium ? 'Dictation' : 'Premium'}
           >
             {quickDictation.isListening ? (
@@ -655,7 +668,13 @@ const Index = () => {
           </AnimatedButton>
         </motion.div>
 
-        <motion.div whileTap={{ scale: 0.9 }}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.15, type: 'spring', stiffness: 400, damping: 25 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.05 }}
+        >
           <div>
             <AIWritingAssistant
               currentText={getPlainText()}
@@ -666,22 +685,35 @@ const Index = () => {
           </div>
         </motion.div>
 
-        <motion.div whileTap={{ scale: 0.9 }}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 25 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.05 }}
+        >
           <AnimatedButton
             variant="outline"
             size="icon"
             onClick={() => setShowPenPanel(true)}
-            className="h-12 w-12 rounded-full shadow-lg bg-card border-border"
+            className="h-14 w-14 rounded-2xl shadow-soft-lg glass-card border-border/50"
           >
             <Palette className="w-5 h-5 text-primary" />
           </AnimatedButton>
         </motion.div>
-        <motion.div whileTap={{ scale: 0.9 }}>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.25, type: 'spring', stiffness: 400, damping: 25 }}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.05 }}
+        >
           <AnimatedButton
             variant="outline"
             size="icon"
             onClick={() => setShowStylePanel(true)}
-            className="h-12 w-12 rounded-full shadow-lg bg-card border-border"
+            className="h-14 w-14 rounded-2xl shadow-soft-lg glass-card border-border/50"
           >
             <Settings2 className="w-5 h-5 text-primary" />
           </AnimatedButton>
