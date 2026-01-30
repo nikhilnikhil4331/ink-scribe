@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Loader2, Sparkles, Wand2, FileText, BookOpen, PenTool, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIWritingAssistantProps {
   onInsertText: (text: string) => void;
@@ -58,6 +59,13 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
       return;
     }
 
+    // Get the user's session token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      toast.error('Please sign in to use AI features');
+      return;
+    }
+
     setIsLoading(true);
     setResult('');
 
@@ -66,7 +74,8 @@ export const AIWritingAssistant: React.FC<AIWritingAssistantProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           mode: selectedMode,
