@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, Loader2, CheckCircle2, Camera, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, CheckCircle2, Camera, Image as ImageIcon, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface FileUploadZoneProps {
   onContentExtracted: (content: string, fileName: string) => void;
@@ -16,7 +17,8 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onImageBase64,
   className 
 }) => {
-  const { session } = useAuth();
+  const { session, user } = useAuth();
+  const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -32,6 +34,13 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   };
 
   const processImageWithOCR = async (file: File) => {
+    // CRITICAL: Check auth before making any API calls
+    if (!session?.access_token || !user) {
+      toast.error('Please sign in to upload images');
+      navigate('/auth');
+      return;
+    }
+
     try {
       const base64 = await fileToBase64(file);
       setPreviewUrl(base64);
@@ -40,12 +49,12 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         onImageBase64(base64);
       }
 
-      // Call OpenAI Vision for OCR
+      // Call OpenAI Vision for OCR with proper auth
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/openai-brain`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || ''}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           action: 'ocr_solve',
@@ -57,6 +66,11 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          toast.error('Session expired. Please sign in again.');
+          navigate('/auth');
+          return;
+        }
         throw new Error(error.error || 'OCR processing failed');
       }
 
@@ -72,12 +86,19 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       }
     } catch (error) {
       console.error('OCR error:', error);
-      toast.error('Failed to extract text from image');
+      toast.error(error instanceof Error ? error.message : 'Failed to extract text from image');
       onContentExtracted(`[Image: ${file.name}]\n\nPlease type the content manually.`, file.name);
     }
   };
 
   const processFile = useCallback(async (file: File) => {
+    // CRITICAL: Auth check before processing
+    if (!session?.access_token || !user) {
+      toast.error('Please sign in to upload files');
+      navigate('/auth');
+      return;
+    }
+
     setUploadedFile(file);
     setIsProcessing(true);
 
@@ -113,7 +134,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     } finally {
       setIsProcessing(false);
     }
-  }, [onContentExtracted, session, onImageBase64]);
+  }, [onContentExtracted, session, user, onImageBase64, navigate]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -143,6 +164,13 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   }, [processFile]);
 
   const handleCameraCapture = useCallback(() => {
+    // Check auth first
+    if (!session?.access_token || !user) {
+      toast.error('Please sign in to take photos');
+      navigate('/auth');
+      return;
+    }
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -154,12 +182,41 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
       }
     };
     input.click();
-  }, [processFile]);
+  }, [processFile, session, user, navigate]);
 
   const clearFile = useCallback(() => {
     setUploadedFile(null);
     setPreviewUrl(null);
   }, []);
+
+  // Show login prompt if not authenticated
+  if (!user || !session) {
+    return (
+      <div className={className}>
+        <div className="p-6 rounded-2xl border-2 border-dashed border-amber-500/50 bg-amber-500/5">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-3">
+              <LogIn className="w-6 h-6 text-amber-500" />
+            </div>
+            <p className="font-medium text-sm text-amber-700 dark:text-amber-300">
+              Sign in required
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Please sign in to upload files and use AI features
+            </p>
+            <Button 
+              onClick={() => navigate('/auth')} 
+              size="sm"
+              className="gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
