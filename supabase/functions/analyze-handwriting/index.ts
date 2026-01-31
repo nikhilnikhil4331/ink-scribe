@@ -29,8 +29,9 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Verify the user's JWT using getUser
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    // Verify the user's JWT using the provided token (do not rely on an internal session)
+    const token = authHeader.replace("Bearer ", "").trim();
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !userData?.user) {
       console.error("JWT verification failed:", userError);
