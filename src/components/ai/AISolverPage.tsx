@@ -85,16 +85,31 @@ export const AISolverPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          toast.error('Session expired. Please sign in again.');
+          navigate('/login');
+          return;
+        }
         if (response.status === 429) {
-          toast.error('Rate limit exceeded. Please try again in a moment.');
+          toast.error('AI is busy right now. Please wait a moment and try again.', {
+            action: {
+              label: 'Retry',
+              onClick: () => handleProcess(),
+            },
+          });
           return;
         }
         if (response.status === 402) {
-          toast.error('AI credits exhausted. Please add credits to continue.');
+          toast.error('Daily AI limit reached. Upgrade for unlimited access.', {
+            action: {
+              label: 'Upgrade',
+              onClick: () => navigate('/payment'),
+            },
+          });
           return;
         }
-        throw new Error(error.error || 'Processing failed');
+        throw new Error(errorData.error || 'Something went wrong. Please try again.');
       }
 
       const reader = response.body?.getReader();
@@ -139,9 +154,15 @@ export const AISolverPage: React.FC = () => {
           page_url: '/ai-solver',
         });
       }
-    } catch (error) {
-      console.error('Processing error:', error);
-      toast.error(error instanceof Error ? error.message : 'Processing failed');
+    } catch (err) {
+      console.error('Processing error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'AI processing failed';
+      toast.error(errorMessage, {
+        action: {
+          label: 'Retry',
+          onClick: () => handleProcess(),
+        },
+      });
     } finally {
       setIsProcessing(false);
     }

@@ -650,7 +650,7 @@ const AdminPanelNikhil: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button 
-                onClick={() => navigate('/auth')} 
+                onClick={() => navigate('/login')} 
                 className="w-full rounded-xl"
               >
                 Login
