@@ -214,24 +214,36 @@ serve(async (req) => {
   }
 
   try {
-    // Optional: Verify authentication
+    // CRITICAL: Verify authentication - REQUIRED for all requests
     const authHeader = req.headers.get("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "");
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-      
-      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-        global: { headers: { Authorization: authHeader } },
-      });
-
-      const { data: userData, error: userError } = await supabase.auth.getUser(token);
-      if (userError) {
-        console.warn("Auth verification failed, proceeding anyway:", userError.message);
-      } else {
-        console.log(`AI Brain request from user: ${userData.user?.id}`);
-      }
+    if (!authHeader?.startsWith("Bearer ")) {
+      console.error("Missing or invalid Authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Please sign in to use AI features" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify JWT - this is mandatory
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData?.user) {
+      console.error("JWT verification failed:", userError?.message || "No user found");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid session. Please sign in again." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = userData.user.id;
+    console.log(`AI Brain request from user: ${userId}`);
 
     const body: AIRequest = await req.json();
     const { 
@@ -281,6 +293,19 @@ serve(async (req) => {
       stream,
       !!imageBase64
     );
+
+    // Log activity for tracking
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: userId,
+        action: imageBase64 ? 'ai_vision_process' : 'ai_document_process',
+        category: 'ai',
+        details: { action, mode, modelType, provider, hasImage: !!imageBase64, contentLength: content?.length || 0 },
+        page_url: '/ai-solver',
+      });
+    } catch (logError) {
+      console.warn("Failed to log activity:", logError);
+    }
 
     // Handle streaming response
     if (stream) {

@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthPage } from "@/components/auth/AuthPage";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Upgrade from "./pages/Upgrade";
 import Payment from "./pages/Payment";
 import Admin from "./pages/Admin";
@@ -27,6 +29,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            {/* Dedicated auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            {/* Legacy auth route - redirects to login */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/payment" element={<Payment />} />
