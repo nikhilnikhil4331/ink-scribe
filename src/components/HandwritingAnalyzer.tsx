@@ -4,6 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Upload, Loader2, Camera, X, Sparkles, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { NoteSettings, HandwritingFont, InkColor } from '@/types/notes';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface HandwritingAnalyzerProps {
   onApplyStyle: (settings: Partial<NoteSettings>) => void;
@@ -25,6 +28,8 @@ export const HandwritingAnalyzer: React.FC<HandwritingAnalyzerProps> = ({ onAppl
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { session } = useAuth();
+  const navigate = useNavigate();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -57,24 +62,29 @@ export const HandwritingAnalyzer: React.FC<HandwritingAnalyzerProps> = ({ onAppl
     setIsAnalyzing(true);
     
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-handwriting`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ imageBase64 }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+      if (!session?.access_token) {
+        toast.error('Please login first');
+        navigate('/login');
+        return;
       }
 
-      const result: AnalysisResult = await response.json();
+      const { data, error } = await supabase.functions.invoke('analyze-handwriting', {
+        body: { imageBase64 },
+      });
+
+      if (error) {
+        // Standardize common auth failure messaging
+        const status = (error as unknown as { status?: number })?.status;
+        if (status === 401) {
+          toast.error('Please login first');
+          navigate('/login');
+          return;
+        }
+
+        throw new Error(error.message || 'Analysis failed');
+      }
+
+      const result = data as AnalysisResult;
       setAnalysisResult(result);
       toast.success('Handwriting analyzed successfully!');
     } catch (error) {
