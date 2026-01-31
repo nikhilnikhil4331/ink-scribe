@@ -5,10 +5,11 @@ import {
   User, Brain, FileText, Download, Calendar, Clock, 
   ArrowLeft, Loader2, FileOutput, ChevronRight, Sparkles,
   LogOut, Crown, Settings, Monitor, Smartphone, Tablet,
-  Mail, History, PenTool, Image, FileImage
+  Mail, History, PenTool, Image, FileImage, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -70,6 +71,7 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalAiRequests: 0,
     totalExports: 0,
@@ -93,6 +95,7 @@ export default function AccountPage() {
     if (!user) return;
     
     setLoading(true);
+    setError(null);
     try {
       // Fetch user's activity logs
       const { data: activityData, error } = await supabase
@@ -124,12 +127,30 @@ export default function AccountPage() {
         totalPages: pages,
         lastActive: lastActivity,
       });
-    } catch (error) {
-      console.error('Failed to fetch account data:', error);
+    } catch (err) {
+      console.error('Failed to fetch account data:', err);
+      setError('Failed to load your activity. Please try again.');
+      toast.error('Failed to load activity data');
     } finally {
       setLoading(false);
     }
   };
+
+  // Activity skeleton loader
+  const ActivitySkeleton = () => (
+    <div className="space-y-3">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-start gap-4 p-4 rounded-2xl">
+          <Skeleton className="w-12 h-12 rounded-2xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   const handleSignOut = async () => {
     await signOut();
@@ -308,7 +329,25 @@ export default function AccountPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {activities.length === 0 ? (
+              {loading ? (
+                <ActivitySkeleton />
+              ) : error ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                    <Sparkles className="w-8 h-8 text-destructive" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">{error}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fetchAccountData}
+                    className="mt-4 gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Retry
+                  </Button>
+                </div>
+              ) : activities.length === 0 ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
                   <p className="text-muted-foreground font-medium">No activity yet</p>
