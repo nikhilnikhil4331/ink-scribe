@@ -142,23 +142,33 @@ async function makeAIRequest(
     const apiKey = provider.getKey();
     if (!apiKey) continue;
 
-    // Skip Lovable AI for image requests (doesn't support vision well in chat format)
-    if (hasImage && provider.name === "lovable") {
-      console.log(`Skipping ${provider.name} for vision request`);
-      continue;
-    }
-
     const model = provider.models[modelType];
     console.log(`Trying ${provider.name} with model ${model} (type: ${modelType})`);
 
     try {
-      // Transform messages for Lovable AI (doesn't support multimodal content array)
-      const requestMessages = provider.name === "lovable" && hasImage
-        ? messages.map(m => ({
-            role: m.role,
-            content: typeof m.content === "string" ? m.content : (m.content as { text?: string }[])[0]?.text || ""
-          }))
-        : messages;
+      // Transform messages for Lovable AI vision (use inline_data format for images)
+      let requestMessages = messages;
+      
+      if (provider.name === "lovable" && hasImage) {
+        // Lovable/Gemini supports vision but needs proper format
+        requestMessages = messages.map(m => {
+          if (typeof m.content === "string") return m;
+          // Convert OpenAI format to Gemini-compatible format
+          const textPart = (m.content as { type: string; text?: string }[]).find(p => p.type === "text");
+          const imagePart = (m.content as { type: string; image_url?: { url: string } }[]).find(p => p.type === "image_url");
+          
+          if (imagePart?.image_url?.url) {
+            return {
+              role: m.role,
+              content: [
+                { type: "text", text: textPart?.text || "Analyze this image" },
+                { type: "image_url", image_url: { url: imagePart.image_url.url } }
+              ]
+            };
+          }
+          return { role: m.role, content: textPart?.text || "" };
+        });
+      }
 
       const response = await fetch(`${provider.baseUrl}/chat/completions`, {
         method: "POST",
