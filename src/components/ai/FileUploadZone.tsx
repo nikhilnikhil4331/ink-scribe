@@ -37,7 +37,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     // CRITICAL: Check auth before making any API calls
     if (!session?.access_token || !user) {
       toast.error('Please sign in to upload images');
-      navigate('/auth');
+      navigate('/login');
       return;
     }
 
@@ -68,7 +68,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
         const error = await response.json().catch(() => ({}));
         if (response.status === 401) {
           toast.error('Session expired. Please sign in again.');
-          navigate('/auth');
+          navigate('/login');
           return;
         }
         throw new Error(error.error || 'OCR processing failed');
@@ -95,7 +95,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     // CRITICAL: Auth check before processing
     if (!session?.access_token || !user) {
       toast.error('Please sign in to upload files');
-      navigate('/auth');
+      navigate('/login');
       return;
     }
 
@@ -167,7 +167,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
     // Check auth first
     if (!session?.access_token || !user) {
       toast.error('Please sign in to take photos');
-      navigate('/auth');
+      navigate('/login');
       return;
     }
 
@@ -205,7 +205,7 @@ export const FileUploadZone: React.FC<FileUploadZoneProps> = ({
               Please sign in to upload files and use AI features
             </p>
             <Button 
-              onClick={() => navigate('/auth')} 
+              onClick={() => navigate('/login')} 
               size="sm"
               className="gap-2"
             >

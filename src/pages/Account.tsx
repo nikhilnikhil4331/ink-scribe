@@ -80,7 +80,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/login');
       return;
     }
 
@@ -213,7 +213,7 @@ export default function AccountPage() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
+                  className="hidden sm:flex"
                 >
                   <Settings className="w-5 h-5" />
                 </Button>

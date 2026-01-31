@@ -61,7 +61,7 @@ export const AISolverPage: React.FC = () => {
 
     if (!user || !session) {
       toast.error('Please sign in to use AI features');
-      navigate('/auth');
+      navigate('/login');
       return;
     }
 
