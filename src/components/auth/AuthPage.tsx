@@ -32,7 +32,7 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Welcome back!');
-          navigate('/');
+          navigate('/account');
         }
       } else {
         const { error } = await signUp(email, password, fullName);
@@ -41,7 +41,7 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Account created! Welcome aboard.');
-          navigate('/');
+          navigate('/account');
         }
       }
     } catch (error) {

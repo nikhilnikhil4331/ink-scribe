@@ -30,7 +30,7 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 import { AIWritingAssistant } from '@/components/AIWritingAssistant';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { HeaderProfileButton } from '@/components/HeaderProfileButton';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -589,7 +589,7 @@ const Index = () => {
             )}
             
             {user ? (
-              <UserProfileDropdown />
+              <HeaderProfileButton />
             ) : (
               <motion.div whileTap={{ scale: 0.95 }}>
                 <Button

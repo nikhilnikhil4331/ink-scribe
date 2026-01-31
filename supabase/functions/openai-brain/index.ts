@@ -1,8 +1,57 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+// AI Provider Configuration
+interface AIProvider {
+  name: string;
+  baseUrl: string;
+  models: {
+    vision: string;
+    reasoning: string;
+    fast: string;
+  };
+  getKey: () => string | undefined;
+}
+
+const providers: AIProvider[] = [
+  {
+    name: "openai",
+    baseUrl: "https://api.openai.com/v1",
+    models: {
+      vision: "gpt-4o",           // Best for image analysis
+      reasoning: "gpt-4o",         // Best for complex reasoning/essays
+      fast: "gpt-4o-mini",         // Fast and cheap for simple text
+    },
+    getKey: () => Deno.env.get("OPENAI_API_KEY"),
+  },
+  {
+    name: "lovable",
+    baseUrl: "https://ai.gateway.lovable.dev/v1",
+    models: {
+      vision: "google/gemini-2.5-pro",    // Vision capable
+      reasoning: "google/gemini-2.5-pro", // Strong reasoning
+      fast: "google/gemini-2.5-flash",    // Fast fallback
+    },
+    getKey: () => Deno.env.get("LOVABLE_API_KEY"),
+  },
+];
+
+// Mode to model type mapping
+const modeToModelType: Record<string, 'vision' | 'reasoning' | 'fast'> = {
+  solve: 'reasoning',
+  essay: 'reasoning',
+  explain: 'reasoning',
+  improve: 'fast',
+  summarize: 'fast',
+  rewrite: 'fast',
+  template: 'fast',
+  notes: 'fast',
+  ocr_solve: 'vision',
 };
 
 interface ChatMessage {
@@ -10,54 +59,64 @@ interface ChatMessage {
   content: string | { type: string; text?: string; image_url?: { url: string } }[];
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+interface AIRequest {
+  action: string;
+  content: string;
+  imageBase64?: string;
+  mode?: string;
+  stream?: boolean;
+}
+
+/**
+ * Intelligently routes AI requests to the appropriate model based on:
+ * 1. Whether an image is present (use vision model)
+ * 2. The action/mode type (essay/solve = reasoning, simple tasks = fast)
+ * 3. Content length (long content = reasoning model)
+ */
+function selectModelType(request: AIRequest): 'vision' | 'reasoning' | 'fast' {
+  // Image input always requires vision model
+  if (request.imageBase64) {
+    return 'vision';
   }
 
-  try {
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!OPENAI_API_KEY && !LOVABLE_API_KEY) {
-      console.error("No AI API key configured");
-      return new Response(
-        JSON.stringify({ error: "AI API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+  // Check action-specific routing
+  const actionType = modeToModelType[request.action];
+  if (actionType) {
+    return actionType;
+  }
 
-    const body = await req.json();
-    const { 
-      action, 
-      content, 
-      imageBase64, 
-      mode = "student",
-      stream = false 
-    } = body;
+  // Long content (>2000 chars) benefits from reasoning model
+  if (request.content && request.content.length > 2000) {
+    return 'reasoning';
+  }
 
-    console.log(`AI Brain: action=${action}, mode=${mode}, hasImage=${!!imageBase64}`);
+  // Default to fast model
+  return 'fast';
+}
 
-    // Build system prompt based on mode and action
-    const modePrompts: Record<string, string> = {
-      student: "You are a helpful tutor for school students. Use simple language, provide step-by-step explanations, and be encouraging. Format solutions clearly with numbered steps.",
-      college: "You are an academic assistant for college students. Provide detailed, well-structured responses with proper citations when applicable. Use academic language and thorough explanations.",
-      professional: "You are a professional assistant. Provide concise, executive-level responses with clear actionable insights. Focus on efficiency and practical application."
-    };
+/**
+ * Build system prompt based on mode and action
+ */
+function buildSystemPrompt(action: string, mode: string): string {
+  const modePrompts: Record<string, string> = {
+    student: "You are a helpful tutor for school students. Use simple language, provide step-by-step explanations, and be encouraging. Format solutions clearly with numbered steps.",
+    college: "You are an academic assistant for college students. Provide detailed, well-structured responses with proper citations when applicable. Use academic language and thorough explanations.",
+    professional: "You are a professional assistant. Provide concise, executive-level responses with clear actionable insights. Focus on efficiency and practical application."
+  };
 
-    const actionPrompts: Record<string, string> = {
-      solve: "Solve this problem completely. Show all steps clearly and provide the final answer.",
-      explain: "Explain this concept in detail. Break it down into understandable parts.",
-      improve: "Improve this text. Make it clearer, more engaging, and better structured.",
-      summarize: "Summarize this content concisely. Capture the key points.",
-      rewrite: "Rewrite this professionally while maintaining the core meaning.",
-      essay: "Write a comprehensive essay on this topic with introduction, body paragraphs, and conclusion.",
-      template: "Create a professional template/outline for this topic that can be filled in.",
-      notes: "Create concise, well-organized study notes from this content with key points and highlights.",
-      ocr_solve: "I've extracted text from an image. Analyze this homework/assignment question and provide a complete, step-by-step solution. Show all work clearly."
-    };
+  const actionPrompts: Record<string, string> = {
+    solve: "Solve this problem completely. Show all steps clearly and provide the final answer.",
+    explain: "Explain this concept in detail. Break it down into understandable parts.",
+    improve: "Improve this text. Make it clearer, more engaging, and better structured.",
+    summarize: "Summarize this content concisely. Capture the key points.",
+    rewrite: "Rewrite this professionally while maintaining the core meaning.",
+    essay: "Write a comprehensive essay on this topic with introduction, body paragraphs, and conclusion.",
+    template: "Create a professional template/outline for this topic that can be filled in.",
+    notes: "Create concise, well-organized study notes from this content with key points and highlights.",
+    ocr_solve: "I've extracted text from an image. Analyze this homework/assignment question and provide a complete, step-by-step solution. Show all work clearly."
+  };
 
-    const systemPrompt = `${modePrompts[mode] || modePrompts.student}
+  return `${modePrompts[mode] || modePrompts.student}
 
 ${actionPrompts[action] || "Help the user with their request."}
 
@@ -67,6 +126,120 @@ Format your response using Markdown for better readability:
 - Use headers (##) to organize sections
 - Use code blocks for formulas or code
 - Use bullet points for key takeaways`;
+}
+
+/**
+ * Make AI request with automatic fallback between providers
+ */
+async function makeAIRequest(
+  messages: ChatMessage[],
+  modelType: 'vision' | 'reasoning' | 'fast',
+  stream: boolean,
+  hasImage: boolean
+): Promise<{ response: Response; provider: string; model: string }> {
+  
+  for (const provider of providers) {
+    const apiKey = provider.getKey();
+    if (!apiKey) continue;
+
+    // Skip Lovable AI for image requests (doesn't support vision well in chat format)
+    if (hasImage && provider.name === "lovable") {
+      console.log(`Skipping ${provider.name} for vision request`);
+      continue;
+    }
+
+    const model = provider.models[modelType];
+    console.log(`Trying ${provider.name} with model ${model} (type: ${modelType})`);
+
+    try {
+      // Transform messages for Lovable AI (doesn't support multimodal content array)
+      const requestMessages = provider.name === "lovable" && hasImage
+        ? messages.map(m => ({
+            role: m.role,
+            content: typeof m.content === "string" ? m.content : (m.content as { text?: string }[])[0]?.text || ""
+          }))
+        : messages;
+
+      const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: requestMessages,
+          stream,
+          max_tokens: 4096,
+          temperature: 0.7,
+        }),
+      });
+
+      // Check for quota/rate limit errors and try next provider
+      if (!response.ok) {
+        const status = response.status;
+        if (status === 429 || status === 402) {
+          console.log(`${provider.name} quota/rate limit, trying next provider`);
+          continue;
+        }
+        // Other errors, try next provider
+        const errorText = await response.text();
+        console.error(`${provider.name} error ${status}: ${errorText}`);
+        continue;
+      }
+
+      return { response, provider: provider.name, model };
+    } catch (error) {
+      console.error(`${provider.name} request failed:`, error);
+      continue;
+    }
+  }
+
+  throw new Error("All AI providers failed or unavailable");
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    // Optional: Verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      if (userError) {
+        console.warn("Auth verification failed, proceeding anyway:", userError.message);
+      } else {
+        console.log(`AI Brain request from user: ${userData.user?.id}`);
+      }
+    }
+
+    const body: AIRequest = await req.json();
+    const { 
+      action, 
+      content, 
+      imageBase64, 
+      mode = "student",
+      stream = false 
+    } = body;
+
+    console.log(`AI Brain: action=${action}, mode=${mode}, hasImage=${!!imageBase64}, contentLength=${content?.length || 0}`);
+
+    // Intelligent model selection
+    const modelType = selectModelType(body);
+    console.log(`Selected model type: ${modelType}`);
+
+    // Build system prompt
+    const systemPrompt = buildSystemPrompt(action, mode);
 
     // Build messages array
     const messages: ChatMessage[] = [
@@ -88,98 +261,20 @@ Format your response using Markdown for better readability:
         ]
       });
     } else {
-      messages.push({ role: "user", content: content });
+      messages.push({ role: "user", content });
     }
 
-    // Try OpenAI first, fallback to Lovable AI
-    let aiResponse: Response | null = null;
-    let usedProvider = "openai";
-
-    if (OPENAI_API_KEY) {
-      try {
-        aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${OPENAI_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: imageBase64 ? "gpt-4o" : "gpt-4o-mini",
-            messages,
-            stream,
-            max_tokens: 4096,
-            temperature: 0.7,
-          }),
-        });
-
-        // Check for quota errors and fallback
-        if (!aiResponse.ok && (aiResponse.status === 429 || aiResponse.status === 402)) {
-          const errorData = await aiResponse.json().catch(() => ({}));
-          const errorType = errorData?.error?.type;
-          
-          if (errorType === "insufficient_quota" && LOVABLE_API_KEY && !imageBase64) {
-            console.log("OpenAI quota exceeded, falling back to Lovable AI");
-            usedProvider = "lovable";
-            aiResponse = null; // Trigger fallback
-          }
-        }
-      } catch (e) {
-        console.error("OpenAI request failed:", e);
-        if (LOVABLE_API_KEY && !imageBase64) {
-          usedProvider = "lovable";
-        }
-      }
-    }
-
-    // Fallback to Lovable AI (doesn't support images)
-    if (!aiResponse && LOVABLE_API_KEY && !imageBase64) {
-      console.log("Using Lovable AI as fallback");
-      
-      const lovableMessages = messages.map(m => ({
-        role: m.role,
-        content: typeof m.content === "string" ? m.content : (m.content as any[])[0]?.text || ""
-      }));
-
-      aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: lovableMessages,
-          stream,
-        }),
-      });
-    }
-
-    if (!aiResponse) {
-      return new Response(
-        JSON.stringify({ error: "No AI provider available. Please check your API keys." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI API error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      return new Response(
-        JSON.stringify({ error: "AI processing failed. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Make AI request with automatic fallback
+    const { response: aiResponse, provider, model } = await makeAIRequest(
+      messages,
+      modelType,
+      stream,
+      !!imageBase64
+    );
 
     // Handle streaming response
     if (stream) {
+      console.log(`Streaming response from ${provider} (${model})`);
       return new Response(aiResponse.body, {
         headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
@@ -189,13 +284,14 @@ Format your response using Markdown for better readability:
     const data = await aiResponse.json();
     const result = data.choices?.[0]?.message?.content || "";
     
-    console.log(`AI Brain (${usedProvider}): Response generated, length=${result.length}`);
+    console.log(`AI Brain (${provider}/${model}): Response generated, length=${result.length}`);
 
     return new Response(
       JSON.stringify({ 
         result,
-        provider: usedProvider,
-        model: imageBase64 ? "gpt-4o" : (usedProvider === "openai" ? "gpt-4o-mini" : "gemini-2.5-flash"),
+        provider,
+        model,
+        modelType,
         usage: data.usage
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
