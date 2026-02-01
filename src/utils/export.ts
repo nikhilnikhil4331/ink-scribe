@@ -45,8 +45,11 @@ const captureToCanvas = async (
       // Wait for any pending renders
       await new Promise(resolve => setTimeout(resolve, 100));
       
+      // Ensure fonts are loaded before capture
+      await document.fonts.ready;
+      
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2, // High resolution for crisp text
         useCORS: true,
         backgroundColor: '#FFFFFF',
         logging: false,
@@ -54,9 +57,16 @@ const captureToCanvas = async (
         foreignObjectRendering: false,
         imageTimeout: 15000,
         removeContainer: true,
-        // Force width/height to prevent 0-size captures
-        width: Math.max(element.offsetWidth, element.scrollWidth, 100),
-        height: Math.max(element.offsetHeight, element.scrollHeight, 100),
+        // Force exact element dimensions - no modification
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+        // Ensure we capture the exact element bounds
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: element.offsetWidth,
+        windowHeight: element.offsetHeight,
       });
       
       // Validate canvas has content
