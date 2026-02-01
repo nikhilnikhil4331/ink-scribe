@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
 import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
@@ -112,7 +112,7 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
           }}
         >
           <AnimatePresence mode="popLayout">
-            {previewLines.map((line, idx) => {
+            {previewLines.map((line) => {
               const globalIndex = lines.indexOf(line);
               return (
                 <motion.div

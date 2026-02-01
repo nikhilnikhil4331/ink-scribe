@@ -115,16 +115,17 @@ export const DEFAULT_SETTINGS: NoteSettings = {
   pageSize: 'a4',
   inkColor: 'blue',
   margins: {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+    // Desktop margins - these are used in preview/export
+    top: 56,
+    right: 48,
+    bottom: 72,
+    left: 48,
   },
   headerFooter: {
     name: '',
     rollNo: '',
     subject: '',
-    showHeader: true,
+    showHeader: false,
     showFooter: false,
     showPageNumber: true,
   },
