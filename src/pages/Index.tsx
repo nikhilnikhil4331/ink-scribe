@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LineBasedEditor } from '@/components/LineBasedEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
+import { MobileLivePreview } from '@/components/MobileLivePreview';
 import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
 import { Toolbar } from '@/components/Toolbar';
@@ -18,6 +19,7 @@ import { useNotebookPages } from '@/hooks/useNotebookPages';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
+
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
 import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, LogIn, Brain } from 'lucide-react';
@@ -41,6 +43,8 @@ const Index = () => {
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
+  const [showMobileLivePreview, setShowMobileLivePreview] = useState(true);
+  const [isMobileLivePreviewExpanded, setIsMobileLivePreviewExpanded] = useState(false);
 
   const { settings, updateSettings, updateMargins, updateHeaderFooter, resetSettings } = useNoteSettings();
   const { isDark, toggle: toggleDark } = useDarkMode();
@@ -771,7 +775,7 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="editor" className="mt-0">
+            <TabsContent value="editor" className="mt-0 relative">
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -822,6 +826,16 @@ const Index = () => {
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
+              
+              {/* Mobile Live Preview floating above keyboard */}
+              <MobileLivePreview
+                lines={lines}
+                settings={settings}
+                realPenMode={realPenMode}
+                isVisible={showMobileLivePreview}
+                onToggle={() => setIsMobileLivePreviewExpanded(prev => !prev)}
+                isExpanded={isMobileLivePreviewExpanded}
+              />
             </TabsContent>
             
             <TabsContent value="preview" className="mt-0">
