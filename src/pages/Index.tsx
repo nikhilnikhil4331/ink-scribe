@@ -498,6 +498,23 @@ const Index = () => {
     }
   }, [firstSelectedLineId, redoLine, triggerHaptic]);
 
+  // Handler for importing text from OCR
+  const handleImportText = useCallback((importedLines: string[]) => {
+    // Convert imported lines to NoteLine objects
+    const newLines = importedLines.map((text, i) => ({
+      id: generateLineId(),
+      text,
+      color: getDefaultColorForLine(i) as LineInkColor,
+      timestamp: Date.now() + i,
+    }));
+    
+    // Replace current page lines with imported lines
+    if (newLines.length > 0) {
+      updateCurrentPageLines(newLines);
+      toast.success(`Imported ${newLines.length} lines!`);
+    }
+  }, [updateCurrentPageLines]);
+
   const controlPanelProps = {
     settings,
     updateSettings,
@@ -511,6 +528,7 @@ const Index = () => {
     onUpdateDiagram: updateDiagram,
     premiumLocked: !premium.isPremium,
     onPremiumTap: () => requirePremium('ai_style_matcher'),
+    onImportText: handleImportText,
   };
 
   // Page transition variants

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef, memo } from 'react';
+import React, { useMemo, useEffect, useState, useRef, memo, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
 import { NoteSettings } from '@/types/notes';
@@ -46,8 +46,9 @@ const AnimatedWord = memo<AnimatedWordProps>(({
       <span 
         style={{ 
           marginRight: `${wordSpacing}px`, 
-          display: 'inline-block',
-          transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
+          display: 'inline',
+          position: 'relative',
+          top: `${yOffset}px`,
         }}
       >
         {word}
@@ -67,8 +68,8 @@ const AnimatedWord = memo<AnimatedWordProps>(({
       }}
       style={{ 
         marginRight: `${wordSpacing}px`, 
-        display: 'inline-block',
-        transform: `rotate(${rotation}deg)`,
+        display: 'inline',
+        position: 'relative',
       }}
     >
       {word.split('').map((char, charIndex) => (
@@ -81,7 +82,6 @@ const AnimatedWord = memo<AnimatedWordProps>(({
             delay: delay + charIndex * 0.025, // 25ms stagger per character
             ease: 'easeOut',
           }}
-          style={{ display: 'inline' }}
         >
           {char}
         </motion.span>
@@ -92,14 +92,15 @@ const AnimatedWord = memo<AnimatedWordProps>(({
 
 AnimatedWord.displayName = 'AnimatedWord';
 
-export const HandwritingLine = memo<HandwritingLineProps>(({
+// Use forwardRef to allow refs to be passed to the component
+export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLineProps>(({
   line,
   lineIndex,
   settings,
   realPenMode,
   fontClass,
   isNewText = false,
-}) => {
+}, ref) => {
   const prevTextRef = useRef(line.text);
   const [animatingWords, setAnimatingWords] = useState<Set<number>>(new Set());
   
@@ -149,58 +150,68 @@ export const HandwritingLine = memo<HandwritingLineProps>(({
         color: `hsl(${adjustedH} ${s}% ${adjustedL}%)`,
         opacity: variation.opacity,
         fontWeight: variation.thickness > 1 ? 500 : 400,
-        transform: `translate(${jitterX}px, ${jitterY}px) rotate(${rotation}deg)`,
+        marginLeft: `${jitterX}px`,
       };
     }
 
     return {
       color: `hsl(${baseHsl})`,
-      transform: `translate(${jitterX}px, ${jitterY}px) rotate(${rotation}deg)`,
+      marginLeft: `${jitterX}px`,
     };
   }, [lineIndex, settings.baselineJitter, settings.strokeRandomness, realPenMode, h, s, l, baseHsl, variation]);
 
   const words = line.text.split(' ');
   const baselineVariation = settings.baselineJitter ? 1.5 : 0;
 
+  // Empty line - render with minimum height but as block element
   if (line.text === '') {
     return (
       <div 
+        ref={ref}
         className={fontClass}
         style={{ 
-          height: `${settings.lineSpacing}px`, 
-          display: 'flex', 
-          alignItems: 'center',
+          minHeight: `${settings.lineSpacing}px`, 
+          lineHeight: `${settings.lineSpacing}px`,
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
           ...lineStyle,
         }}
       >
-        <span className="opacity-0">.</span>
+        {/* Invisible character to maintain line height */}
+        <span className="opacity-0 select-none">&nbsp;</span>
       </div>
     );
   }
 
   return (
     <div 
+      ref={ref}
       className={fontClass}
       style={{ 
-        height: `${settings.lineSpacing}px`, 
-        display: 'flex', 
-        alignItems: 'center',
+        minHeight: `${settings.lineSpacing}px`, 
+        lineHeight: `${settings.lineSpacing}px`,
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
         ...lineStyle,
       }}
     >
       {words.map((word, wordIndex) => (
-        <AnimatedWord
-          key={`${wordIndex}-${word}`}
-          word={word}
-          wordIndex={wordIndex}
-          wordSpacing={settings.wordSpacing}
-          baselineVariation={baselineVariation}
-          delay={wordIndex * 0.03} // 30ms stagger between words
-          isNew={isNewText || animatingWords.has(wordIndex)}
-        />
+        <React.Fragment key={`${wordIndex}-${word}`}>
+          <AnimatedWord
+            word={word}
+            wordIndex={wordIndex}
+            wordSpacing={0}
+            baselineVariation={baselineVariation}
+            delay={wordIndex * 0.03}
+            isNew={isNewText || animatingWords.has(wordIndex)}
+          />
+          {wordIndex < words.length - 1 && (
+            <span style={{ marginRight: `${settings.wordSpacing}px` }}> </span>
+          )}
+        </React.Fragment>
       ))}
     </div>
   );
-});
+}));
 
 HandwritingLine.displayName = 'HandwritingLine';
