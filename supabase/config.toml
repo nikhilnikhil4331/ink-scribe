@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.admin-auth]
 verify_jwt = false
+
+[functions.extract-handwriting-text]
+verify_jwt = false

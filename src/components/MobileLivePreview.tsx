@@ -44,16 +44,23 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
     const [h, s, l] = baseHsl.split(' ').map(v => parseFloat(v));
     const variation = generateRealPenVariation(lineIndex, realPenMode);
 
+    const baseStyle: React.CSSProperties = {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+      lineHeight: 1.6,
+    };
+
     if (realPenMode) {
       const adjustedH = h + variation.hueShift;
       const adjustedL = Math.max(10, Math.min(50, l + (variation.thickness - 1) * 20));
       return {
+        ...baseStyle,
         color: `hsl(${adjustedH} ${s}% ${adjustedL}%)`,
         opacity: variation.opacity,
       };
     }
 
-    return { color: `hsl(${baseHsl})` };
+    return { ...baseStyle, color: `hsl(${baseHsl})` };
   };
 
   if (!isVisible) return null;
@@ -103,12 +110,12 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className={cn(
             "overflow-y-auto overflow-x-hidden px-4 py-3",
-            "bg-white dark:bg-paper",
-            // Paper lines effect
-            "bg-[repeating-linear-gradient(transparent,transparent_23px,hsl(var(--line-color))_23px,hsl(var(--line-color))_24px)]"
+            "bg-white dark:bg-paper"
           )}
           style={{
-            backgroundPosition: '0 4px',
+            // Flow-based layout - no overlapping
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <AnimatePresence mode="popLayout">
@@ -117,20 +124,20 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
               return (
                 <motion.div
                   key={line.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   className={cn(
                     fontClass,
-                    "text-base leading-[24px] min-h-[24px]",
+                    "text-base min-h-[24px]",
                     "transition-colors duration-150"
                   )}
                   style={getLineStyle(line, globalIndex)}
                 >
                   {line.text || (
                     <span className="text-muted-foreground/30 italic text-sm">
-                      {globalIndex === 0 ? "Start typing..." : ""}
+                      {globalIndex === 0 ? "Start typing..." : "\u00A0"}
                     </span>
                   )}
                 </motion.div>

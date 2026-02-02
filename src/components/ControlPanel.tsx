@@ -10,6 +10,7 @@ import { FontPreviewPanel } from './FontPreviewPanel';
 import { TableConfigPanel } from './TableConfigPanel';
 import { DiagramImport } from './DiagramImport';
 import { HandwritingAnalyzer } from './HandwritingAnalyzer';
+import { HandwritingTextImporter } from './HandwritingTextImporter';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Accordion,
@@ -31,7 +32,8 @@ import {
   Settings,
   Wand2,
   FileBox,
-  Lock
+  Lock,
+  Upload
 } from 'lucide-react';
 
 // Map ink colors to CSS color values for the swatches
@@ -71,6 +73,7 @@ interface ControlPanelProps {
   onUpdateDiagram: (id: string, updates: Partial<DiagramImage>) => void;
   premiumLocked?: boolean;
   onPremiumTap?: () => void;
+  onImportText?: (lines: string[]) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -86,6 +89,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onUpdateDiagram,
   premiumLocked = false,
   onPremiumTap,
+  onImportText,
 }) => {
   return (
     <ScrollArea className="h-[calc(100vh-10rem)]">
@@ -153,6 +157,53 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          {/* Handwriting Text Importer */}
+          {onImportText && (
+            <AccordionItem value="text-importer" className="border border-border/50 rounded-xl px-4 overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+                    <Upload className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <span className="font-medium text-sm">Import Handwriting</span>
+                    <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-primary/20 text-primary rounded-full">OCR</span>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Upload a photo of handwritten notes and AI will extract the text.
+                </p>
+                <div className="relative">
+                  {premiumLocked && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center">
+                      <div className="rounded-2xl border border-border/60 bg-background/80 backdrop-blur p-4 w-full">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Lock className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground">Premium feature</p>
+                            <p className="text-xs text-muted-foreground">Tap to unlock Handwriting Import</p>
+                          </div>
+                        </div>
+                        <Button onClick={onPremiumTap} className="w-full mt-3 rounded-xl" size="sm">
+                          Unlock Premium
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={premiumLocked ? 'pointer-events-none opacity-40' : ''}>
+                    <HandwritingTextImporter onImportText={onImportText} />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
           {/* Typography */}
           <AccordionItem value="typography" className="border border-border/50 rounded-xl px-4 overflow-hidden bg-secondary/20">
             <AccordionTrigger className="py-3 hover:no-underline">
