@@ -113,8 +113,14 @@ export const HandwritingTextImporter: React.FC<HandwritingTextImporterProps> = (
 
   const handleImport = () => {
     if (!ocrResult?.lines.length) return;
-    
-    onImportText(ocrResult.lines);
+
+    // CRITICAL: Ensure we import as real editor line blocks.
+    // Some OCR pipelines return "lines" that still contain embedded newlines (paragraph chunks).
+    const flattened = ocrResult.lines
+      .flatMap((chunk) => String(chunk ?? '').split(/\r?\n/))
+      .map((l) => l.replace(/[\t ]+$/g, ''));
+
+    onImportText(flattened);
     toast.success('Text imported to editor!');
     clearImage();
   };
