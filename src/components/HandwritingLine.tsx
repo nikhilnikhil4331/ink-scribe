@@ -160,18 +160,32 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     };
   }, [lineIndex, settings.baselineJitter, settings.strokeRandomness, realPenMode, h, s, l, baseHsl, variation]);
 
-  const words = line.text.split(' ');
+  // CRITICAL: Render embedded newlines as real stacked DOM blocks.
+  // Even though the editor is line-based, OCR/paste pipelines can accidentally
+  // insert "\n" inside a single line. If we render that inside a fixed-height
+  // line container, it visually overlaps and export captures the same overlap.
+  const visualLines = useMemo(() => {
+    // Preserve empty lines for spacing.
+    return String(line.text ?? '').split(/\r?\n/);
+  }, [line.text]);
+
   const baselineVariation = settings.baselineJitter ? 1.5 : 0;
 
-  // Common styles for flow-based layout - CRITICAL: display: block ensures each line is a separate block
-  const flowLayoutStyle: React.CSSProperties = {
+  // Outer wrapper: flow-based layout, never absolute/layered.
+  const wrapperStyle: React.CSSProperties = {
     display: 'block',
-    minHeight: `${settings.lineSpacing}px`, 
-    lineHeight: `${settings.lineSpacing}px`,
     whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
     wordBreak: 'break-word',
     ...lineStyle,
+  };
+
+  // Each visual line is a real block that participates in normal document flow.
+  const visualLineStyle: React.CSSProperties = {
+    display: 'block',
+    minHeight: `${settings.lineSpacing}px`,
+    lineHeight: 1.6,
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
   };
 
   // Empty line - render with minimum height but as block element
@@ -180,7 +194,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
       <div 
         ref={ref}
         className={fontClass}
-        style={flowLayoutStyle}
+        style={{ ...wrapperStyle, ...visualLineStyle }}
       >
         {/* Invisible character to maintain line height */}
         <span className="opacity-0 select-none">&nbsp;</span>
@@ -192,23 +206,38 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     <div 
       ref={ref}
       className={fontClass}
-      style={flowLayoutStyle}
+      style={wrapperStyle}
     >
-      {words.map((word, wordIndex) => (
-        <React.Fragment key={`${wordIndex}-${word}`}>
-          <AnimatedWord
-            word={word}
-            wordIndex={wordIndex}
-            wordSpacing={0}
-            baselineVariation={baselineVariation}
-            delay={wordIndex * 0.03}
-            isNew={isNewText || animatingWords.has(wordIndex)}
-          />
-          {wordIndex < words.length - 1 && (
-            <span style={{ marginRight: `${settings.wordSpacing}px` }}> </span>
-          )}
-        </React.Fragment>
-      ))}
+      {visualLines.map((textLine, vIndex) => {
+        // Keep exact spacing intent: treat repeated spaces as separators.
+        // We still animate at word granularity for performance.
+        const words = textLine.split(' ');
+        const baseDelay = vIndex * 0.02; // small extra stagger per visual line
+
+        return (
+          <div key={`${line.id}-vline-${vIndex}`} style={visualLineStyle}>
+            {textLine === '' ? (
+              <span className="opacity-0 select-none">&nbsp;</span>
+            ) : (
+              words.map((word, wordIndex) => (
+                <React.Fragment key={`${vIndex}-${wordIndex}-${word}`}>
+                  <AnimatedWord
+                    word={word}
+                    wordIndex={wordIndex}
+                    wordSpacing={0}
+                    baselineVariation={baselineVariation}
+                    delay={baseDelay + wordIndex * 0.03}
+                    isNew={isNewText || animatingWords.has(wordIndex)}
+                  />
+                  {wordIndex < words.length - 1 && (
+                    <span style={{ marginRight: `${settings.wordSpacing}px` }}> </span>
+                  )}
+                </React.Fragment>
+              ))
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }));

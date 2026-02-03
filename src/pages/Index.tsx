@@ -500,8 +500,18 @@ const Index = () => {
 
   // Handler for importing text from OCR
   const handleImportText = useCallback((importedLines: string[]) => {
+    // CRITICAL: Never allow embedded newlines inside a single NoteLine.
+    // If a chunk contains "\n" (common from OCR paragraph preservation),
+    // split it into real editor line blocks so preview/export stays flow-based.
+    const flattened = importedLines
+      .flatMap((chunk) => String(chunk ?? '').split(/\r?\n/))
+      // Keep blank lines (paragraph spacing), but normalize trailing whitespace.
+      .map((l) => l.replace(/[\t ]+$/g, ''));
+
+    const safeLines = flattened.length > 0 ? flattened : [''];
+
     // Convert imported lines to NoteLine objects
-    const newLines = importedLines.map((text, i) => ({
+    const newLines = safeLines.map((text, i) => ({
       id: generateLineId(),
       text,
       color: getDefaultColorForLine(i) as LineInkColor,

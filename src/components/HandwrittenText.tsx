@@ -57,8 +57,10 @@ const HandwrittenLine = memo(({
       style={{ 
         // CRITICAL: Block element with proper line height - no absolute positioning
         display: 'block',
-        height: `${settings.lineSpacing}px`, 
-        lineHeight: `${settings.lineSpacing}px`,
+        // IMPORTANT: Never use fixed height here. Fixed height + wrapping/newlines
+        // causes subsequent lines to visually overlap (and export captures the same overlap).
+        minHeight: `${settings.lineSpacing}px`,
+        lineHeight: 1.6,
         whiteSpace: 'pre-wrap',
         wordWrap: 'break-word',
         wordBreak: 'break-word',
