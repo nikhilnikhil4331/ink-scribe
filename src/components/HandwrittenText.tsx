@@ -53,7 +53,18 @@ const HandwrittenLine = memo(({
   const lineJitter = generateJitter(settings.baselineJitter, 1);
 
   return (
-    <div style={{ height: `${settings.lineSpacing}px`, display: 'flex', alignItems: 'center', transform: `translateY(${lineJitter}px)` }}>
+    <div 
+      style={{ 
+        // CRITICAL: Block element with proper line height - no absolute positioning
+        display: 'block',
+        height: `${settings.lineSpacing}px`, 
+        lineHeight: `${settings.lineSpacing}px`,
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+        wordBreak: 'break-word',
+        transform: `translateY(${lineJitter}px)`,
+      }}
+    >
       {words.map((word, wordIndex) => (
         <HandwrittenWord key={`${lineIndex}-${wordIndex}`} word={word} settings={settings} index={wordIndex} />
       ))}
@@ -176,7 +187,16 @@ export const HandwrittenText: React.FC<HandwrittenTextProps> = ({
         </div>
       )}
 
-      <div className={`${fontClass} ${inkClass} leading-relaxed`} style={{ fontSize: `${settings.fontSize}px` }}>
+      {/* CRITICAL: Lines container with flex-direction: column for proper flow */}
+      <div 
+        className={`${fontClass} ${inkClass} leading-relaxed`} 
+        style={{ 
+          fontSize: `${settings.fontSize}px`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0,
+        }}
+      >
         {lines.map((line, index) => (
           <HandwrittenLine key={index} line={line} settings={settings} lineIndex={index} />
         ))}
