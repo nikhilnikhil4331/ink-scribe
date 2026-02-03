@@ -100,7 +100,7 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
           )}
         </motion.button>
 
-        {/* Preview Content */}
+        {/* Preview Content - CRITICAL: Flow-based layout with flex column, no absolute positioning */}
         <motion.div
           ref={containerRef}
           initial={false}
@@ -113,9 +113,10 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
             "bg-white dark:bg-paper"
           )}
           style={{
-            // Flow-based layout - no overlapping
+            // CRITICAL: Flow-based layout - each line is a block, no overlapping
             display: 'flex',
             flexDirection: 'column',
+            gap: 0,
           }}
         >
           <AnimatePresence mode="popLayout">
@@ -130,10 +131,19 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   className={cn(
                     fontClass,
-                    "text-base min-h-[24px]",
+                    "text-base",
                     "transition-colors duration-150"
                   )}
-                  style={getLineStyle(line, globalIndex)}
+                  style={{
+                    ...getLineStyle(line, globalIndex),
+                    // CRITICAL: Block-level elements with proper line-height
+                    display: 'block',
+                    minHeight: '24px',
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    wordBreak: 'break-word',
+                  }}
                 >
                   {line.text || (
                     <span className="text-muted-foreground/30 italic text-sm">

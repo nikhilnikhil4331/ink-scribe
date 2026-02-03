@@ -156,12 +156,15 @@ const NotebookPage = memo<{
           </div>
         )}
 
-        {/* Lines content with handwriting animation */}
+        {/* Lines content with handwriting animation - CRITICAL: Flow-based layout with flex-direction: column */}
         <div 
           className="leading-relaxed" 
           style={{ 
             fontSize: `${settings.fontSize}px`, 
             marginLeft: showCornellLayout ? '26%' : 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0, // Lines manage their own spacing via lineHeight
           }}
         >
           {pageLines.map((line, lineIndex) => {

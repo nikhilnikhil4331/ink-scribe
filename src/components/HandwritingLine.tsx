@@ -163,19 +163,24 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
   const words = line.text.split(' ');
   const baselineVariation = settings.baselineJitter ? 1.5 : 0;
 
+  // Common styles for flow-based layout - CRITICAL: display: block ensures each line is a separate block
+  const flowLayoutStyle: React.CSSProperties = {
+    display: 'block',
+    minHeight: `${settings.lineSpacing}px`, 
+    lineHeight: `${settings.lineSpacing}px`,
+    whiteSpace: 'pre-wrap',
+    wordWrap: 'break-word',
+    wordBreak: 'break-word',
+    ...lineStyle,
+  };
+
   // Empty line - render with minimum height but as block element
   if (line.text === '') {
     return (
       <div 
         ref={ref}
         className={fontClass}
-        style={{ 
-          minHeight: `${settings.lineSpacing}px`, 
-          lineHeight: `${settings.lineSpacing}px`,
-          whiteSpace: 'pre-wrap',
-          wordWrap: 'break-word',
-          ...lineStyle,
-        }}
+        style={flowLayoutStyle}
       >
         {/* Invisible character to maintain line height */}
         <span className="opacity-0 select-none">&nbsp;</span>
@@ -187,13 +192,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     <div 
       ref={ref}
       className={fontClass}
-      style={{ 
-        minHeight: `${settings.lineSpacing}px`, 
-        lineHeight: `${settings.lineSpacing}px`,
-        whiteSpace: 'pre-wrap',
-        wordWrap: 'break-word',
-        ...lineStyle,
-      }}
+      style={flowLayoutStyle}
     >
       {words.map((word, wordIndex) => (
         <React.Fragment key={`${wordIndex}-${word}`}>
