@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PenTool, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { useNavigate } from 'react-router-dom';
-
-export const AuthPage: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
-  const { playClick, playSuccess } = useSoundEffects();
-  const navigate = useNavigate();
-
+ import React, { useState } from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { PenTool, Mail, Lock, User, ArrowRight, Sparkles, Apple } from 'lucide-react';
+ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { toast } from 'sonner';
+ import { useSoundEffects } from '@/hooks/useSoundEffects';
+ import { useNavigate } from 'react-router-dom';
+ import { lovable } from '@/integrations/lovable';
+ 
+ export const AuthPage: React.FC = () => {
+   const [isLogin, setIsLogin] = useState(true);
+   const [email, setEmail] = useState('');
+   const [password, setPassword] = useState('');
+   const [fullName, setFullName] = useState('');
+   const [loading, setLoading] = useState(false);
+   const [oauthLoading, setOauthLoading] = useState(false);
+   const { signIn, signUp } = useAuth();
+   const { playClick, playSuccess } = useSoundEffects();
+   const navigate = useNavigate();
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     playClick();
@@ -44,13 +46,30 @@ export const AuthPage: React.FC = () => {
           navigate('/account');
         }
       }
-    } catch (error) {
-      toast.error('Something went wrong');
-    } finally {
-      setLoading(false);
+ } catch {
+       toast.error('Something went wrong');
+     } finally {
+       setLoading(false);
     }
   };
 
+   const handleAppleSignIn = async () => {
+     playClick();
+     setOauthLoading(true);
+     try {
+       const { error } = await lovable.auth.signInWithOAuth("apple", {
+         redirect_uri: window.location.origin,
+       });
+       if (error) {
+         toast.error(error.message || 'Failed to sign in with Apple');
+       }
+     } catch {
+       toast.error('Something went wrong with Apple sign-in');
+     } finally {
+       setOauthLoading(false);
+     }
+   };
+ 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Animated background */}
@@ -193,8 +212,41 @@ export const AuthPage: React.FC = () => {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
-            </Button>
-          </form>
+ </Button>
+           </form>
+ 
+           {/* Divider */}
+           <div className="relative my-6">
+             <div className="absolute inset-0 flex items-center">
+               <div className="w-full border-t border-border" />
+             </div>
+             <div className="relative flex justify-center text-xs uppercase">
+               <span className="bg-card px-2 text-muted-foreground">or continue with</span>
+             </div>
+           </div>
+ 
+           {/* Apple Sign In */}
+           <Button
+             type="button"
+             variant="outline"
+             disabled={loading || oauthLoading}
+             onClick={handleAppleSignIn}
+             className="w-full h-12 rounded-xl bg-black hover:bg-black/90 text-white border-0 font-medium transition-all duration-300 hover:shadow-lg"
+           >
+             {oauthLoading ? (
+               <motion.div
+                 animate={{ rotate: 360 }}
+                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+               >
+                 <Sparkles className="w-5 h-5" />
+               </motion.div>
+             ) : (
+               <>
+                 <Apple className="w-5 h-5 mr-2" />
+                 Continue with Apple
+               </>
+             )}
+           </Button>
 
           {/* Features preview */}
           <div className="mt-8 pt-6 border-t border-border">
