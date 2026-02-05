@@ -269,11 +269,29 @@ const AdminPanelNikhil: React.FC = () => {
     const expiresAt = sessionStorage.getItem('admin_expires');
     
     if (adminToken && expiresAt && Date.now() < parseInt(expiresAt)) {
-      console.log('Admin access via hardcoded credentials');
-      setIsAdmin(true);
-      setLoading(false);
-      await loadAllData();
-      return;
+      // SECURITY: Validate token server-side instead of trusting client storage
+      try {
+        const { data, error } = await supabase.functions.invoke('admin-auth', {
+          body: { action: 'validate', token: adminToken }
+        });
+
+        if (error || !data?.valid) {
+          console.log('Admin token validation failed, clearing session');
+          sessionStorage.removeItem('admin_token');
+          sessionStorage.removeItem('admin_expires');
+          // Continue to database role check
+        } else {
+          console.log('Admin access validated server-side');
+          setIsAdmin(true);
+          setLoading(false);
+          await loadAllData();
+          return;
+        }
+      } catch (validationError) {
+        console.error('Token validation error:', validationError);
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_expires');
+      }
     }
 
     // Fall back to database role check

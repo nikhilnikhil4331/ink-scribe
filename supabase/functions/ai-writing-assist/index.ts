@@ -6,6 +6,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
+const MAX_REQUESTS_PER_WINDOW = 50; // 50 requests per hour for writing assist
+
+async function checkRateLimit(
+  supabase: any,
+  userId: string,
+  endpoint: string
+): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW * 1000);
+  
+  const { count, error } = await supabase
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('endpoint', endpoint)
+    .gte('window_start', windowStart.toISOString());
+
+  if (error) {
+    console.error('Rate limit check error:', error);
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW, resetAt: new Date(now.getTime() + RATE_LIMIT_WINDOW * 1000) };
+  }
+
+  const currentCount = count || 0;
+  const remaining = Math.max(0, MAX_REQUESTS_PER_WINDOW - currentCount - 1);
+  const resetAt = new Date(now.getTime() + RATE_LIMIT_WINDOW * 1000);
+  
+  if (currentCount >= MAX_REQUESTS_PER_WINDOW) {
+    return { allowed: false, remaining: 0, resetAt };
+  }
+
+  await supabase.from('rate_limits').insert({
+    user_id: userId,
+    endpoint,
+    window_start: now.toISOString(),
+  });
+
+  return { allowed: true, remaining, resetAt };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -26,6 +67,7 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
     // Create client with the user's token for authentication
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -45,6 +87,29 @@ serve(async (req) => {
 
     const userId = userData.user.id;
     console.log(`AI writing assist request from user: ${userId}`);
+
+    // Check rate limit using service role client
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { allowed, remaining, resetAt } = await checkRateLimit(adminClient, userId, 'ai-writing-assist');
+    
+    if (!allowed) {
+      console.log(`Rate limit exceeded for user: ${userId}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Rate limit exceeded. Please try again later.",
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000)
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetAt.toISOString()
+          } 
+        }
+      );
+    }
 
     const { mode, text, systemPrompt } = await req.json();
 
@@ -101,7 +166,12 @@ serve(async (req) => {
 
     // Return the streaming response
     return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "text/event-stream",
+        "X-RateLimit-Remaining": String(remaining),
+        "X-RateLimit-Reset": resetAt.toISOString()
+      },
     });
   } catch (error) {
     console.error("AI writing assist error:", error);
