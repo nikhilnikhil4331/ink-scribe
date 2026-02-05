@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState, forwardRef } from 'react';
+ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { NoteLine, LineInkColor, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -92,13 +92,41 @@ const EditableLine: React.FC<EditableLineProps> = ({
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    const pastedText = e.clipboardData.getData('text');
-    if (pastedText.includes('\n')) {
-      e.preventDefault();
-      onPaste(pastedText);
-    }
-  };
+ // CRITICAL: Handle paste for both mobile and desktop
+   // Must intercept ALL multi-line pastes and create separate NoteLines
+   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+     const pastedText = e.clipboardData.getData('text');
+     // Check for any newline character (CRLF, LF, or CR)
+     if (/\r?\n|\r/.test(pastedText)) {
+       e.preventDefault();
+       e.stopPropagation();
+       // Delegate to parent handler which will split into multiple lines
+       onPaste(pastedText);
+     }
+   };
+ 
+   // MOBILE-SPECIFIC: Handle paste via input event for mobile browsers
+   // Some mobile browsers don't fire ClipboardEvent properly
+   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+     const target = e.target as HTMLInputElement;
+     const value = target.value;
+     
+     // Detect if a paste happened that includes newlines (mobile fallback)
+     if (/\r?\n|\r/.test(value)) {
+       e.preventDefault();
+       // Extract just the pasted content by comparing to original line.text
+       const originalText = line.text;
+       const pastedContent = value.replace(originalText, '');
+       
+       if (/\r?\n|\r/.test(pastedContent)) {
+         onPaste(value); // Pass entire new value to be split
+         return;
+       }
+     }
+     
+     // Normal text input (no newlines)
+     onTextChange(value);
+   };
 
   const handleClick = (e: React.MouseEvent) => {
     onSelect(e.ctrlKey || e.metaKey);
@@ -141,18 +169,22 @@ const EditableLine: React.FC<EditableLineProps> = ({
       />
       
       {/* Editable input - notebook feel */}
-      <input
-        ref={inputRef}
-        type="text"
-        value={line.text}
-        onChange={(e) => onTextChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        placeholder={lineIndex === 0 ? "Start writing here..." : ""}
-        autoComplete="off"
-        autoCorrect="on"
-        spellCheck="true"
-        className={cn(
+ {/* CRITICAL: Mobile-optimized input with proper paste handling */}
+       <input
+         ref={inputRef}
+         type="text"
+         value={line.text}
+         onChange={handleInput}
+         onKeyDown={handleKeyDown}
+         onPaste={handlePaste}
+         placeholder={lineIndex === 0 ? "Start writing here..." : ""}
+         autoComplete="off"
+         autoCorrect="on"
+         spellCheck="true"
+         // Mobile-specific attributes for better paste handling
+         inputMode="text"
+         enterKeyHint="next"
+         className={cn(
           "flex-1 bg-transparent border-none outline-none font-handwriting-1",
           "text-lg sm:text-xl leading-relaxed tracking-wide",
           "placeholder:text-muted-foreground/30 placeholder:italic",
