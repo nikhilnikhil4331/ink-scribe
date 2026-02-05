@@ -64,3 +64,35 @@ export const generateRealPenVariation = (lineIndex: number, realPenMode: boolean
     hueShift: (random3 - 0.5) * 10, // -5 to +5 degrees
   };
 };
+
+// Types for inline content (images/diagrams)
+export interface InlineImage {
+  id: string;
+  type: 'image';
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  position: { x: number; y: number };
+  rotation: number;
+}
+
+export interface InlineDiagram {
+  id: string;
+  type: 'diagram';
+  shape: 'rectangle' | 'circle' | 'arrow' | 'line' | 'freedraw';
+  points?: { x: number; y: number }[];
+  width: number;
+  height: number;
+  position: { x: number; y: number };
+  rotation: number;
+  strokeColor: string;
+  fillColor?: string;
+  strokeWidth: number;
+}
+
+export type InlineContent = InlineImage | InlineDiagram;
+
+export const generateContentId = (): string => {
+  return `content-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+};
