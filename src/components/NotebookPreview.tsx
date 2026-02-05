@@ -1,9 +1,11 @@
 import React, { useMemo, forwardRef, useImperativeHandle, useRef, useState, useEffect, memo } from 'react';
-import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
+import { NoteLine } from '@/types/noteLine';
 import { NoteSettings, FONT_OPTIONS, PAGE_SIZE_OPTIONS } from '@/types/notes';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DEFAULT_RESPONSIVE_MARGINS, calculateLinesPerPage } from '@/hooks/useResponsiveMargins';
 import { HandwritingLine } from './HandwritingLine';
+import { InlineContent } from '@/types/noteLine';
+import { InlineContentRenderer } from './InlineContentRenderer';
 
 interface NotebookPreviewProps {
   lines: NoteLine[];
@@ -12,6 +14,9 @@ interface NotebookPreviewProps {
   pageNumber?: number;
   totalPages?: number;
   forExport?: boolean; // When true, renders at full size without scaling
+  inlineContent?: InlineContent[];
+  onUpdateContent?: (id: string, updates: Partial<InlineContent>) => void;
+  onDeleteContent?: (id: string) => void;
 }
 
 export interface NotebookPreviewHandle {
@@ -206,7 +211,7 @@ const NotebookPage = memo<{
 NotebookPage.displayName = 'NotebookPage';
 
 export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreviewProps>(
-  ({ lines, settings, realPenMode, forExport = false }, ref) => {
+  ({ lines, settings, realPenMode, forExport = false, inlineContent, onUpdateContent, onDeleteContent }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
     const isMobile = useIsMobile();
@@ -392,6 +397,21 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
               forExport={forExport}
             />
           ))}
+
+          {/* Inline content (images/diagrams) - shown below pages */}
+          {inlineContent && inlineContent.length > 0 && (
+            <div className="w-full max-w-[595px] p-4 flex flex-wrap gap-3 justify-center bg-muted/30 rounded-xl border border-border/50">
+              {inlineContent.map((content) => (
+                <InlineContentRenderer
+                  key={content.id}
+                  content={content}
+                  onUpdate={onUpdateContent}
+                  onDelete={onDeleteContent}
+                  editable={!forExport}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Empty state */}
           {!forExport && (lines.length === 0 || (lines.length === 1 && lines[0].text === '')) && (

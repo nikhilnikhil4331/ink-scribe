@@ -21,10 +21,11 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
 import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { PenLine, Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, LogIn, Brain } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, LogIn, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
+import { InlineDiagram } from '@/types/noteLine';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
@@ -32,6 +33,8 @@ import { AIWritingAssistant } from '@/components/AIWritingAssistant';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
+import { DiagramToolbar } from '@/components/DiagramToolbar';
+import { useInlineContent } from '@/hooks/useInlineContent';
 const Index = () => {
   const navigate = useNavigate();
   const {
@@ -66,6 +69,15 @@ const Index = () => {
     tableData,
     updateTableData
   } = useTableData(settings.table.rows, settings.table.columns);
+  
+  // Inline content (images/diagrams)
+  const {
+    content: inlineContent,
+    addImage,
+    addDiagram: addInlineDiagram,
+    updateContent,
+    removeContent,
+  } = useInlineContent();
   const {
     mood,
     changeMood,
@@ -446,6 +458,32 @@ const Index = () => {
       triggerHaptic('light');
     }
   }, [firstSelectedLineId, redoLine, triggerHaptic]);
+  // Handle image upload
+  const handleImageUpload = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          await addImage(file);
+          toast.success('Image added!');
+          triggerHaptic('success');
+        } catch (error) {
+          toast.error('Failed to add image');
+        }
+      }
+    };
+    input.click();
+  }, [addImage, triggerHaptic]);
+
+  // Handle diagram add
+  const handleAddInlineDiagram = useCallback((diagram: InlineDiagram) => {
+    addInlineDiagram(diagram);
+    toast.success('Shape added!');
+    triggerHaptic('light');
+  }, [addInlineDiagram, triggerHaptic]);
 
   // Handler for importing text from OCR
   const handleImportText = useCallback((importedLines: string[]) => {
@@ -715,6 +753,15 @@ const Index = () => {
                     <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
                   </div>
                 </div>
+                
+                {/* Content toolbar */}
+                <div className="mb-3">
+                  <DiagramToolbar 
+                    onAddDiagram={handleAddInlineDiagram} 
+                    onAddImage={handleImageUpload}
+                  />
+                </div>
+                
                 <AnimatePresence mode="wait" custom={pageDirection}>
                   <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{
                   type: 'spring',
@@ -762,7 +809,17 @@ const Index = () => {
                     handleNextPage();
                   }
                 }}>
-                    <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} />
+                    <NotebookPreview 
+                      ref={previewRef} 
+                      lines={lines} 
+                      settings={settings} 
+                      realPenMode={realPenMode} 
+                      pageNumber={currentPageIndex + 1} 
+                      totalPages={totalPages}
+                      inlineContent={inlineContent}
+                      onUpdateContent={updateContent}
+                      onDeleteContent={removeContent}
+                    />
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -800,9 +857,29 @@ const Index = () => {
                 stiffness: 300,
                 damping: 30
               }}>
-                  <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                  <LineBasedEditor 
+                    lines={lines} 
+                    selectedLines={selectedLines} 
+                    currentColor={currentColor} 
+                    realPenMode={realPenMode} 
+                    onLineTextChange={updateLineText} 
+                    onLineColorChange={updateLineColor} 
+                    onSelectLine={selectLine} 
+                    onAddLine={addLine} 
+                    onRemoveLine={removeLine} 
+                    onPaste={handlePaste} 
+                    onMergeLinesUp={mergeLinesUp} 
+                  />
                 </motion.div>
               </AnimatePresence>
+              
+              {/* Content toolbar for desktop */}
+              <div className="mt-4">
+                <DiagramToolbar 
+                  onAddDiagram={handleAddInlineDiagram} 
+                  onAddImage={handleImageUpload}
+                />
+              </div>
             </div>
           </motion.div>
 
@@ -832,7 +909,17 @@ const Index = () => {
                   handleNextPage();
                 }
               }}>
-                  <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} />
+                  <NotebookPreview 
+                    ref={previewRef} 
+                    lines={lines} 
+                    settings={settings} 
+                    realPenMode={realPenMode} 
+                    pageNumber={currentPageIndex + 1} 
+                    totalPages={totalPages}
+                    inlineContent={inlineContent}
+                    onUpdateContent={updateContent}
+                    onDeleteContent={removeContent}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>
