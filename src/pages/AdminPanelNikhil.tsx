@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Shield, LogOut, RefreshCw, Lock, Menu, X,
   LayoutDashboard, Users, Activity, Bug, Settings,
-  BarChart3, TrendingUp, Download
+  BarChart3, Download, Radio
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,6 +81,7 @@ const AdminPanelNikhil: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   // Data states
   const [users, setUsers] = useState<UserData[]>([]);
@@ -143,10 +144,124 @@ const AdminPanelNikhil: React.FC = () => {
     avgSessionDuration: '0m',
   });
 
-  // Check admin status - supports both database roles AND hardcoded session
+  // Check admin status - supports both database roles AND session token
+  // NOTE: sessionStorage check is for demo purposes - production should use only database roles
   useEffect(() => {
     checkAdminStatus();
   }, [user]);
+
+  // Set up realtime subscriptions for live dashboard updates
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    console.log('Setting up realtime subscriptions for admin panel...');
+    
+    // Subscribe to activity_logs for live activity feed
+    const activityChannel = supabase
+      .channel('admin-activity-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activity_logs',
+        },
+        (payload) => {
+          console.log('New activity:', payload.new);
+          // Prepend new activity to the list
+          setActivities(prev => {
+            const newActivity = {
+              ...payload.new as ActivityLog,
+              details: (payload.new as ActivityLog).details || {},
+              display_name: 'New User',
+            };
+            return [newActivity, ...prev.slice(0, 199)];
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('Activity channel status:', status);
+        setRealtimeConnected(status === 'SUBSCRIBED');
+      });
+
+    // Subscribe to error_logs for live error monitoring
+    const errorChannel = supabase
+      .channel('admin-errors-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'error_logs',
+        },
+        (payload) => {
+          console.log('New error:', payload.new);
+          setErrors(prev => [payload.new as ErrorLog, ...prev.slice(0, 49)]);
+        }
+      )
+      .subscribe();
+
+    // Subscribe to profiles for new user signups
+    const profilesChannel = supabase
+      .channel('admin-profiles-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'profiles',
+        },
+        (payload) => {
+          console.log('New profile:', payload.new);
+          const profile = payload.new as { user_id: string; display_name: string | null; created_at: string };
+          setUsers(prev => [{
+            id: profile.user_id,
+            display_name: profile.display_name,
+            created_at: profile.created_at,
+            is_premium: false,
+          }, ...prev]);
+          // Update KPI
+          setKpiData(prev => ({ ...prev, totalUsers: prev.totalUsers + 1 }));
+        }
+      )
+      .subscribe();
+
+    // Subscribe to user_subscriptions for premium updates
+    const subscriptionsChannel = supabase
+      .channel('admin-subscriptions-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_subscriptions',
+        },
+        (payload) => {
+          console.log('Subscription update:', payload);
+          // Reload KPIs when subscriptions change
+          loadKPIs();
+        }
+      )
+      .subscribe();
+
+    // Auto-refresh every 60 seconds for data that doesn't have realtime
+    const autoRefreshInterval = setInterval(() => {
+      console.log('Auto-refreshing admin dashboard...');
+      loadKPIs();
+      loadChartData();
+      loadFunnelData();
+      loadHeatmapData();
+    }, 60000);
+
+    return () => {
+      console.log('Cleaning up realtime subscriptions...');
+      supabase.removeChannel(activityChannel);
+      supabase.removeChannel(errorChannel);
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(subscriptionsChannel);
+      clearInterval(autoRefreshInterval);
+    };
+  }, [isAdmin]);
 
   const checkAdminStatus = async () => {
     // First check for hardcoded admin session
@@ -689,8 +804,16 @@ const AdminPanelNikhil: React.FC = () => {
               <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-bold text-base sm:text-lg">Analytics Control Center</h1>
-              <p className="text-xs text-muted-foreground">Nikhil Notes Admin</p>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-base sm:text-lg">Analytics Control Center</h1>
+                {realtimeConnected && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                    <Radio className="w-3 h-3 animate-pulse" />
+                    Live
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">NikNote Admin</p>
             </div>
           </div>
 

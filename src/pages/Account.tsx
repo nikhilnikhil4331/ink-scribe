@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-  User, Brain, FileText, Download, Calendar, Clock, 
+  User, Brain, FileText, Download, Calendar,
   ArrowLeft, Loader2, FileOutput, ChevronRight, Sparkles,
   LogOut, Crown, Settings, Monitor, Smartphone, Tablet,
   Mail, History, PenTool, Image, FileImage, RefreshCw
@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
 
@@ -77,7 +77,9 @@ export default function AccountPage() {
     totalExports: 0,
     totalUploads: 0,
     totalPages: 0,
+    totalNotebooks: 0,
     lastActive: null as string | null,
+    memberSince: null as string | null,
   });
 
   useEffect(() => {
@@ -97,16 +99,23 @@ export default function AccountPage() {
     setLoading(true);
     setError(null);
     try {
-      // Fetch user's activity logs
-      const { data: activityData, error } = await supabase
+      // Fetch user's activity logs and notebook count in parallel
+      const [activityResult, notebooksResult] = await Promise.all([
+        supabase
         .from('activity_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(100);
+          .limit(100),
+        supabase
+          .from('notebooks')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+      ]);
 
-      if (error) throw error;
+      if (activityResult.error) throw activityResult.error;
 
+      const activityData = activityResult.data;
       const mappedActivities = (activityData || []).map(a => ({
         ...a,
         details: (typeof a.details === 'object' && a.details !== null) ? a.details as Record<string, unknown> : {},
@@ -125,7 +134,9 @@ export default function AccountPage() {
         totalExports: exports,
         totalUploads: uploads,
         totalPages: pages,
+        totalNotebooks: notebooksResult.count || 0,
         lastActive: lastActivity,
+        memberSince: user.created_at || null,
       });
     } catch (err) {
       console.error('Failed to fetch account data:', err);
@@ -214,6 +225,12 @@ export default function AccountPage() {
                     <Mail className="w-4 h-4" />
                     <span className="text-sm">{user?.email}</span>
                   </div>
+                  {stats.memberSince && (
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-1 text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">Member since {format(new Date(stats.memberSince), 'MMM d, yyyy')}</span>
+                    </div>
+                  )}
                   {isPremium ? (
                     <span className="inline-flex items-center gap-1.5 text-sm text-accent mt-3 font-semibold bg-accent/10 px-3 py-1.5 rounded-full">
                       <Crown className="w-4 h-4" />
@@ -298,18 +315,13 @@ export default function AccountPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <Card className="border-2 border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-amber-500/10 hover:shadow-lg hover:shadow-amber-500/10 transition-shadow">
+            <Card className="border-2 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-purple-500/10 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow">
               <CardContent className="p-4 sm:p-5 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
-                  <Clock className="w-6 h-6 text-amber-500" />
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
+                  <FileText className="w-6 h-6 text-purple-500" />
                 </div>
-                <p className="text-sm font-medium">
-                  {stats.lastActive 
-                    ? formatDistanceToNow(new Date(stats.lastActive), { addSuffix: true })
-                    : 'Never'
-                  }
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Last Active</p>
+                <p className="text-3xl font-bold">{stats.totalNotebooks}</p>
+                <p className="text-xs text-muted-foreground mt-1">Notebooks</p>
               </CardContent>
             </Card>
           </motion.div>
