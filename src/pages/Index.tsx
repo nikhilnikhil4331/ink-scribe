@@ -25,7 +25,8 @@ import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown,
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
-import { InlineDiagram } from '@/types/noteLine';
+ import { InlineDiagram } from '@/types/noteLine';
+ import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
@@ -226,28 +227,64 @@ const Index = () => {
       setCurrentColor(line.color);
     }
   }, [lines]);
-  const clearSelection = useCallback(() => {
-    setSelectedLines(new Set());
-  }, []);
-  const handlePaste = useCallback((text: string, atLineId?: string) => {
-    const pastedLines = text.split('\n');
-    const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
-    if (insertIndex === -1) return;
-    const newLinesData = pastedLines.map((lineText, i) => ({
-      id: generateLineId(),
-      text: lineText,
-      color: getDefaultColorForLine(insertIndex + i),
-      timestamp: Date.now() + i
-    }));
-    const currentLine = lines[insertIndex];
-    const newLines = [...lines];
-    if (currentLine.text === '') {
-      newLines.splice(insertIndex, 1, ...newLinesData);
-    } else {
-      newLines.splice(insertIndex + 1, 0, ...newLinesData);
-    }
-    updateCurrentPageLines(newLines);
-  }, [lines, updateCurrentPageLines]);
+ const clearSelection = useCallback(() => {
+     setSelectedLines(new Set());
+   }, []);
+   
+   // CRITICAL: Auto-pagination hook for smart paste and page management
+   const autoPagination = useAutoPagination({
+     settings,
+     lines,
+     updateLines: updateCurrentPageLines,
+     addNewPage,
+     totalPages,
+     currentPageIndex,
+     goToPage,
+   });
+ 
+   // CRITICAL: Enhanced paste handler with proper line splitting and auto-pagination
+   const handlePaste = useCallback((text: string, atLineId?: string) => {
+     // Split by ALL newline types (CRLF, LF, CR) for cross-platform compatibility
+     const pastedLines = text.split(/\r?\n|\r/);
+     const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
+     
+     if (insertIndex === -1) return;
+     
+     // Create separate NoteLine for each pasted line
+     const newLinesData = pastedLines.map((lineText, i) => ({
+       id: generateLineId(),
+       text: lineText, // Keep original text including empty lines for paragraph breaks
+       color: getDefaultColorForLine(insertIndex + i),
+       timestamp: Date.now() + i
+     }));
+     
+     const currentLine = lines[insertIndex];
+     const newLines = [...lines];
+     
+     if (currentLine.text === '') {
+       // Replace empty current line
+       newLines.splice(insertIndex, 1, ...newLinesData);
+     } else {
+       // Insert after current line
+       newLines.splice(insertIndex + 1, 0, ...newLinesData);
+     }
+     
+     updateCurrentPageLines(newLines);
+     
+     // CRITICAL: Check if we need to auto-create new pages after paste
+     const totalLinesAfterPaste = newLines.length;
+     const linesPerPage = autoPagination.linesPerPage;
+     const pagesNeeded = Math.ceil(totalLinesAfterPaste / linesPerPage);
+     
+     if (pagesNeeded > totalPages) {
+       // Auto-create additional pages for overflow content
+       const pagesToCreate = pagesNeeded - totalPages;
+       for (let i = 0; i < pagesToCreate; i++) {
+         setTimeout(() => addNewPage(), i * 50); // Stagger page creation
+       }
+       toast.success(`Created ${pagesToCreate} new page${pagesToCreate > 1 ? 's' : ''} for your content!`);
+     }
+   }, [lines, updateCurrentPageLines, autoPagination.linesPerPage, totalPages, addNewPage]);
   const undoLine = useCallback((lineId: string) => {
     const history = lineHistories.get(lineId);
     if (!history || history.past.length === 0) return;

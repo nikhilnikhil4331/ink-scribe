@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
-import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
-import { Eye, ChevronUp, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+ import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
+ import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
+ import { Eye, ChevronUp, ChevronDown } from 'lucide-react';
+ import { cn } from '@/lib/utils';
 
 interface MobileLivePreviewProps {
   lines: NoteLine[];
@@ -25,12 +25,17 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const fontClass = FONT_OPTIONS.find(f => f.value === settings.font)?.className || 'font-handwriting-1';
 
-  // Auto-scroll to bottom when content changes
-  useEffect(() => {
-    if (containerRef.current && isExpanded) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, [lines, isExpanded]);
+ // CRITICAL: Auto-scroll to bottom when content changes (especially after paste)
+   useEffect(() => {
+     if (containerRef.current) {
+       // Use requestAnimationFrame to ensure DOM is updated before scrolling
+       requestAnimationFrame(() => {
+         if (containerRef.current) {
+           containerRef.current.scrollTop = containerRef.current.scrollHeight;
+         }
+       });
+     }
+   }, [lines, isExpanded, lines.length]); // Also trigger on lines.length change for paste updates
 
   // Get the last few lines for preview
   const previewLines = useMemo(() => {
@@ -122,35 +127,38 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
           <AnimatePresence mode="popLayout">
             {previewLines.map((line) => {
               const globalIndex = lines.indexOf(line);
-              return (
-                <motion.div
-                  key={line.id}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className={cn(
-                    fontClass,
-                    "text-base",
-                    "transition-colors duration-150"
-                  )}
-                  style={{
-                    ...getLineStyle(line, globalIndex),
-                    // CRITICAL: Block-level elements with proper line-height
-                    display: 'block',
-                    minHeight: '24px',
-                    lineHeight: '1.6',
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {line.text || (
-                    <span className="text-muted-foreground/30 italic text-sm">
-                      {globalIndex === 0 ? "Start typing..." : "\u00A0"}
-                    </span>
-                  )}
-                </motion.div>
+ return (
+                 <motion.div
+                   key={line.id}
+                   initial={{ opacity: 0, y: -4 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   exit={{ opacity: 0, height: 0 }}
+                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                   className={cn(
+                     fontClass,
+                     "text-base",
+                     "transition-colors duration-150"
+                   )}
+                   style={{
+                     ...getLineStyle(line, globalIndex),
+                     // CRITICAL: Block-level layout for mobile paste - each line flows naturally
+                     display: 'block',
+                     minHeight: '28px', // Increased for better mobile readability
+                     lineHeight: '1.8', // More spacing for handwriting feel
+                     whiteSpace: 'pre-wrap',
+                     wordWrap: 'break-word',
+                     wordBreak: 'break-word',
+                     // Mobile-optimized padding for touch targets
+                     paddingTop: '2px',
+                     paddingBottom: '2px',
+                   }}
+                 >
+                   {line.text || (
+                     <span className="text-muted-foreground/30 italic text-sm">
+                       {globalIndex === 0 ? "Start typing..." : "\u00A0"}
+                     </span>
+                   )}
+                 </motion.div>
               );
             })}
           </AnimatePresence>
