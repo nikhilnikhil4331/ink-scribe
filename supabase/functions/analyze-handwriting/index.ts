@@ -6,6 +6,50 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
+const MAX_REQUESTS_PER_WINDOW = 20; // 20 requests per hour
+
+async function checkRateLimit(
+  supabase: any,
+  userId: string,
+  endpoint: string
+): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW * 1000);
+  
+  // Get current request count within window
+  const { count, error } = await supabase
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('endpoint', endpoint)
+    .gte('window_start', windowStart.toISOString());
+
+  if (error) {
+    console.error('Rate limit check error:', error);
+    // Fail open but log the error
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW, resetAt: new Date(now.getTime() + RATE_LIMIT_WINDOW * 1000) };
+  }
+
+  const currentCount = count || 0;
+  const remaining = Math.max(0, MAX_REQUESTS_PER_WINDOW - currentCount - 1);
+  const resetAt = new Date(now.getTime() + RATE_LIMIT_WINDOW * 1000);
+  
+  if (currentCount >= MAX_REQUESTS_PER_WINDOW) {
+    return { allowed: false, remaining: 0, resetAt };
+  }
+
+  // Record this request
+  await supabase.from('rate_limits').insert({
+    user_id: userId,
+    endpoint,
+    window_start: now.toISOString(),
+  });
+
+  return { allowed: true, remaining, resetAt };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,6 +68,7 @@ serve(async (req) => {
     // Verify the user's JWT
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -43,6 +88,29 @@ serve(async (req) => {
 
     const userId = userData.user.id;
     console.log(`Analyze handwriting request from user: ${userId}`);
+
+    // Check rate limit using service role client
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { allowed, remaining, resetAt } = await checkRateLimit(adminClient, userId, 'analyze-handwriting');
+    
+    if (!allowed) {
+      console.log(`Rate limit exceeded for user: ${userId}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Rate limit exceeded. Please try again later.",
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000)
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetAt.toISOString()
+          } 
+        }
+      );
+    }
 
     const { imageBase64 } = await req.json();
     
@@ -302,7 +370,7 @@ Respond ONLY with the JSON object, no markdown or explanations.`
       
       console.log("Successfully parsed advanced analysis result");
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
+      console.error("Failed to parse AI response:", parseError, content);
       return new Response(
         JSON.stringify({ error: "Failed to parse analysis. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -311,7 +379,14 @@ Respond ONLY with the JSON object, no markdown or explanations.`
 
     return new Response(
       JSON.stringify(analysisResult),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Reset": resetAt.toISOString()
+        } 
+      }
     );
   } catch (error) {
     console.error("Error in analyze-handwriting function:", error);
