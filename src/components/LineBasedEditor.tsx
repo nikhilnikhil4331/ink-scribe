@@ -92,52 +92,69 @@ const EditableLine: React.FC<EditableLineProps> = ({
     }
   };
 
- // CRITICAL: Handle paste for both mobile and desktop
-    // Must intercept ALL multi-line pastes and create separate NoteLines
-    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-      const plain = e.clipboardData.getData('text/plain') || e.clipboardData.getData('text');
-      const html = e.clipboardData.getData('text/html');
-
-      // iOS/Safari often collapses newlines in plain text, but preserves structure in HTML.
-      let normalized = plain;
-      if (!/\r?\n|\r/.test(normalized) && html) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = html;
-        const htmlText = tmp.innerText;
-        if (htmlText) normalized = htmlText;
+  // CRITICAL: Universal paste handler for mobile + desktop
+  // Must intercept ALL multi-line pastes and create separate NoteLines
+  const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+    let pastedText = '';
+    
+    // Method 1: Try clipboardData (works on most browsers)
+    const plain = e.clipboardData?.getData('text/plain') || e.clipboardData?.getData('text') || '';
+    const html = e.clipboardData?.getData('text/html') || '';
+    
+    // iOS/Safari often collapses newlines in plain text, but preserves structure in HTML
+    pastedText = plain;
+    if (!/\r?\n|\r/.test(pastedText) && html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const htmlText = tmp.innerText;
+      if (htmlText && /\r?\n|\r/.test(htmlText)) {
+        pastedText = htmlText;
       }
-
-      // Check for any newline character (CRLF, LF, or CR)
-      if (/\r?\n|\r/.test(normalized)) {
-        e.preventDefault();
-        e.stopPropagation();
-        // Delegate to parent handler which will split into multiple lines
-        onPaste(normalized);
+    }
+    
+    // Method 2: Fallback to navigator.clipboard API for mobile browsers
+    if (!pastedText || !/\r?\n|\r/.test(pastedText)) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const clipboardText = await navigator.clipboard.readText();
+          if (clipboardText && /\r?\n|\r/.test(clipboardText)) {
+            pastedText = clipboardText;
+          }
+        }
+      } catch {
+        // Clipboard API not available or permission denied - continue with existing text
       }
-    };
+    }
+    
+    // If we have multiline text, intercept and delegate to parent
+    if (/\r?\n|\r/.test(pastedText)) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Delegate to parent handler which will split into multiple lines
+      onPaste(pastedText);
+    }
+    // Single line paste - let default behavior handle it
+  };
  
-   // MOBILE-SPECIFIC: Handle paste via input event for mobile browsers
-   // Some mobile browsers don't fire ClipboardEvent properly
-   const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-     const target = e.target as HTMLInputElement;
-     const value = target.value;
-     
-     // Detect if a paste happened that includes newlines (mobile fallback)
-     if (/\r?\n|\r/.test(value)) {
-       e.preventDefault();
-       // Extract just the pasted content by comparing to original line.text
-       const originalText = line.text;
-       const pastedContent = value.replace(originalText, '');
-       
-       if (/\r?\n|\r/.test(pastedContent)) {
-         onPaste(value); // Pass entire new value to be split
-         return;
-       }
-     }
-     
-     // Normal text input (no newlines)
-     onTextChange(value);
-   };
+  // MOBILE-SPECIFIC: Handle paste via input event for mobile browsers
+  // Some mobile browsers don't fire ClipboardEvent properly
+  const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    const value = target.value;
+    
+    // Detect if a paste happened that includes newlines (mobile fallback)
+    // This catches cases where onPaste didn't fire or was bypassed
+    if (/\r?\n|\r/.test(value)) {
+      e.preventDefault();
+      // Normalize and pass to parent for proper line splitting
+      const normalized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      onPaste(normalized);
+      return;
+    }
+    
+    // Normal text input (no newlines)
+    onTextChange(value);
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     onSelect(e.ctrlKey || e.metaKey);

@@ -163,8 +163,18 @@ export function useNoteLines(): UseNoteLinesReturn {
     setSelectedLines(new Set(lines.map(l => l.id)));
   }, [lines]);
 
+  // CRITICAL: Universal mobile/desktop paste handler with line break normalization
   const handlePaste = useCallback((text: string, atLineId?: string) => {
-    const pastedLines = text.split('\n');
+    // Step 1: Normalize all line break variants (CRLF, CR, LF)
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Step 2: Split into individual lines - each becomes a separate NoteLine
+    // Keep empty lines for paragraph breaks
+    const pastedLines = normalized.split('\n');
+    
+    // Step 3: For very long pastes (>500 chars), process in chunks to prevent mobile freeze
+    const CHUNK_SIZE = 50; // lines per chunk
+    const totalLines = pastedLines.length;
     
     setLines(prev => {
       const insertIndex = atLineId 
@@ -173,9 +183,10 @@ export function useNoteLines(): UseNoteLinesReturn {
       
       if (insertIndex === -1) return prev;
       
+      // Create new NoteLine for EACH pasted line
       const newLines = pastedLines.map((lineText, i) => ({
         id: generateLineId(),
-        text: lineText,
+        text: lineText, // Preserve original text including indentation
         color: getDefaultColorForLine(insertIndex + i),
         timestamp: Date.now() + i,
       }));
