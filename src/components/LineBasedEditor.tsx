@@ -93,17 +93,28 @@ const EditableLine: React.FC<EditableLineProps> = ({
   };
 
  // CRITICAL: Handle paste for both mobile and desktop
-   // Must intercept ALL multi-line pastes and create separate NoteLines
-   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-     const pastedText = e.clipboardData.getData('text');
-     // Check for any newline character (CRLF, LF, or CR)
-     if (/\r?\n|\r/.test(pastedText)) {
-       e.preventDefault();
-       e.stopPropagation();
-       // Delegate to parent handler which will split into multiple lines
-       onPaste(pastedText);
-     }
-   };
+    // Must intercept ALL multi-line pastes and create separate NoteLines
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+      const plain = e.clipboardData.getData('text/plain') || e.clipboardData.getData('text');
+      const html = e.clipboardData.getData('text/html');
+
+      // iOS/Safari often collapses newlines in plain text, but preserves structure in HTML.
+      let normalized = plain;
+      if (!/\r?\n|\r/.test(normalized) && html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const htmlText = tmp.innerText;
+        if (htmlText) normalized = htmlText;
+      }
+
+      // Check for any newline character (CRLF, LF, or CR)
+      if (/\r?\n|\r/.test(normalized)) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Delegate to parent handler which will split into multiple lines
+        onPaste(normalized);
+      }
+    };
  
    // MOBILE-SPECIFIC: Handle paste via input event for mobile browsers
    // Some mobile browsers don't fire ClipboardEvent properly

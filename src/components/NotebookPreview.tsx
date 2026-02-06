@@ -73,21 +73,25 @@ const NotebookPage = memo<{
 
   return (
     <div
-      ref={pageRef}
-      className={`animate-scale-in origin-top ${forExport ? '' : 'hover-lift'}`}
+      className={`${forExport ? '' : 'animate-scale-in hover-lift'} origin-top`}
       style={{ 
         width: `${sizeConfig.width}px`,
+        // CRITICAL: Never export scaled pages (causes tiny-corner output)
         transform: !forExport && scale < 1 ? `scale(${scale})` : undefined,
         transformOrigin: 'top center',
         marginBottom: !forExport && scale < 1 ? `${-(sizeConfig.height * (1 - scale))}px` : undefined,
-        animationDelay: `${pageIndex * 50}ms`,
+        animationDelay: forExport ? undefined : `${pageIndex * 50}ms`,
       }}
     >
       <div
+        ref={pageRef}
+        data-export-page="true"
         className={`w-full paper-shadow relative overflow-hidden ${isBlueprint ? 'rounded-none' : ''}`}
         style={{
           ...paperStyle,
           aspectRatio: `${sizeConfig.width}/${sizeConfig.height}`,
+          // CRITICAL: Lock exact A4 pixel height for export so html2canvas captures 1:1
+          height: forExport ? `${sizeConfig.height}px` : undefined,
           paddingTop: `${margins.top}px`,
           paddingRight: `${margins.right}px`,
           paddingBottom: `${margins.bottom}px`,
