@@ -1,4 +1,4 @@
- import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+ import React, { useEffect, useRef, useMemo } from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
  import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
  import { NoteSettings, FONT_OPTIONS } from '@/types/notes';
@@ -139,19 +139,19 @@ export const MobileLivePreview: React.FC<MobileLivePreviewProps> = ({
                      "text-base",
                      "transition-colors duration-150"
                    )}
-                   style={{
-                     ...getLineStyle(line, globalIndex),
-                     // CRITICAL: Block-level layout for mobile paste - each line flows naturally
-                     display: 'block',
-                     minHeight: '28px', // Increased for better mobile readability
-                     lineHeight: '1.8', // More spacing for handwriting feel
-                     whiteSpace: 'pre-wrap',
-                     wordWrap: 'break-word',
-                     wordBreak: 'break-word',
-                     // Mobile-optimized padding for touch targets
-                     paddingTop: '2px',
-                     paddingBottom: '2px',
-                   }}
+                    style={{
+                      ...getLineStyle(line, globalIndex),
+                      // CRITICAL: Block-level layout for mobile paste - each line flows naturally
+                      display: 'block',
+                      minHeight: '48px',
+                      lineHeight: '48px',
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                      wordBreak: 'break-word',
+                      // Mobile-optimized padding for touch targets
+                      paddingTop: '0px',
+                      paddingBottom: '0px',
+                    }}
                  >
                    {line.text || (
                      <span className="text-muted-foreground/30 italic text-sm">

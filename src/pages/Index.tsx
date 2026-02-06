@@ -19,9 +19,9 @@ import { useNotebookPages } from '@/hooks/useNotebookPages';
 import { useHaptics } from '@/hooks/useHaptics';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
-import { exportToPDF, exportAllPagesToImages, ExportProgress } from '@/utils/export';
+import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Sparkles, Crown, LogIn, Brain } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -85,6 +85,11 @@ const Index = () => {
     styles: moodStyles
   } = useMood();
   const previewRef = useRef<NotebookPreviewHandle>(null);
+
+  // Offscreen export mount (same NotebookPreview renderer, but unscaled)
+  const exportContainerRef = useRef<HTMLDivElement>(null);
+  const [exportMount, setExportMount] = useState(false);
+
   const {
     triggerHaptic
   } = useHaptics();
@@ -117,6 +122,7 @@ const Index = () => {
     addNewPage,
     deletePage,
     updateCurrentPageLines,
+    flowOverflowFrom,
     canGoNext,
     canGoPrev
   } = useNotebookPages();
@@ -242,49 +248,42 @@ const Index = () => {
      goToPage,
    });
  
-   // CRITICAL: Enhanced paste handler with proper line splitting and auto-pagination
-   const handlePaste = useCallback((text: string, atLineId?: string) => {
-     // Split by ALL newline types (CRLF, LF, CR) for cross-platform compatibility
-     const pastedLines = text.split(/\r?\n|\r/);
-     const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
-     
-     if (insertIndex === -1) return;
-     
-     // Create separate NoteLine for each pasted line
-     const newLinesData = pastedLines.map((lineText, i) => ({
-       id: generateLineId(),
-       text: lineText, // Keep original text including empty lines for paragraph breaks
-       color: getDefaultColorForLine(insertIndex + i),
-       timestamp: Date.now() + i
-     }));
-     
-     const currentLine = lines[insertIndex];
-     const newLines = [...lines];
-     
-     if (currentLine.text === '') {
-       // Replace empty current line
-       newLines.splice(insertIndex, 1, ...newLinesData);
-     } else {
-       // Insert after current line
-       newLines.splice(insertIndex + 1, 0, ...newLinesData);
-     }
-     
-     updateCurrentPageLines(newLines);
-     
-     // CRITICAL: Check if we need to auto-create new pages after paste
-     const totalLinesAfterPaste = newLines.length;
-     const linesPerPage = autoPagination.linesPerPage;
-     const pagesNeeded = Math.ceil(totalLinesAfterPaste / linesPerPage);
-     
-     if (pagesNeeded > totalPages) {
-       // Auto-create additional pages for overflow content
-       const pagesToCreate = pagesNeeded - totalPages;
-       for (let i = 0; i < pagesToCreate; i++) {
-         setTimeout(() => addNewPage(), i * 50); // Stagger page creation
-       }
-       toast.success(`Created ${pagesToCreate} new page${pagesToCreate > 1 ? 's' : ''} for your content!`);
-     }
-   }, [lines, updateCurrentPageLines, autoPagination.linesPerPage, totalPages, addNewPage]);
+    // CRITICAL: Enhanced paste handler with proper line splitting
+    const handlePaste = useCallback((text: string, atLineId?: string) => {
+      // Split by ALL newline types (CRLF, LF, CR) for cross-platform compatibility
+      const pastedLines = text.split(/\r?\n|\r/);
+      const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
+
+      if (insertIndex === -1) return;
+
+      // Create separate NoteLine for each pasted line (blank line = paragraph break)
+      const newLinesData = pastedLines.map((lineText, i) => ({
+        id: generateLineId(),
+        text: lineText,
+        color: getDefaultColorForLine(insertIndex + i),
+        timestamp: Date.now() + i
+      }));
+
+      const currentLine = lines[insertIndex];
+      const nextLines = [...lines];
+
+      if ((currentLine?.text ?? '') === '') {
+        // Replace empty current line
+        nextLines.splice(insertIndex, 1, ...newLinesData);
+      } else {
+        // Insert after current line
+        nextLines.splice(insertIndex + 1, 0, ...newLinesData);
+      }
+
+      updateCurrentPageLines(nextLines);
+    }, [lines, updateCurrentPageLines]);
+  // CRITICAL: Auto pagination after paste OR typing (real new A4 pages, overflow moved)
+  useEffect(() => {
+    if (lines.length > autoPagination.linesPerPage) {
+      flowOverflowFrom(currentPageIndex, autoPagination.linesPerPage);
+    }
+  }, [lines.length, autoPagination.linesPerPage, currentPageIndex, flowOverflowFrom]);
+
   const undoLine = useCallback((lineId: string) => {
     const history = lineHistories.get(lineId);
     if (!history || history.past.length === 0) return;
@@ -393,15 +392,36 @@ const Index = () => {
       toast.error('Please add some content first');
       return;
     }
-    const elements = previewRef.current?.getPageElements();
+
+    // CRITICAL: Mount an unscaled, animation-free export DOM using the SAME renderer.
+    setExportMount(true);
+
+    // Wait for React to paint + fonts to be ready for capture.
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+    const exportElements = Array.from(
+      exportContainerRef.current?.querySelectorAll('[data-export-page="true"]') ?? []
+    ) as HTMLElement[];
+
+    const elements = exportElements.length > 0
+      ? exportElements
+      : (previewRef.current?.getPageElements() ?? []);
+
     if (!elements || elements.length === 0) {
+      setExportMount(false);
       toast.error('No pages to export');
       return;
     }
+
     setIsExporting(true);
     setExportProgress(null);
     triggerHaptic('medium');
-    const toastId = toast.loading(elements.length > 1 ? `Creating PDF: Page 1 of ${elements.length}...` : 'Creating PDF...');
+
+    const toastId = toast.loading(
+      elements.length > 1 ? `Creating PDF: Page 1 of ${elements.length}...` : 'Creating PDF...'
+    );
+
     try {
       await exportToPDF(elements, 'handwritten-notes', settings.pageSize, progress => {
         setExportProgress(progress);
@@ -411,12 +431,15 @@ const Index = () => {
           });
         }
       });
+
       const successMsg = elements.length > 1 
         ? `PDF with ${elements.length} pages exported successfully!` 
         : 'PDF exported successfully!';
+
       toast.success(successMsg, {
         id: toastId
       });
+
       playSuccess();
       triggerHaptic('success');
     } catch (error) {
@@ -433,49 +456,11 @@ const Index = () => {
     } finally {
       setIsExporting(false);
       setExportProgress(null);
+      setExportMount(false);
     }
   }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length, triggerHaptic, playSuccess]);
-  const handleExportImages = useCallback(async (format: 'png' | 'jpeg') => {
-    const text = getPlainText();
-    if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
-      toast.error('Please add some content first');
-      return;
-    }
-    const elements = previewRef.current?.getPageElements();
-    if (!elements || elements.length === 0) {
-      toast.error('No pages to export');
-      return;
-    }
-    setIsExporting(true);
-    setExportProgress(null);
-    triggerHaptic('medium');
-    const toastId = toast.loading(elements.length > 1 ? `Exporting ${format.toUpperCase()}: Image 1 of ${elements.length}...` : `Exporting ${format.toUpperCase()}...`);
-    try {
-      await exportAllPagesToImages(elements, format, 'handwritten-note', progress => {
-        setExportProgress(progress);
-        if (elements.length > 1) {
-          toast.loading(`Exporting ${format.toUpperCase()}: Image ${progress.current} of ${progress.total} (${progress.percentage}%)`, {
-            id: toastId
-          });
-        }
-      });
-      toast.success(`${format.toUpperCase()} exported successfully!`, {
-        id: toastId
-      });
-      playSuccess();
-      triggerHaptic('success');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Export failed: ${message}`, {
-        id: toastId
-      });
-      triggerHaptic('error');
-      console.error('Export error:', error);
-    } finally {
-      setIsExporting(false);
-      setExportProgress(null);
-    }
-  }, [getPlainText, settings.table.enabled, diagrams.length, triggerHaptic, playSuccess]);
+  // Image/ZIP export removed — PDF-only export is the single supported pipeline.
+
   const handleReset = useCallback(() => {
     resetSettings();
     triggerHaptic('medium');
@@ -638,7 +623,7 @@ const Index = () => {
                 </Button>
               </motion.div>}
 
-            <Toolbar onExportPDF={handleExportPDF} onExportPNG={() => handleExportImages('png')} onExportJPEG={() => handleExportImages('jpeg')} onReset={handleReset} isDark={isDark} onToggleDark={toggleDark} isExporting={isExporting} />
+            <Toolbar onExportPDF={handleExportPDF} onReset={handleReset} isDark={isDark} onToggleDark={toggleDark} isExporting={isExporting} />
           </div>
         </div>
       </motion.header>
@@ -990,14 +975,10 @@ const Index = () => {
               delay: 0.4
             }} className="mt-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Export</h4>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   <AnimatedButton variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs">
                     <FileDown className="w-3.5 h-3.5" />
-                    Export
-                  </AnimatedButton>
-                  <AnimatedButton variant="default" size="sm" onClick={() => handleExportImages('png')} disabled={isExporting} className="gap-1.5 rounded-xl text-xs">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    PNG
+                    Export PDF
                   </AnimatedButton>
                 </div>
               </motion.div>
@@ -1024,6 +1005,30 @@ const Index = () => {
           </motion.div>
         </div>
       </main>
+
+      {/* Offscreen export DOM: renders every page at true A4 size using NotebookPreview(forExport). */}
+      {exportMount && (
+        <div
+          ref={exportContainerRef}
+          className="fixed left-[-10000px] top-0 pointer-events-none opacity-0"
+          aria-hidden="true"
+        >
+          <div className="flex flex-col gap-6">
+            {pages.map((page, idx) => (
+              <div key={page.id} style={{ width: 794, height: 1123 }}>
+                <NotebookPreview
+                  lines={page.lines}
+                  settings={settings}
+                  realPenMode={realPenMode}
+                  pageNumber={idx + 1}
+                  totalPages={pages.length}
+                  forExport
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Paywall Modal */}
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />

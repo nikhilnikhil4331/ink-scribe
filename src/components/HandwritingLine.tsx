@@ -34,12 +34,6 @@ const AnimatedWord = memo<AnimatedWordProps>(({
   const yOffset = useMemo(() => {
     return Math.sin(wordIndex * 3.7) * baselineVariation;
   }, [wordIndex, baselineVariation]);
-
-  // Slight rotation variation
-  const rotation = useMemo(() => {
-    return Math.sin(wordIndex * 5.3) * 0.3;
-  }, [wordIndex]);
-
   if (!isNew) {
     // Static render for existing text
     return (
@@ -140,8 +134,6 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
 
   const lineStyle = useMemo(() => {
     const jitterX = settings.baselineJitter ? (Math.sin(lineIndex * 7) * 2) : 0;
-    const jitterY = settings.baselineJitter ? (Math.cos(lineIndex * 11) * 1.5) : 0;
-    const rotation = settings.strokeRandomness ? (Math.sin(lineIndex * 13) * 0.3) : 0;
 
     if (realPenMode) {
       const adjustedH = h + variation.hueShift;
@@ -180,10 +172,13 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
   };
 
   // Each visual line is a real block that participates in normal document flow.
+  const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768;
+  const effectiveLineHeightPx = isMobileViewport ? 48 : settings.lineSpacing;
+
   const visualLineStyle: React.CSSProperties = {
     display: 'block',
-    minHeight: `${settings.lineSpacing}px`,
-    lineHeight: 1.6,
+    minHeight: `${effectiveLineHeightPx}px`,
+    lineHeight: `${effectiveLineHeightPx}px`,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
   };

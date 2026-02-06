@@ -209,33 +209,16 @@ export async function exportToPDF(
       
       // Convert canvas to image data URL
       const imgData = canvas.toDataURL('image/png', 1.0);
-      
-      // Calculate dimensions to fit A4 while maintaining aspect ratio
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const aspectRatio = imgWidth / imgHeight;
-      
-      // Fit to A4 dimensions (in mm)
-      let pdfWidth = A4_WIDTH_MM;
-      let pdfHeight = A4_WIDTH_MM / aspectRatio;
-      
-      // If height exceeds A4 height, scale down
-      if (pdfHeight > A4_HEIGHT_MM) {
-        pdfHeight = A4_HEIGHT_MM;
-        pdfWidth = A4_HEIGHT_MM * aspectRatio;
-      }
-      
-      // Center the image on the page
-      const xOffset = (A4_WIDTH_MM - pdfWidth) / 2;
-      const yOffset = (A4_HEIGHT_MM - pdfHeight) / 2;
-      
+
       // Add new page for subsequent pages
       if (i > 0) {
         pdf.addPage();
       }
-      
-      // Add the image to PDF - centered and scaled to fill A4
-      pdf.addImage(imgData, 'PNG', xOffset, yOffset, pdfWidth, pdfHeight);
+
+      // CRITICAL: NotebookPreview export pages are rendered at true A4 aspect ratio.
+      // Always fill the full A4 page to prevent tiny-corner / mis-centering.
+      pdf.addImage(imgData, 'PNG', 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
+
       
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
