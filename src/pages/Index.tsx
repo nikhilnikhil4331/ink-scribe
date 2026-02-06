@@ -401,17 +401,19 @@ const Index = () => {
     setIsExporting(true);
     setExportProgress(null);
     triggerHaptic('medium');
-    const toastId = toast.loading(elements.length > 1 ? `Exporting: Page 1 of ${elements.length}...` : 'Exporting page...');
+    const toastId = toast.loading(elements.length > 1 ? `Creating PDF: Page 1 of ${elements.length}...` : 'Creating PDF...');
     try {
       await exportToPDF(elements, 'handwritten-notes', settings.pageSize, progress => {
         setExportProgress(progress);
         if (elements.length > 1) {
-          toast.loading(`Exporting: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, {
+          toast.loading(`Creating PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, {
             id: toastId
           });
         }
       });
-      const successMsg = elements.length > 1 ? 'Pages exported as ZIP successfully!' : 'Page exported as PNG successfully!';
+      const successMsg = elements.length > 1 
+        ? `PDF with ${elements.length} pages exported successfully!` 
+        : 'PDF exported successfully!';
       toast.success(successMsg, {
         id: toastId
       });
@@ -419,8 +421,12 @@ const Index = () => {
       triggerHaptic('success');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Export failed: ${message}`, {
-        id: toastId
+      toast.error(`Export failed: ${message}. Try again.`, {
+        id: toastId,
+        action: {
+          label: 'Retry',
+          onClick: () => handleExportPDF(),
+        },
       });
       triggerHaptic('error');
       console.error('Export error:', error);
