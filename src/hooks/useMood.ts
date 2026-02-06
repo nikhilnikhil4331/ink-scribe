@@ -50,15 +50,11 @@ export function useMood() {
   useEffect(() => {
     localStorage.setItem('nikhil-notes-mood', mood);
     
-    // Apply dark class based on mood
+    // Apply dark class based on mood (never system preference)
     if (mood === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
-      // Only remove if not manually set to dark
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (!prefersDark) {
-        document.documentElement.classList.remove('dark');
-      }
+      document.documentElement.classList.remove('dark');
     }
   }, [mood]);
 

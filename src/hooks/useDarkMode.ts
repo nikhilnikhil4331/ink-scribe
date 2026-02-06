@@ -3,9 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 export function useDarkMode() {
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
+      // Only check localStorage, never system preference
       const stored = localStorage.getItem('theme');
-      if (stored) return stored === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return stored === 'dark' ? true : false;
     }
     return false;
   });
