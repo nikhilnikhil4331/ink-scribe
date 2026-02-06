@@ -1,5 +1,5 @@
 import html2canvas from 'html2canvas';
-import JSZip from 'jszip';
+import { jsPDF } from 'jspdf';
 
 export type ExportProgress = {
   current: number;
@@ -8,6 +8,14 @@ export type ExportProgress = {
 };
 
 export type ProgressCallback = (progress: ExportProgress) => void;
+
+// A4 dimensions in mm
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
+
+// A4 dimensions in pixels at 96 DPI (standard screen)
+const A4_WIDTH_PX = 794;
+const A4_HEIGHT_PX = 1123;
 
 // Validate that element has visible content
 const validateElement = (element: HTMLElement): { valid: boolean; error?: string } => {
@@ -28,7 +36,15 @@ const validateElement = (element: HTMLElement): { valid: boolean; error?: string
   return { valid: true };
 };
 
-// Capture element to canvas with retries
+// Wait for all fonts and images to load
+const waitForResources = async (): Promise<void> => {
+  await document.fonts.ready;
+  
+  // Wait a bit for any lazy-loaded images
+  await new Promise(resolve => setTimeout(resolve, 100));
+};
+
+// Capture element to canvas with high quality settings for PDF export
 const captureToCanvas = async (
   element: HTMLElement,
   retries = 2
@@ -42,14 +58,21 @@ const captureToCanvas = async (
   
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      // Wait for any pending renders
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for resources
+      await waitForResources();
       
-      // Ensure fonts are loaded before capture
-      await document.fonts.ready;
+      // Get element dimensions
+      const rect = element.getBoundingClientRect();
+      const width = element.offsetWidth || rect.width;
+      const height = element.offsetHeight || rect.height;
       
+      if (width < 10 || height < 10) {
+        throw new Error('Element has no visible content');
+      }
+      
+      // Capture at 2x scale for crisp PDF output
       const canvas = await html2canvas(element, {
-        scale: 2, // High resolution for crisp text
+        scale: 2, // High resolution for crisp text in PDF
         useCORS: true,
         backgroundColor: '#FFFFFF',
         logging: false,
@@ -57,16 +80,15 @@ const captureToCanvas = async (
         foreignObjectRendering: false,
         imageTimeout: 15000,
         removeContainer: true,
-        // Force exact element dimensions - no modification
-        width: element.offsetWidth,
-        height: element.offsetHeight,
-        // Ensure we capture the exact element bounds
+        // Capture the exact element
+        width: width,
+        height: height,
         x: 0,
         y: 0,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: element.offsetWidth,
-        windowHeight: element.offsetHeight,
+        windowWidth: width,
+        windowHeight: height,
       });
       
       // Validate canvas has content
@@ -80,7 +102,6 @@ const captureToCanvas = async (
       console.warn(`Capture attempt ${attempt + 1} failed:`, lastError.message);
       
       if (attempt < retries) {
-        // Wait longer before retry
         await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
       }
     }
@@ -89,75 +110,29 @@ const captureToCanvas = async (
   throw lastError || new Error('Failed to capture element');
 };
 
-// Convert canvas to blob with multiple fallback strategies
+// Convert canvas to blob
 const canvasToBlob = async (
   canvas: HTMLCanvasElement,
   type: string = 'image/png',
   quality: number = 0.95
 ): Promise<Blob> => {
-  // Validate canvas
   if (!canvas || canvas.width < 1 || canvas.height < 1) {
     throw new Error('Cannot export empty canvas');
   }
   
-  // Strategy 1: Use toBlob (preferred)
-  const blobFromNative = await new Promise<Blob | null>((resolve) => {
-    try {
-      canvas.toBlob(
-        (blob) => resolve(blob),
-        type,
-        quality
-      );
-    } catch {
-      resolve(null);
-    }
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
   });
   
-  if (blobFromNative && blobFromNative.size > 0) {
-    return blobFromNative;
+  if (blob && blob.size > 0) {
+    return blob;
   }
   
-  // Strategy 2: Use toDataURL and convert
-  try {
-    const dataUrl = canvas.toDataURL(type, quality);
-    if (dataUrl && dataUrl.length > 100) {
-      const blob = dataUrlToBlob(dataUrl);
-      if (blob.size > 0) {
-        return blob;
-      }
-    }
-  } catch (e) {
-    console.warn('toDataURL failed:', e);
-  }
-  
-  // Strategy 3: Downscale and retry (mobile memory issues)
-  if (canvas.width > 2048 || canvas.height > 2048) {
-    try {
-      const scaled = downscaleCanvas(canvas, 2048);
-      const scaledBlob = await new Promise<Blob | null>((resolve) => {
-        scaled.toBlob(blob => resolve(blob), type, quality);
-      });
-      if (scaledBlob && scaledBlob.size > 0) {
-        return scaledBlob;
-      }
-    } catch (e) {
-      console.warn('Downscale strategy failed:', e);
-    }
-  }
-  
-  throw new Error('Failed to create exportable image');
-};
-
-// Convert data URL to blob
-const dataUrlToBlob = (dataUrl: string): Blob => {
+  // Fallback to dataURL
+  const dataUrl = canvas.toDataURL(type, quality);
   const parts = dataUrl.split(',');
-  if (parts.length !== 2) {
-    throw new Error('Invalid data URL');
-  }
-  
   const mimeMatch = parts[0].match(/data:(.*?);/);
   const mime = mimeMatch?.[1] || 'application/octet-stream';
-  
   const binary = atob(parts[1]);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -167,28 +142,9 @@ const dataUrlToBlob = (dataUrl: string): Blob => {
   return new Blob([bytes], { type: mime });
 };
 
-// Downscale canvas for memory-constrained devices
-const downscaleCanvas = (canvas: HTMLCanvasElement, maxDim: number): HTMLCanvasElement => {
-  const { width, height } = canvas;
-  const largest = Math.max(width, height);
-  
-  if (largest <= maxDim) return canvas;
-  
-  const ratio = maxDim / largest;
-  const newCanvas = document.createElement('canvas');
-  newCanvas.width = Math.max(1, Math.round(width * ratio));
-  newCanvas.height = Math.max(1, Math.round(height * ratio));
-  
-  const ctx = newCanvas.getContext('2d');
-  if (!ctx) return canvas;
-  
-  ctx.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
-  return newCanvas;
-};
-
 // Validate blob is not empty
 const validateBlob = (blob: Blob): boolean => {
-  return blob && blob.size > 100; // Minimum valid file size
+  return blob && blob.size > 100;
 };
 
 // Download blob as file
@@ -201,12 +157,100 @@ const downloadBlob = (blob: Blob, filename: string): void => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
-  // Cleanup after a short delay
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 };
 
-// Export single page as image
+/**
+ * MAIN PDF EXPORT FUNCTION
+ * Creates a true multi-page PDF with proper A4 dimensions
+ * Uses the same NotebookPreview component for pixel-perfect matching
+ */
+export async function exportToPDF(
+  elements: HTMLElement[],
+  filename: string = 'handwritten-notes',
+  _pageSize?: string, // Kept for backward compatibility
+  onProgress?: ProgressCallback
+): Promise<void> {
+  if (!elements || elements.length === 0) {
+    throw new Error('No pages to export');
+  }
+  
+  // Filter valid elements
+  const validElements = elements.filter(el => validateElement(el).valid);
+  
+  if (validElements.length === 0) {
+    throw new Error('No valid pages found to export');
+  }
+  
+  // Wait for fonts to be ready before export
+  await waitForResources();
+  
+  // Create PDF with A4 dimensions
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true,
+  });
+  
+  const total = validElements.length;
+  
+  for (let i = 0; i < validElements.length; i++) {
+    // Update progress
+    onProgress?.({
+      current: i + 1,
+      total,
+      percentage: Math.round(((i + 1) / total) * 100),
+    });
+    
+    try {
+      // Capture the page element to canvas
+      const canvas = await captureToCanvas(validElements[i]);
+      
+      // Convert canvas to image data URL
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Calculate dimensions to fit A4 while maintaining aspect ratio
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const aspectRatio = imgWidth / imgHeight;
+      
+      // Fit to A4 dimensions (in mm)
+      let pdfWidth = A4_WIDTH_MM;
+      let pdfHeight = A4_WIDTH_MM / aspectRatio;
+      
+      // If height exceeds A4 height, scale down
+      if (pdfHeight > A4_HEIGHT_MM) {
+        pdfHeight = A4_HEIGHT_MM;
+        pdfWidth = A4_HEIGHT_MM * aspectRatio;
+      }
+      
+      // Center the image on the page
+      const xOffset = (A4_WIDTH_MM - pdfWidth) / 2;
+      const yOffset = (A4_HEIGHT_MM - pdfHeight) / 2;
+      
+      // Add new page for subsequent pages
+      if (i > 0) {
+        pdf.addPage();
+      }
+      
+      // Add the image to PDF - centered and scaled to fill A4
+      pdf.addImage(imgData, 'PNG', xOffset, yOffset, pdfWidth, pdfHeight);
+      
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`Failed to capture page ${i + 1}:`, message);
+      throw new Error(`Failed to export page ${i + 1}: ${message}`);
+    }
+  }
+  
+  // Save the PDF
+  pdf.save(`${filename}.pdf`);
+}
+
+/**
+ * Export single page as image (PNG or JPEG)
+ */
 export async function exportToImage(
   element: HTMLElement,
   format: 'png' | 'jpeg' = 'png',
@@ -226,98 +270,10 @@ export async function exportToImage(
   downloadBlob(blob, `${filename}.${format}`);
 }
 
-// Export multiple pages as ZIP
-export async function exportPagesAsZip(
-  elements: HTMLElement[],
-  filename: string = 'handwritten-notes',
-  onProgress?: ProgressCallback
-): Promise<void> {
-  if (elements.length === 0) {
-    throw new Error('No pages to export');
-  }
-  
-  const zip = new JSZip();
-  const total = elements.length;
-  const errors: string[] = [];
-
-  for (let i = 0; i < elements.length; i++) {
-    onProgress?.({
-      current: i + 1,
-      total,
-      percentage: Math.round(((i + 1) / total) * 100),
-    });
-
-    try {
-      const canvas = await captureToCanvas(elements[i]);
-      const blob = await canvasToBlob(canvas, 'image/png');
-      
-      if (validateBlob(blob)) {
-        zip.file(`${filename}-page-${i + 1}.png`, blob);
-      } else {
-        errors.push(`Page ${i + 1}: Empty output`);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`Page ${i + 1}: ${msg}`);
-      console.error(`Failed to capture page ${i + 1}:`, err);
-    }
-  }
-  
-  // Check if we have any successful pages
-  const fileCount = Object.keys(zip.files).length;
-  if (fileCount === 0) {
-    throw new Error(`Failed to export any pages: ${errors.join('; ')}`);
-  }
-
-  const zipBlob = await zip.generateAsync({ type: 'blob' });
-  
-  if (!validateBlob(zipBlob)) {
-    throw new Error('Generated ZIP file is empty');
-  }
-  
-  downloadBlob(zipBlob, `${filename}.zip`);
-  
-  // Warn if some pages failed
-  if (errors.length > 0) {
-    console.warn(`Some pages failed to export: ${errors.join('; ')}`);
-  }
-}
-
-// Main export function - PNG for single, ZIP for multiple
-export async function exportPages(
-  elements: HTMLElement[],
-  filename: string = 'handwritten-notes',
-  onProgress?: ProgressCallback
-): Promise<void> {
-  if (!elements || elements.length === 0) {
-    throw new Error('No pages to export');
-  }
-  
-  // Filter out invalid elements
-  const validElements = elements.filter(el => validateElement(el).valid);
-  
-  if (validElements.length === 0) {
-    throw new Error('No valid pages found to export');
-  }
-
-  if (validElements.length === 1) {
-    await exportToImage(validElements[0], 'png', filename);
-  } else {
-    await exportPagesAsZip(validElements, filename, onProgress);
-  }
-}
-
-// Backward compatibility wrapper
-export async function exportToPDF(
-  elements: HTMLElement[],
-  filename: string = 'handwritten-notes',
-  _pageSize?: string,
-  onProgress?: ProgressCallback
-): Promise<void> {
-  return exportPages(elements, filename, onProgress);
-}
-
-// Export all pages as individual image files
+/**
+ * Export multiple pages as individual image files
+ * Downloads each page as a separate file
+ */
 export async function exportAllPagesToImages(
   elements: HTMLElement[],
   format: 'png' | 'jpeg' = 'png',
@@ -345,7 +301,8 @@ export async function exportAllPagesToImages(
     });
     
     try {
-      await exportToImage(validElements[i], format, `${baseFilename}-page-${i + 1}`);
+      const filename = total === 1 ? baseFilename : `${baseFilename}-page-${i + 1}`;
+      await exportToImage(validElements[i], format, filename);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Page ${i + 1}: ${msg}`);
@@ -360,4 +317,16 @@ export async function exportAllPagesToImages(
   if (errors.length > 0) {
     console.warn(`Some pages failed to export: ${errors.join('; ')}`);
   }
+}
+
+/**
+ * Main export function - PDF for any number of pages
+ * This is the recommended export method
+ */
+export async function exportPages(
+  elements: HTMLElement[],
+  filename: string = 'handwritten-notes',
+  onProgress?: ProgressCallback
+): Promise<void> {
+  return exportToPDF(elements, filename, undefined, onProgress);
 }
