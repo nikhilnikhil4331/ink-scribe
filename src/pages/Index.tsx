@@ -86,6 +86,9 @@ const Index = () => {
   } = useMood();
   const previewRef = useRef<NotebookPreviewHandle>(null);
 
+  // Prevent overflow-flow while we are inserting a large paste in batches
+  const isPastingRef = useRef(false);
+
   // Offscreen export mount (same NotebookPreview renderer, but unscaled)
   const exportContainerRef = useRef<HTMLDivElement>(null);
   const [exportMount, setExportMount] = useState(false);
@@ -248,12 +251,18 @@ const Index = () => {
      goToPage,
    });
  
-    // CRITICAL: Enhanced paste handler with proper line splitting
-    const handlePaste = useCallback((text: string, atLineId?: string) => {
-      // Split by ALL newline types (CRLF, LF, CR) for cross-platform compatibility
-      const pastedLines = text.split(/\r?\n|\r/);
-      const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
+    // CRITICAL: Enhanced paste handler with mobile-safe line splitting + chunked insertion
+    const handlePaste = useCallback((rawText: string, atLineId?: string) => {
+      const normalized = (rawText ?? '').replace(/\r/g, '');
 
+      // Preserve blank lines (paragraphs)
+      const pastedLines = normalized.split('\n');
+
+      // If mobile collapsed everything into one line, LineBasedEditor will not call us.
+      // If we somehow get a single line here, we treat it as a normal paste and do nothing special.
+      if (pastedLines.length <= 1) return;
+
+      const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
       if (insertIndex === -1) return;
 
       // Create separate NoteLine for each pasted line (blank line = paragraph break)
@@ -265,20 +274,54 @@ const Index = () => {
       }));
 
       const currentLine = lines[insertIndex];
-      const nextLines = [...lines];
 
-      if ((currentLine?.text ?? '') === '') {
-        // Replace empty current line
-        nextLines.splice(insertIndex, 1, ...newLinesData);
-      } else {
-        // Insert after current line
-        nextLines.splice(insertIndex + 1, 0, ...newLinesData);
-      }
+      // Build stable base slices so we can insert in batches without fighting pagination mid-paste
+      const baseBefore = (currentLine?.text ?? '') === ''
+        ? lines.slice(0, insertIndex)
+        : lines.slice(0, insertIndex + 1);
 
-      updateCurrentPageLines(nextLines);
-    }, [lines, updateCurrentPageLines]);
+      const baseAfter = (currentLine?.text ?? '') === ''
+        ? lines.slice(insertIndex + 1)
+        : lines.slice(insertIndex + 1);
+
+      // Long paste safety (mobile): insert gradually to avoid UI freeze
+      const batchSize = normalized.length > 500 ? 12 : 30; // lines per tick
+
+      isPastingRef.current = true;
+      let inserted: NoteLine[] = [];
+      let lastWorking: NoteLine[] = [...baseBefore, ...baseAfter];
+
+      const tick = () => {
+        const nextBatch = newLinesData.slice(inserted.length, inserted.length + batchSize);
+        inserted = inserted.concat(nextBatch);
+
+        lastWorking = [...baseBefore, ...inserted, ...baseAfter];
+        updateCurrentPageLines(lastWorking);
+
+        if (inserted.length < newLinesData.length) {
+          setTimeout(tick, 0);
+          return;
+        }
+
+        // After final batch: paginate once, with the final line set
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isPastingRef.current = false;
+            const perPage = autoPagination.linesPerPage;
+            if (lastWorking.length > perPage) {
+              flowOverflowFrom(currentPageIndex, perPage);
+            }
+          });
+        });
+      };
+
+      tick();
+    }, [lines, updateCurrentPageLines, autoPagination.linesPerPage, flowOverflowFrom, currentPageIndex]);
+
   // CRITICAL: Auto pagination after paste OR typing (real new A4 pages, overflow moved)
   useEffect(() => {
+    if (isPastingRef.current) return;
+
     if (lines.length > autoPagination.linesPerPage) {
       flowOverflowFrom(currentPageIndex, autoPagination.linesPerPage);
     }
