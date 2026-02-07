@@ -30,7 +30,7 @@ interface EditableLineProps {
   onArrowUp: () => void;
   onArrowDown: () => void;
   isNewLine?: boolean;
-  onMount?: (el: HTMLInputElement | null) => void;
+  onMount?: (el: HTMLTextAreaElement | null) => void;
 }
 
 const EditableLine: React.FC<EditableLineProps> = ({
@@ -48,21 +48,21 @@ const EditableLine: React.FC<EditableLineProps> = ({
   isNewLine,
   onMount,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const variation = generateRealPenVariation(lineIndex, realPenMode);
   const inkColor = LINE_INK_COLORS.find(c => c.value === line.color);
-  
+
   // Register input ref with parent
   useEffect(() => {
     onMount?.(inputRef.current);
     return () => onMount?.(null);
   }, [onMount]);
-  
+
   // Apply real pen variation to color
   const getInkStyle = () => {
     const baseHsl = inkColor?.hsl || '220 20% 12%';
     const [h, s, l] = baseHsl.split(' ').map(v => parseFloat(v));
-    
+
     if (realPenMode) {
       const adjustedH = h + variation.hueShift;
       const adjustedL = Math.max(10, Math.min(50, l + (variation.thickness - 1) * 20));
@@ -72,11 +72,11 @@ const EditableLine: React.FC<EditableLineProps> = ({
         fontWeight: variation.thickness > 1 ? 500 : 400,
       };
     }
-    
+
     return { color: `hsl(${baseHsl})` };
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       onEnter();
@@ -94,64 +94,65 @@ const EditableLine: React.FC<EditableLineProps> = ({
 
   // CRITICAL: Universal paste handler for mobile + desktop
   // Must intercept ALL multi-line pastes and create separate NoteLines
-  const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
-    let pastedText = '';
-    
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const beforeText = line.text;
+
     // Method 1: Try clipboardData (works on most browsers)
     const plain = e.clipboardData?.getData('text/plain') || e.clipboardData?.getData('text') || '';
     const html = e.clipboardData?.getData('text/html') || '';
-    
+
     // iOS/Safari often collapses newlines in plain text, but preserves structure in HTML
-    pastedText = plain;
+    let pastedText = plain;
     if (!/\r?\n|\r/.test(pastedText) && html) {
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       const htmlText = tmp.innerText;
-      if (htmlText && /\r?\n|\r/.test(htmlText)) {
-        pastedText = htmlText;
-      }
+      if (htmlText) pastedText = htmlText;
     }
-    
-    // Method 2: Fallback to navigator.clipboard API for mobile browsers
-    if (!pastedText || !/\r?\n|\r/.test(pastedText)) {
-      try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-          const clipboardText = await navigator.clipboard.readText();
-          if (clipboardText && /\r?\n|\r/.test(clipboardText)) {
-            pastedText = clipboardText;
-          }
-        }
-      } catch {
-        // Clipboard API not available or permission denied - continue with existing text
-      }
-    }
-    
-    // If we have multiline text, intercept and delegate to parent
+
+    // If we already have multiline text, intercept immediately.
     if (/\r?\n|\r/.test(pastedText)) {
       e.preventDefault();
       e.stopPropagation();
-      // Delegate to parent handler which will split into multiple lines
       onPaste(pastedText);
+      return;
     }
-    // Single line paste - let default behavior handle it
+
+    // Method 2: navigator.clipboard.readText() (mobile reliable path)
+    // If this reveals multiline content, revert the already-pasted single-line value and re-handle.
+    try {
+      if (navigator.clipboard?.readText) {
+        const clipboardText = await navigator.clipboard.readText();
+        if (clipboardText && /\r?\n|\r/.test(clipboardText)) {
+          // Let any default paste complete, then revert and re-apply as smart paste.
+          setTimeout(() => {
+            onTextChange(beforeText);
+            onPaste(clipboardText);
+          }, 0);
+        }
+      }
+    } catch {
+      // Clipboard API not available/allowed — keep default single-line paste
+    }
   };
- 
+
   // MOBILE-SPECIFIC: Handle paste via input event for mobile browsers
   // Some mobile browsers don't fire ClipboardEvent properly
-  const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const target = e.target as HTMLInputElement;
+  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const target = e.target as HTMLTextAreaElement;
     const value = target.value;
-    
-    // Detect if a paste happened that includes newlines (mobile fallback)
-    // This catches cases where onPaste didn't fire or was bypassed
+
+    // Detect multiline paste that bypassed onPaste
     if (/\r?\n|\r/.test(value)) {
       e.preventDefault();
+      // Revert the current line (so we don't end up with embedded newlines)
+      onTextChange(line.text);
       // Normalize and pass to parent for proper line splitting
-      const normalized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const normalized = value.replace(/\r/g, '');
       onPaste(normalized);
       return;
     }
-    
+
     // Normal text input (no newlines)
     onTextChange(value);
   };
@@ -165,9 +166,9 @@ const EditableLine: React.FC<EditableLineProps> = ({
     <motion.div
       initial={isNewLine ? { opacity: 0, y: -8, height: 0 } : false}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
-      transition={{ 
-        type: 'spring', 
-        stiffness: 400, 
+      transition={{
+        type: 'spring',
+        stiffness: 400,
         damping: 30,
         opacity: { duration: 0.15 }
       }}
@@ -175,8 +176,8 @@ const EditableLine: React.FC<EditableLineProps> = ({
       className={cn(
         "relative flex items-center min-h-[48px] px-4 sm:px-5 py-2 border-l-4 cursor-text group",
         "transition-colors duration-150 ease-out",
-        isSelected 
-          ? "bg-primary/5 border-l-primary" 
+        isSelected
+          ? "bg-primary/5 border-l-primary"
           : "border-l-transparent hover:bg-muted/30 hover:border-l-muted-foreground/20"
       )}
     >
@@ -184,37 +185,38 @@ const EditableLine: React.FC<EditableLineProps> = ({
       <div className="absolute left-[-1.75rem] sm:left-[-2rem] w-6 text-right text-[10px] text-muted-foreground/40 font-mono select-none">
         {lineIndex + 1}
       </div>
-      
+
       {/* Ruled line effect */}
       <div className="absolute bottom-0 left-4 right-4 h-px bg-border/30" />
-      
+
       {/* Color indicator dot */}
-      <motion.div 
+      <motion.div
         className="w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0 shadow-sm"
         style={{ backgroundColor: inkColor?.hex }}
         whileHover={{ scale: 1.2 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       />
-      
-      {/* Editable input - notebook feel */}
- {/* CRITICAL: Mobile-optimized input with proper paste handling */}
-       <input
-         ref={inputRef}
-         type="text"
-         value={line.text}
-         onChange={handleInput}
-         onKeyDown={handleKeyDown}
-         onPaste={handlePaste}
-         placeholder={lineIndex === 0 ? "Start writing here..." : ""}
-         autoComplete="off"
-         autoCorrect="on"
-         spellCheck="true"
-         // Mobile-specific attributes for better paste handling
-         inputMode="text"
-         enterKeyHint="next"
-         className={cn(
-          "flex-1 bg-transparent border-none outline-none font-handwriting-1",
-          "text-lg sm:text-xl leading-relaxed tracking-wide",
+
+      {/* CRITICAL: Mobile-optimized textarea with proper paste handling */}
+      <textarea
+        ref={inputRef}
+        rows={1}
+        value={line.text}
+        onChange={handleInput}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        placeholder={lineIndex === 0 ? "Start writing here..." : ""}
+        autoComplete="off"
+        autoCorrect="on"
+        spellCheck={true}
+        // Mobile-specific attributes for better paste handling
+        inputMode="text"
+        enterKeyHint="next"
+        wrap="off"
+        className={cn(
+          "block flex-1 bg-transparent border-none outline-none font-handwriting-1",
+          "text-lg sm:text-xl leading-[48px] tracking-wide",
+          "resize-none overflow-hidden whitespace-pre-wrap break-words",
           "placeholder:text-muted-foreground/30 placeholder:italic",
           "focus:outline-none focus-visible:outline-none focus-visible:ring-0",
           "caret-primary caret-[2px]",
@@ -247,18 +249,18 @@ const EditableLine: React.FC<EditableLineProps> = ({
 export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
   lines,
   selectedLines,
-  currentColor,
+  currentColor: _currentColor,
   realPenMode,
   onLineTextChange,
-  onLineColorChange,
+  onLineColorChange: _onLineColorChange,
   onSelectLine,
   onAddLine,
-  onRemoveLine,
+  onRemoveLine: _onRemoveLine,
   onPaste,
   onMergeLinesUp,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+  const inputRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
   const lastAddedLineId = useRef<string | null>(null);
   const [newLineIds, setNewLineIds] = useState<Set<string>>(new Set());
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -269,10 +271,10 @@ export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
       const isKeyboard = window.innerHeight < window.outerHeight * 0.75;
       setKeyboardVisible(isKeyboard);
     };
-    
+
     window.visualViewport?.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.visualViewport?.removeEventListener('resize', handleResize);
       window.removeEventListener('resize', handleResize);
@@ -287,15 +289,15 @@ export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
         // Small delay to let animation start
         requestAnimationFrame(() => {
           input.focus();
-          
+
           // Smooth scroll the new line into view
-          input.scrollIntoView({ 
-            behavior: 'smooth', 
+          input.scrollIntoView({
+            behavior: 'smooth',
             block: 'center',
             inline: 'nearest'
           });
         });
-        
+
         // Clear the new line animation after it's done
         setTimeout(() => {
           setNewLineIds(prev => {
@@ -304,19 +306,22 @@ export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
             return next;
           });
         }, 300);
-        
+
         lastAddedLineId.current = null;
       }
     }
   }, [lines]);
 
-  const setInputRef = useCallback((lineId: string) => (el: HTMLInputElement | null) => {
-    if (el) {
-      inputRefs.current.set(lineId, el);
-    } else {
-      inputRefs.current.delete(lineId);
-    }
-  }, []);
+  const setInputRef = useCallback(
+    (lineId: string) => (el: HTMLTextAreaElement | null) => {
+      if (el) {
+        inputRefs.current.set(lineId, el);
+      } else {
+        inputRefs.current.delete(lineId);
+      }
+    },
+    []
+  );
 
   const handleAddLine = useCallback((afterLineId: string) => {
     const newLineId = onAddLine(afterLineId);
