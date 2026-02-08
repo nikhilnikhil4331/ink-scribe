@@ -104,6 +104,7 @@ export interface NoteSettings {
   strokeRandomness: boolean;
   table: TableConfig;
   customStyle?: CustomHandwritingStyle;
+  showMarginLine: boolean;
 }
 
 export const DEFAULT_SETTINGS: NoteSettings = {
@@ -127,8 +128,9 @@ export const DEFAULT_SETTINGS: NoteSettings = {
     subject: '',
     showHeader: false,
     showFooter: false,
-    showPageNumber: true,
+    showPageNumber: false,
   },
+  showMarginLine: false,
   baselineJitter: true,
   strokeRandomness: true,
   table: {

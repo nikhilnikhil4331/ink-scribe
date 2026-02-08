@@ -382,8 +382,8 @@ export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
       {/* Paper texture overlay */}
       <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')]" />
       
-      {/* Margin line */}
-      <div className="absolute left-8 sm:left-10 top-0 bottom-0 w-px bg-destructive/20" />
+      {/* Margin line - hidden by default for clean blank paper look */}
+      {/* <div className="absolute left-8 sm:left-10 top-0 bottom-0 w-px bg-destructive/20" /> */}
       
       {/* Lines container with better scroll behavior */}
       <div 
