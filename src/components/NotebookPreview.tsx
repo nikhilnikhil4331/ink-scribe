@@ -142,8 +142,8 @@ const NotebookPage = memo<{
           </>
         )}
 
-        {/* Margin line */}
-        {margins.left > 30 && !showSpiral && (
+        {/* Margin line - only show if explicitly enabled */}
+        {settings.showMarginLine && margins.left > 30 && !showSpiral && (
           <div className="absolute top-0 bottom-0 w-0.5" style={{ left: `${margins.left - 10}px`, backgroundColor: 'hsla(0, 65%, 60%, 0.4)' }} />
         )}
 
