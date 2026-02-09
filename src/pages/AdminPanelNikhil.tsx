@@ -390,16 +390,8 @@ const AdminPanelNikhil: React.FC = () => {
   }, [isAdmin]);
 
   const checkAdminStatus = async () => {
-    // DEMO MODE: Skip authentication for demo/presentation purposes
-    // This allows viewing the admin panel with demo data without login
-    const isDemoMode = true; // Set to false in production
-    
-    if (isDemoMode) {
-      console.log('Demo mode enabled - skipping authentication');
-      setIsAdmin(true);
-      setLoading(false);
-      return;
-    }
+    // Production mode: Require proper admin authentication
+    // Authentication is handled via the admin-auth edge function with server-side validation
 
     // First check for hardcoded admin session
     const adminToken = sessionStorage.getItem('admin_token');
