@@ -83,8 +83,35 @@ const AdminPanelNikhil: React.FC = () => {
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
 
-  // Data states
-  const [users, setUsers] = useState<UserData[]>([]);
+  // Data states - Demo Indian users list
+  const demoIndianUsers: UserData[] = [
+    { id: 'u1', display_name: 'Rahul Sharma', created_at: '2024-12-15T10:30:00Z', is_premium: true, email: 'rahul.sharma@gmail.com' },
+    { id: 'u2', display_name: 'Priya Singh', created_at: '2024-12-18T14:20:00Z', is_premium: true, email: 'priya.singh@yahoo.com' },
+    { id: 'u3', display_name: 'Amit Kumar', created_at: '2024-12-20T09:15:00Z', is_premium: true, email: 'amit.kumar@hotmail.com' },
+    { id: 'u4', display_name: 'Sneha Patel', created_at: '2024-12-22T16:45:00Z', is_premium: true, email: 'sneha.patel@gmail.com' },
+    { id: 'u5', display_name: 'Vikram Reddy', created_at: '2024-12-25T11:30:00Z', is_premium: true, email: 'vikram.reddy@outlook.com' },
+    { id: 'u6', display_name: 'Ananya Gupta', created_at: '2024-12-28T08:00:00Z', is_premium: false, email: 'ananya.gupta@gmail.com' },
+    { id: 'u7', display_name: 'Arjun Nair', created_at: '2025-01-02T13:20:00Z', is_premium: false, email: 'arjun.nair@yahoo.co.in' },
+    { id: 'u8', display_name: 'Kavya Iyer', created_at: '2025-01-05T17:10:00Z', is_premium: true, email: 'kavya.iyer@gmail.com' },
+    { id: 'u9', display_name: 'Rohan Mehta', created_at: '2025-01-08T10:45:00Z', is_premium: false, email: 'rohan.mehta@rediffmail.com' },
+    { id: 'u10', display_name: 'Ishita Verma', created_at: '2025-01-10T15:30:00Z', is_premium: false, email: 'ishita.verma@gmail.com' },
+    { id: 'u11', display_name: 'Karthik Rajan', created_at: '2025-01-12T09:00:00Z', is_premium: true, email: 'karthik.rajan@gmail.com' },
+    { id: 'u12', display_name: 'Neha Agarwal', created_at: '2025-01-15T14:15:00Z', is_premium: false, email: 'neha.agarwal@yahoo.com' },
+    { id: 'u13', display_name: 'Siddharth Joshi', created_at: '2025-01-18T11:20:00Z', is_premium: false, email: 'siddharth.joshi@gmail.com' },
+    { id: 'u14', display_name: 'Pooja Deshmukh', created_at: '2025-01-20T16:00:00Z', is_premium: true, email: 'pooja.deshmukh@hotmail.com' },
+    { id: 'u15', display_name: 'Aditya Saxena', created_at: '2025-01-22T08:30:00Z', is_premium: false, email: 'aditya.saxena@gmail.com' },
+    { id: 'u16', display_name: 'Riya Kapoor', created_at: '2025-01-25T13:45:00Z', is_premium: false, email: 'riya.kapoor@outlook.com' },
+    { id: 'u17', display_name: 'Manish Tiwari', created_at: '2025-01-28T10:10:00Z', is_premium: true, email: 'manish.tiwari@gmail.com' },
+    { id: 'u18', display_name: 'Shreya Bose', created_at: '2025-01-30T15:20:00Z', is_premium: false, email: 'shreya.bose@yahoo.co.in' },
+    { id: 'u19', display_name: 'Deepak Chauhan', created_at: '2025-02-01T09:30:00Z', is_premium: false, email: 'deepak.chauhan@gmail.com' },
+    { id: 'u20', display_name: 'Megha Srivastava', created_at: '2025-02-03T14:00:00Z', is_premium: true, email: 'megha.srivastava@gmail.com' },
+    { id: 'u21', display_name: 'Rajesh Pillai', created_at: '2025-02-05T11:15:00Z', is_premium: false, email: 'rajesh.pillai@hotmail.com' },
+    { id: 'u22', display_name: 'Divya Menon', created_at: '2025-02-06T16:30:00Z', is_premium: false, email: 'divya.menon@gmail.com' },
+    { id: 'u23', display_name: 'Suresh Yadav', created_at: '2025-02-07T08:45:00Z', is_premium: true, email: 'suresh.yadav@yahoo.com' },
+    { id: 'u24', display_name: 'Anjali Mishra', created_at: '2025-02-08T13:00:00Z', is_premium: false, email: 'anjali.mishra@gmail.com' },
+    { id: 'u25', display_name: 'Varun Bhatt', created_at: '2025-02-09T10:00:00Z', is_premium: false, email: 'varun.bhatt@outlook.com' },
+  ];
+  const [users, setUsers] = useState<UserData[]>(demoIndianUsers);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [settings, setSettings] = useState<AppSettings>({
@@ -97,51 +124,150 @@ const AdminPanelNikhil: React.FC = () => {
     monthly_price: 99,
   });
 
-  // KPI Data
+  // KPI Data - Demo stats for 42K Indian users
   const [kpiData, setKpiData] = useState({
-    totalUsers: 0,
-    todayUsers: 0,
-    activeNow: 0,
-    totalPages: 0,
-    totalExports: 0,
-    totalRevenue: 0,
-    premiumUsers: 0,
-    conversionRate: 0,
-    avgSessionDuration: '0m',
-    totalNotebooks: 0,
-    aiRequests: 0,
-    totalUploads: 0,
+    totalUsers: 42000,
+    todayUsers: 3847,
+    activeNow: 22000,
+    totalPages: 39000,
+    totalExports: 18542,
+    totalRevenue: 13552,
+    premiumUsers: 1284,
+    conversionRate: 3.1,
+    avgSessionDuration: '14m',
+    totalNotebooks: 28750,
+    aiRequests: 12890,
+    totalUploads: 8456,
   });
 
-  // Chart Data
+  // Generate demo chart data for 30 days
+  const generateDemoChartData = () => {
+    const data = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      data.push({
+        date: dateStr,
+        visitors: Math.floor(800 + Math.random() * 600),
+        signups: Math.floor(120 + Math.random() * 80),
+      });
+    }
+    return data;
+  };
+
+  const generateDemoPageCreations = () => {
+    const data = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        pages: Math.floor(900 + Math.random() * 400),
+      });
+    }
+    return data;
+  };
+
+  const generateDemoExports = () => {
+    const data = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        exports: Math.floor(400 + Math.random() * 300),
+      });
+    }
+    return data;
+  };
+
+  const generateDemoPayments = () => {
+    const data = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        attempts: Math.floor(80 + Math.random() * 60),
+        success: Math.floor(40 + Math.random() * 35),
+      });
+    }
+    return data;
+  };
+
+  const generateDemoPremiumTrend = () => {
+    const data = [];
+    let premium = 800;
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      premium += Math.floor(Math.random() * 20);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        premium: premium,
+        free: 42000 - premium,
+      });
+    }
+    return data;
+  };
+
+  // Chart Data with demo values
   const [chartData, setChartData] = useState({
-    dailyVisitors: [] as { date: string; visitors: number; signups: number }[],
-    pageCreations: [] as { date: string; pages: number }[],
-    exports: [] as { date: string; exports: number }[],
-    payments: [] as { date: string; attempts: number; success: number }[],
+    dailyVisitors: generateDemoChartData(),
+    pageCreations: generateDemoPageCreations(),
+    exports: generateDemoExports(),
+    payments: generateDemoPayments(),
     deviceUsage: [
-      { name: 'Mobile', value: 0, color: 'hsl(var(--primary))' },
-      { name: 'Desktop', value: 0, color: 'hsl(var(--muted-foreground))' },
+      { name: 'Mobile', value: 31500, color: 'hsl(var(--primary))' },
+      { name: 'Desktop', value: 10500, color: 'hsl(var(--muted-foreground))' },
     ],
-    premiumTrend: [] as { date: string; premium: number; free: number }[],
+    premiumTrend: generateDemoPremiumTrend(),
   });
 
-  // Funnel Data
+  // Funnel Data - realistic for 42K users
   const [funnelData, setFunnelData] = useState({
-    visits: 0,
-    signups: 0,
-    firstPage: 0,
-    firstExport: 0,
-    premium: 0,
+    visits: 156000,
+    signups: 42000,
+    firstPage: 38500,
+    firstExport: 18542,
+    premium: 1284,
   });
 
-  // Heatmap Data
+  // Heatmap Data with Indian user patterns
   const [heatmapData, setHeatmapData] = useState({
-    features: [] as { name: string; count: number; percentage: number }[],
-    peakHours: Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 })),
-    topExporters: [] as { name: string; exports: number }[],
-    commonMoods: [] as { mood: string; count: number }[],
-    avgSessionDuration: '0m',
+    features: [
+      { name: 'Text Editor', count: 38200, percentage: 91 },
+      { name: 'PDF Export', count: 18542, percentage: 44 },
+      { name: 'Handwriting Style', count: 15680, percentage: 37 },
+      { name: 'AI Assistant', count: 12890, percentage: 31 },
+      { name: 'Image Upload', count: 8456, percentage: 20 },
+      { name: 'Multiple Pages', count: 7840, percentage: 19 },
+    ],
+    peakHours: [
+      { hour: 0, count: 420 }, { hour: 1, count: 180 }, { hour: 2, count: 95 },
+      { hour: 3, count: 65 }, { hour: 4, count: 120 }, { hour: 5, count: 340 },
+      { hour: 6, count: 890 }, { hour: 7, count: 1450 }, { hour: 8, count: 2100 },
+      { hour: 9, count: 2800 }, { hour: 10, count: 3200 }, { hour: 11, count: 3500 },
+      { hour: 12, count: 2900 }, { hour: 13, count: 3100 }, { hour: 14, count: 3400 },
+      { hour: 15, count: 3600 }, { hour: 16, count: 3800 }, { hour: 17, count: 4200 },
+      { hour: 18, count: 4500 }, { hour: 19, count: 4800 }, { hour: 20, count: 5200 },
+      { hour: 21, count: 4600 }, { hour: 22, count: 3200 }, { hour: 23, count: 1800 },
+    ],
+    topExporters: [
+      { name: 'Rahul Sharma', exports: 156 },
+      { name: 'Priya Singh', exports: 142 },
+      { name: 'Amit Kumar', exports: 128 },
+      { name: 'Sneha Patel', exports: 115 },
+      { name: 'Vikram Reddy', exports: 98 },
+    ],
+    commonMoods: [
+      { mood: 'focused', count: 15800 },
+      { mood: 'creative', count: 12400 },
+      { mood: 'relaxed', count: 8900 },
+      { mood: 'professional', count: 4900 },
+    ],
+    avgSessionDuration: '14m',
   });
 
   // Check admin status - supports both database roles AND session token
