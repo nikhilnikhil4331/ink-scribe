@@ -899,7 +899,8 @@ const AdminPanelNikhil: React.FC = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  // In demo mode, skip user check since no login is required
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <motion.div
