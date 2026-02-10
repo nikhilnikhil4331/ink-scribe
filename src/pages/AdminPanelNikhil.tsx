@@ -390,15 +390,8 @@ const AdminPanelNikhil: React.FC = () => {
   }, [isAdmin]);
 
   const checkAdminStatus = async () => {
-    // DEMO MODE: Skip authentication for demo/presentation purposes
-    const isDemoMode = true;
-    
-    if (isDemoMode) {
-      console.log('Demo mode enabled - skipping authentication');
-      setIsAdmin(true);
-      setLoading(false);
-      return;
-    }
+    // Security enabled: Require proper admin authentication
+    // Demo data (hardcoded stats) is preserved - loadAllData is NOT called
 
     // First check for hardcoded admin session
     const adminToken = sessionStorage.getItem('admin_token');
@@ -420,7 +413,7 @@ const AdminPanelNikhil: React.FC = () => {
           console.log('Admin access validated server-side');
           setIsAdmin(true);
           setLoading(false);
-          await loadAllData();
+          // Demo data preserved - not calling loadAllData()
           return;
         }
       } catch (validationError) {
@@ -452,7 +445,7 @@ const AdminPanelNikhil: React.FC = () => {
       setIsAdmin(!!data);
       
       if (data) {
-        await loadAllData();
+        // Demo data preserved - not calling loadAllData()
       } else {
         // Not an admin via database, redirect to admin login
         navigate('/admin-login');
