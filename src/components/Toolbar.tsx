@@ -19,8 +19,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   return (
     <div className="flex items-center gap-1.5">
-      <Button 
-        className="gap-2 rounded-xl gradient-bg shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-200 px-4"
+      <button 
+        className="glass-liquid gap-2 px-4 py-2 text-white font-medium text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         disabled={isExporting}
         onClick={onExportPDF}
       >
@@ -30,7 +30,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <Download className="w-4 h-4" />
         )}
         <span className="font-medium">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
-      </Button>
+      </button>
 
       <Button 
         variant="outline" 

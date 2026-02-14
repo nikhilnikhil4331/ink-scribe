@@ -61,16 +61,15 @@ export const CTASection: React.FC<CTASectionProps> = ({ onStartWriting }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Button
-              size="lg"
+            <button
               onClick={onStartWriting}
-              className="group h-16 px-10 text-lg font-semibold rounded-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300"
+              className="group glass-liquid h-16 px-10 text-lg font-semibold text-white transition-all duration-300 cursor-pointer"
             >
               <span className="flex items-center gap-3">
                 Start Creating Now
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </span>
-            </Button>
+            </button>
           </motion.div>
 
           <p className="mt-6 text-sm text-muted-foreground">
