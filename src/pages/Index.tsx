@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
 import { DiagramToolbar } from '@/components/DiagramToolbar';
 import { useInlineContent } from '@/hooks/useInlineContent';
+import { FisheyeCameraBackground } from '@/components/FisheyeCameraBackground';
 const Index = () => {
   const navigate = useNavigate();
   const {
@@ -615,7 +616,10 @@ const Index = () => {
       scale: 0.95
     })
   };
-  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background, glassMode && "glass-mode")}>
+  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative", moodStyles.background, glassMode && "glass-mode")}>
+      {/* Fisheye Camera Mirror Background */}
+      <FisheyeCameraBackground isActive={glassMode} />
+
       {/* Header - Apple-style glassmorphism */}
       <motion.header initial={{
       y: -20,

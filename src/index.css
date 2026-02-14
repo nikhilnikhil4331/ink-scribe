@@ -885,16 +885,23 @@
    ============================================ */
 
 .glass-mode {
-  /* Override background to a dark, moody base */
-  background: linear-gradient(135deg, hsl(220 20% 8%), hsl(240 15% 12%), hsl(220 20% 8%)) !important;
+  /* Transparent background so camera feed shows through */
+  background: transparent !important;
+  position: relative;
+}
+
+/* All direct children in glass mode need z-index above camera */
+.glass-mode > *:not(.fixed) {
+  position: relative;
+  z-index: 1;
 }
 
 /* Header in glass mode */
 .glass-mode header,
 .glass-mode .sticky {
-  background: hsl(220 20% 6% / 0.7) !important;
-  backdrop-filter: blur(30px) saturate(1.5) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(1.5) !important;
+  background: hsl(220 20% 6% / 0.55) !important;
+  backdrop-filter: blur(40px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.5) !important;
   border-color: hsl(0 0% 100% / 0.08) !important;
 }
 
@@ -958,8 +965,16 @@
 .glass-mode .paper-college,
 .glass-mode .paper-graph,
 .glass-mode .paper-dotted {
-  background-color: hsl(220 20% 8% / 0.4) !important;
+  background-color: hsl(220 20% 8% / 0.35) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid hsl(0 0% 100% / 0.06);
+}
+
+/* Main content area */
+.glass-mode main {
+  position: relative;
+  z-index: 1;
 }
 
 /* Mood selector pills */
