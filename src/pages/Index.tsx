@@ -25,8 +25,8 @@ import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Br
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
- import { InlineDiagram } from '@/types/noteLine';
- import { useAutoPagination } from '@/hooks/useAutoPagination';
+import { InlineDiagram } from '@/types/noteLine';
+import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
@@ -72,14 +72,14 @@ const Index = () => {
     tableData,
     updateTableData
   } = useTableData(settings.table.rows, settings.table.columns);
-  
+
   // Inline content (images/diagrams)
   const {
     content: inlineContent,
     addImage,
     addDiagram: addInlineDiagram,
     updateContent,
-    removeContent,
+    removeContent
   } = useInlineContent();
   const {
     mood,
@@ -110,7 +110,7 @@ const Index = () => {
     setPaywallOpen(true);
   }, []);
   const quickDictation = useSpeechDictation({
-    onFinalTranscript: text => {
+    onFinalTranscript: (text) => {
       handlePaste(text);
     }
   });
@@ -146,7 +146,7 @@ const Index = () => {
 
   // Line operations
   const saveToHistory = useCallback((lineId: string, line: NoteLine) => {
-    setLineHistories(prev => {
+    setLineHistories((prev) => {
       const newHistories = new Map(prev);
       const history = newHistories.get(lineId) || {
         past: [],
@@ -160,10 +160,10 @@ const Index = () => {
     });
   }, []);
   const updateLineText = useCallback((lineId: string, text: string) => {
-    const lineIndex = lines.findIndex(l => l.id === lineId);
+    const lineIndex = lines.findIndex((l) => l.id === lineId);
     if (lineIndex === -1) return;
     saveToHistory(lineId, lines[lineIndex]);
-    const newLines = lines.map(line => line.id === lineId ? {
+    const newLines = lines.map((line) => line.id === lineId ? {
       ...line,
       text,
       timestamp: Date.now()
@@ -171,7 +171,7 @@ const Index = () => {
     updateCurrentPageLines(newLines);
   }, [lines, saveToHistory, updateCurrentPageLines]);
   const updateLineColor = useCallback((lineId: string, color: LineInkColor) => {
-    const newLines = lines.map(line => line.id === lineId ? {
+    const newLines = lines.map((line) => line.id === lineId ? {
       ...line,
       color,
       timestamp: Date.now()
@@ -180,7 +180,7 @@ const Index = () => {
   }, [lines, updateCurrentPageLines]);
   const updateSelectedLinesColor = useCallback((color: LineInkColor) => {
     if (selectedLines.size === 0) return;
-    const newLines = lines.map(line => selectedLines.has(line.id) ? {
+    const newLines = lines.map((line) => selectedLines.has(line.id) ? {
       ...line,
       color,
       timestamp: Date.now()
@@ -190,7 +190,7 @@ const Index = () => {
   }, [lines, selectedLines, updateCurrentPageLines]);
   const addLine = useCallback((afterLineId?: string): string => {
     const newId = generateLineId();
-    const newLineIndex = afterLineId ? lines.findIndex(l => l.id === afterLineId) + 1 : lines.length;
+    const newLineIndex = afterLineId ? lines.findIndex((l) => l.id === afterLineId) + 1 : lines.length;
     const newLine: NoteLine = {
       id: newId,
       text: '',
@@ -204,23 +204,23 @@ const Index = () => {
   }, [lines, updateCurrentPageLines]);
   const removeLine = useCallback((lineId: string) => {
     if (lines.length <= 1) {
-      const newLines = lines.map(line => line.id === lineId ? {
+      const newLines = lines.map((line) => line.id === lineId ? {
         ...line,
         text: '',
         timestamp: Date.now()
       } : line);
       updateCurrentPageLines(newLines);
     } else {
-      updateCurrentPageLines(lines.filter(line => line.id !== lineId));
+      updateCurrentPageLines(lines.filter((line) => line.id !== lineId));
     }
-    setSelectedLines(prev => {
+    setSelectedLines((prev) => {
       const next = new Set(prev);
       next.delete(lineId);
       return next;
     });
   }, [lines, updateCurrentPageLines]);
   const selectLine = useCallback((lineId: string, multiSelect = false) => {
-    setSelectedLines(prev => {
+    setSelectedLines((prev) => {
       if (multiSelect) {
         const next = new Set(prev);
         if (next.has(lineId)) {
@@ -233,92 +233,92 @@ const Index = () => {
         return new Set([lineId]);
       }
     });
-    const line = lines.find(l => l.id === lineId);
+    const line = lines.find((l) => l.id === lineId);
     if (line) {
       setCurrentColor(line.color);
     }
   }, [lines]);
- const clearSelection = useCallback(() => {
-     setSelectedLines(new Set());
-   }, []);
-   
-   // CRITICAL: Auto-pagination hook for smart paste and page management
-   const autoPagination = useAutoPagination({
-     settings,
-     lines,
-     updateLines: updateCurrentPageLines,
-     addNewPage,
-     totalPages,
-     currentPageIndex,
-     goToPage,
-   });
- 
-    // CRITICAL: Enhanced paste handler with mobile-safe line splitting + chunked insertion
-    const handlePaste = useCallback((rawText: string, atLineId?: string) => {
-      const normalized = (rawText ?? '').replace(/\r/g, '');
+  const clearSelection = useCallback(() => {
+    setSelectedLines(new Set());
+  }, []);
 
-      // Preserve blank lines (paragraphs)
-      const pastedLines = normalized.split('\n');
+  // CRITICAL: Auto-pagination hook for smart paste and page management
+  const autoPagination = useAutoPagination({
+    settings,
+    lines,
+    updateLines: updateCurrentPageLines,
+    addNewPage,
+    totalPages,
+    currentPageIndex,
+    goToPage
+  });
 
-      // If mobile collapsed everything into one line, LineBasedEditor will not call us.
-      // If we somehow get a single line here, we treat it as a normal paste and do nothing special.
-      if (pastedLines.length <= 1) return;
+  // CRITICAL: Enhanced paste handler with mobile-safe line splitting + chunked insertion
+  const handlePaste = useCallback((rawText: string, atLineId?: string) => {
+    const normalized = (rawText ?? '').replace(/\r/g, '');
 
-      const insertIndex = atLineId ? lines.findIndex(l => l.id === atLineId) : lines.length - 1;
-      if (insertIndex === -1) return;
+    // Preserve blank lines (paragraphs)
+    const pastedLines = normalized.split('\n');
 
-      // Create separate NoteLine for each pasted line (blank line = paragraph break)
-      const newLinesData = pastedLines.map((lineText, i) => ({
-        id: generateLineId(),
-        text: lineText,
-        color: getDefaultColorForLine(insertIndex + i),
-        timestamp: Date.now() + i
-      }));
+    // If mobile collapsed everything into one line, LineBasedEditor will not call us.
+    // If we somehow get a single line here, we treat it as a normal paste and do nothing special.
+    if (pastedLines.length <= 1) return;
 
-      const currentLine = lines[insertIndex];
+    const insertIndex = atLineId ? lines.findIndex((l) => l.id === atLineId) : lines.length - 1;
+    if (insertIndex === -1) return;
 
-      // Build stable base slices so we can insert in batches without fighting pagination mid-paste
-      const baseBefore = (currentLine?.text ?? '') === ''
-        ? lines.slice(0, insertIndex)
-        : lines.slice(0, insertIndex + 1);
+    // Create separate NoteLine for each pasted line (blank line = paragraph break)
+    const newLinesData = pastedLines.map((lineText, i) => ({
+      id: generateLineId(),
+      text: lineText,
+      color: getDefaultColorForLine(insertIndex + i),
+      timestamp: Date.now() + i
+    }));
 
-      const baseAfter = (currentLine?.text ?? '') === ''
-        ? lines.slice(insertIndex + 1)
-        : lines.slice(insertIndex + 1);
+    const currentLine = lines[insertIndex];
 
-      // Long paste safety (mobile): insert gradually to avoid UI freeze
-      const batchSize = normalized.length > 500 ? 12 : 30; // lines per tick
+    // Build stable base slices so we can insert in batches without fighting pagination mid-paste
+    const baseBefore = (currentLine?.text ?? '') === '' ?
+    lines.slice(0, insertIndex) :
+    lines.slice(0, insertIndex + 1);
 
-      isPastingRef.current = true;
-      let inserted: NoteLine[] = [];
-      let lastWorking: NoteLine[] = [...baseBefore, ...baseAfter];
+    const baseAfter = (currentLine?.text ?? '') === '' ?
+    lines.slice(insertIndex + 1) :
+    lines.slice(insertIndex + 1);
 
-      const tick = () => {
-        const nextBatch = newLinesData.slice(inserted.length, inserted.length + batchSize);
-        inserted = inserted.concat(nextBatch);
+    // Long paste safety (mobile): insert gradually to avoid UI freeze
+    const batchSize = normalized.length > 500 ? 12 : 30; // lines per tick
 
-        lastWorking = [...baseBefore, ...inserted, ...baseAfter];
-        updateCurrentPageLines(lastWorking);
+    isPastingRef.current = true;
+    let inserted: NoteLine[] = [];
+    let lastWorking: NoteLine[] = [...baseBefore, ...baseAfter];
 
-        if (inserted.length < newLinesData.length) {
-          setTimeout(tick, 0);
-          return;
-        }
+    const tick = () => {
+      const nextBatch = newLinesData.slice(inserted.length, inserted.length + batchSize);
+      inserted = inserted.concat(nextBatch);
 
-        // After final batch: paginate once, with the final line set
+      lastWorking = [...baseBefore, ...inserted, ...baseAfter];
+      updateCurrentPageLines(lastWorking);
+
+      if (inserted.length < newLinesData.length) {
+        setTimeout(tick, 0);
+        return;
+      }
+
+      // After final batch: paginate once, with the final line set
+      requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            isPastingRef.current = false;
-            const perPage = autoPagination.linesPerPage;
-            if (lastWorking.length > perPage) {
-              flowOverflowFrom(currentPageIndex, perPage);
-            }
-          });
+          isPastingRef.current = false;
+          const perPage = autoPagination.linesPerPage;
+          if (lastWorking.length > perPage) {
+            flowOverflowFrom(currentPageIndex, perPage);
+          }
         });
-      };
+      });
+    };
 
-      tick();
-    }, [lines, updateCurrentPageLines, autoPagination.linesPerPage, flowOverflowFrom, currentPageIndex]);
+    tick();
+  }, [lines, updateCurrentPageLines, autoPagination.linesPerPage, flowOverflowFrom, currentPageIndex]);
 
   // CRITICAL: Auto pagination after paste OR typing (real new A4 pages, overflow moved)
   useEffect(() => {
@@ -332,10 +332,10 @@ const Index = () => {
   const undoLine = useCallback((lineId: string) => {
     const history = lineHistories.get(lineId);
     if (!history || history.past.length === 0) return;
-    const currentLine = lines.find(l => l.id === lineId);
+    const currentLine = lines.find((l) => l.id === lineId);
     if (!currentLine) return;
     const previousState = history.past[history.past.length - 1];
-    setLineHistories(prevHistories => {
+    setLineHistories((prevHistories) => {
       const newHistories = new Map(prevHistories);
       const h = newHistories.get(lineId)!;
       newHistories.set(lineId, {
@@ -344,16 +344,16 @@ const Index = () => {
       });
       return newHistories;
     });
-    const newLines = lines.map(line => line.id === lineId ? previousState : line);
+    const newLines = lines.map((line) => line.id === lineId ? previousState : line);
     updateCurrentPageLines(newLines);
   }, [lines, lineHistories, updateCurrentPageLines]);
   const redoLine = useCallback((lineId: string) => {
     const history = lineHistories.get(lineId);
     if (!history || history.future.length === 0) return;
-    const currentLine = lines.find(l => l.id === lineId);
+    const currentLine = lines.find((l) => l.id === lineId);
     if (!currentLine) return;
     const nextState = history.future[0];
-    setLineHistories(prevHistories => {
+    setLineHistories((prevHistories) => {
       const newHistories = new Map(prevHistories);
       const h = newHistories.get(lineId)!;
       newHistories.set(lineId, {
@@ -362,7 +362,7 @@ const Index = () => {
       });
       return newHistories;
     });
-    const newLines = lines.map(line => line.id === lineId ? nextState : line);
+    const newLines = lines.map((line) => line.id === lineId ? nextState : line);
     updateCurrentPageLines(newLines);
   }, [lines, lineHistories, updateCurrentPageLines]);
   const canUndo = useCallback((lineId: string) => {
@@ -374,10 +374,10 @@ const Index = () => {
     return history ? history.future.length > 0 : false;
   }, [lineHistories]);
   const getPlainText = useCallback(() => {
-    return lines.map(l => l.text).join('\n');
+    return lines.map((l) => l.text).join('\n');
   }, [lines]);
   const mergeLinesUp = useCallback((lineId: string) => {
-    const lineIndex = lines.findIndex(l => l.id === lineId);
+    const lineIndex = lines.findIndex((l) => l.id === lineId);
     if (lineIndex <= 0) return;
     const currentLine = lines[lineIndex];
     const previousLine = lines[lineIndex - 1];
@@ -442,16 +442,16 @@ const Index = () => {
     setExportMount(true);
 
     // Wait for React to paint + fonts to be ready for capture.
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
     const exportElements = Array.from(
       exportContainerRef.current?.querySelectorAll('[data-export-page="true"]') ?? []
     ) as HTMLElement[];
 
-    const elements = exportElements.length > 0
-      ? exportElements
-      : (previewRef.current?.getPageElements() ?? []);
+    const elements = exportElements.length > 0 ?
+    exportElements :
+    previewRef.current?.getPageElements() ?? [];
 
     if (!elements || elements.length === 0) {
       setExportMount(false);
@@ -468,7 +468,7 @@ const Index = () => {
     );
 
     try {
-      await exportToPDF(elements, 'handwritten-notes', settings.pageSize, progress => {
+      await exportToPDF(elements, 'handwritten-notes', settings.pageSize, (progress) => {
         setExportProgress(progress);
         if (elements.length > 1) {
           toast.loading(`Creating PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, {
@@ -477,9 +477,9 @@ const Index = () => {
         }
       });
 
-      const successMsg = elements.length > 1 
-        ? `PDF with ${elements.length} pages exported successfully!` 
-        : 'PDF exported successfully!';
+      const successMsg = elements.length > 1 ?
+      `PDF with ${elements.length} pages exported successfully!` :
+      'PDF exported successfully!';
 
       toast.success(successMsg, {
         id: toastId
@@ -493,8 +493,8 @@ const Index = () => {
         id: toastId,
         action: {
           label: 'Retry',
-          onClick: () => handleExportPDF(),
-        },
+          onClick: () => handleExportPDF()
+        }
       });
       triggerHaptic('error');
       console.error('Export error:', error);
@@ -563,9 +563,9 @@ const Index = () => {
     // CRITICAL: Never allow embedded newlines inside a single NoteLine.
     // If a chunk contains "\n" (common from OCR paragraph preservation),
     // split it into real editor line blocks so preview/export stays flow-based.
-    const flattened = importedLines.flatMap(chunk => String(chunk ?? '').split(/\r?\n/))
+    const flattened = importedLines.flatMap((chunk) => String(chunk ?? '').split(/\r?\n/))
     // Keep blank lines (paragraph spacing), but normalize trailing whitespace.
-    .map(l => l.replace(/[\t ]+$/g, ''));
+    .map((l) => l.replace(/[\t ]+$/g, ''));
     const safeLines = flattened.length > 0 ? flattened : [''];
 
     // Convert imported lines to NoteLine objects
@@ -616,7 +616,7 @@ const Index = () => {
       scale: 0.95
     })
   };
-  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative", moodStyles.background, glassMode && "glass-mode")}>
+  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0", moodStyles.background, glassMode && "glass-mode")}>
       {/* Fisheye Camera Mirror Background */}
       <FisheyeCameraBackground isActive={glassMode} />
 
@@ -640,17 +640,17 @@ const Index = () => {
           <div className="hidden md:flex items-center gap-2">
             <MoodSelector currentMood={mood} onMoodChange={changeMood} />
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setGlassMode(prev => !prev)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium",
-                glassMode
-                  ? "glass-liquid text-white shadow-lg"
-                  : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-              title="Toggle Glass Mode"
-            >
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setGlassMode((prev) => !prev)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium",
+              glassMode ?
+              "glass-liquid text-white shadow-lg" :
+              "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+            title="Toggle Glass Mode">
+
               <Gem className="w-4 h-4" />
               <span className="hidden lg:inline">Glass</span>
             </motion.button>
@@ -702,15 +702,15 @@ const Index = () => {
       <div className="md:hidden px-4 py-2 flex items-center gap-2">
         <MoodSelector currentMood={mood} onMoodChange={changeMood} />
         <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setGlassMode(prev => !prev)}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium flex-shrink-0",
-            glassMode
-              ? "glass-liquid text-white"
-              : "bg-secondary/50 text-muted-foreground"
-          )}
-        >
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setGlassMode((prev) => !prev)}
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium flex-shrink-0",
+          glassMode ?
+          "glass-liquid text-white" :
+          "bg-secondary/50 text-muted-foreground"
+        )}>
+
           <Gem className="w-3.5 h-3.5" />
         </motion.button>
       </div>
@@ -763,7 +763,7 @@ const Index = () => {
         scale: 1.05
       }}>
           <div>
-            <AIWritingAssistant currentText={getPlainText()} onInsertText={text => handlePaste(text)} locked={!premium.isPremium} onLockedTap={() => requirePremium('ai_writing')} />
+            <AIWritingAssistant currentText={getPlainText()} onInsertText={(text) => handlePaste(text)} locked={!premium.isPremium} onLockedTap={() => requirePremium('ai_writing')} />
           </div>
         </motion.div>
 
@@ -816,7 +816,7 @@ const Index = () => {
 
       {/* Slide Panels for Mobile */}
       <SlidePanel isOpen={showPenPanel} onClose={() => setShowPenPanel(false)} title="Pen Palette" icon={<Palette className="w-4 h-4 text-primary" />} side="right">
-        <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={text => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_writing')} />
+        <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={(text) => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_writing')} />
       </SlidePanel>
 
       <SlidePanel isOpen={showStylePanel} onClose={() => setShowStylePanel(false)} title="Page Style" icon={<Settings2 className="w-4 h-4 text-primary" />} side="right">
@@ -824,7 +824,7 @@ const Index = () => {
       </SlidePanel>
 
       {/* Main Content */}
-      <main className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28 sm:pb-8">
+      <main className="container mx-auto px-2 sm:px-4 lg:px-6 sm:py-6 pb-28 sm:pb-8 my-0 py-[70px]">
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
@@ -859,10 +859,10 @@ const Index = () => {
                 
                 {/* Content toolbar */}
                 <div className="mb-3">
-                  <DiagramToolbar 
-                    onAddDiagram={handleAddInlineDiagram} 
-                    onAddImage={handleImageUpload}
-                  />
+                  <DiagramToolbar
+                  onAddDiagram={handleAddInlineDiagram}
+                  onAddImage={handleImageUpload} />
+
                 </div>
                 
                 <AnimatePresence mode="wait" custom={pageDirection}>
@@ -886,7 +886,7 @@ const Index = () => {
               </motion.div>
               
               {/* Mobile Live Preview floating above keyboard */}
-              <MobileLivePreview lines={lines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded(prev => !prev)} isExpanded={isMobileLivePreviewExpanded} />
+              <MobileLivePreview lines={lines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded((prev) => !prev)} isExpanded={isMobileLivePreviewExpanded} />
             </TabsContent>
             
             <TabsContent value="preview" className="mt-0">
@@ -912,17 +912,17 @@ const Index = () => {
                     handleNextPage();
                   }
                 }}>
-                    <NotebookPreview 
-                      ref={previewRef} 
-                      lines={lines} 
-                      settings={settings} 
-                      realPenMode={realPenMode} 
-                      pageNumber={currentPageIndex + 1} 
-                      totalPages={totalPages}
-                      inlineContent={inlineContent}
-                      onUpdateContent={updateContent}
-                      onDeleteContent={removeContent}
-                    />
+                    <NotebookPreview
+                    ref={previewRef}
+                    lines={lines}
+                    settings={settings}
+                    realPenMode={realPenMode}
+                    pageNumber={currentPageIndex + 1}
+                    totalPages={totalPages}
+                    inlineContent={inlineContent}
+                    onUpdateContent={updateContent}
+                    onDeleteContent={removeContent} />
+
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -960,28 +960,28 @@ const Index = () => {
                 stiffness: 300,
                 damping: 30
               }}>
-                  <LineBasedEditor 
-                    lines={lines} 
-                    selectedLines={selectedLines} 
-                    currentColor={currentColor} 
-                    realPenMode={realPenMode} 
-                    onLineTextChange={updateLineText} 
-                    onLineColorChange={updateLineColor} 
-                    onSelectLine={selectLine} 
-                    onAddLine={addLine} 
-                    onRemoveLine={removeLine} 
-                    onPaste={handlePaste} 
-                    onMergeLinesUp={mergeLinesUp} 
-                  />
+                  <LineBasedEditor
+                  lines={lines}
+                  selectedLines={selectedLines}
+                  currentColor={currentColor}
+                  realPenMode={realPenMode}
+                  onLineTextChange={updateLineText}
+                  onLineColorChange={updateLineColor}
+                  onSelectLine={selectLine}
+                  onAddLine={addLine}
+                  onRemoveLine={removeLine}
+                  onPaste={handlePaste}
+                  onMergeLinesUp={mergeLinesUp} />
+
                 </motion.div>
               </AnimatePresence>
               
               {/* Content toolbar for desktop */}
               <div className="mt-4">
-                <DiagramToolbar 
-                  onAddDiagram={handleAddInlineDiagram} 
-                  onAddImage={handleImageUpload}
-                />
+                <DiagramToolbar
+                onAddDiagram={handleAddInlineDiagram}
+                onAddImage={handleImageUpload} />
+
               </div>
             </div>
           </motion.div>
@@ -1012,17 +1012,17 @@ const Index = () => {
                   handleNextPage();
                 }
               }}>
-                  <NotebookPreview 
-                    ref={previewRef} 
-                    lines={lines} 
-                    settings={settings} 
-                    realPenMode={realPenMode} 
-                    pageNumber={currentPageIndex + 1} 
-                    totalPages={totalPages}
-                    inlineContent={inlineContent}
-                    onUpdateContent={updateContent}
-                    onDeleteContent={removeContent}
-                  />
+                  <NotebookPreview
+                  ref={previewRef}
+                  lines={lines}
+                  settings={settings}
+                  realPenMode={realPenMode}
+                  pageNumber={currentPageIndex + 1}
+                  totalPages={totalPages}
+                  inlineContent={inlineContent}
+                  onUpdateContent={updateContent}
+                  onDeleteContent={removeContent} />
+
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -1039,7 +1039,7 @@ const Index = () => {
           delay: 0.3
         }} className={`${showControls ? 'col-span-3' : 'col-span-2'} space-y-4`}>
             <div className="sticky top-36">
-              <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={text => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_writing')} />
+              <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={(text) => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_writing')} />
 
               {/* Quick Export */}
               <motion.div initial={{
@@ -1082,28 +1082,28 @@ const Index = () => {
       </main>
 
       {/* Offscreen export DOM: renders every page at true A4 size using NotebookPreview(forExport). */}
-      {exportMount && (
-        <div
-          ref={exportContainerRef}
-          className="fixed left-[-10000px] top-0 pointer-events-none opacity-0"
-          aria-hidden="true"
-        >
+      {exportMount &&
+    <div
+      ref={exportContainerRef}
+      className="fixed left-[-10000px] top-0 pointer-events-none opacity-0"
+      aria-hidden="true">
+
           <div className="flex flex-col gap-6">
-            {pages.map((page, idx) => (
-              <div key={page.id} style={{ width: 794, height: 1123 }}>
+            {pages.map((page, idx) =>
+        <div key={page.id} style={{ width: 794, height: 1123 }}>
                 <NotebookPreview
-                  lines={page.lines}
-                  settings={settings}
-                  realPenMode={realPenMode}
-                  pageNumber={idx + 1}
-                  totalPages={pages.length}
-                  forExport
-                />
+            lines={page.lines}
+            settings={settings}
+            realPenMode={realPenMode}
+            pageNumber={idx + 1}
+            totalPages={pages.length}
+            forExport />
+
               </div>
-            ))}
+        )}
           </div>
         </div>
-      )}
+    }
 
       {/* Paywall Modal */}
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
