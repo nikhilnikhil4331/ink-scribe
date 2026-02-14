@@ -616,7 +616,7 @@ const Index = () => {
       scale: 0.95
     })
   };
-  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0", moodStyles.background, glassMode && "glass-mode")}>
+  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0 py-0", moodStyles.background, glassMode && "glass-mode")}>
       {/* Fisheye Camera Mirror Background */}
       <FisheyeCameraBackground isActive={glassMode} />
 
@@ -824,7 +824,7 @@ const Index = () => {
       </SlidePanel>
 
       {/* Main Content */}
-      <main className="container mx-auto px-2 sm:px-4 lg:px-6 sm:py-6 pb-28 sm:pb-8 my-0 py-[70px]">
+      <main className="container mx-auto px-2 sm:px-4 lg:px-6 sm:py-6 pb-28 sm:pb-8 my-0 py-[75px]">
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
