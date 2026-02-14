@@ -89,16 +89,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Button
-              size="lg"
+            <button
               onClick={onStartWriting}
-              className="group relative h-14 px-8 text-base font-semibold rounded-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105"
+              className="group glass-liquid h-14 px-8 text-base font-semibold text-white transition-all duration-300 hover:scale-105 cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 Start Writing
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </span>
-            </Button>
+            </button>
             
             <Button
               size="lg"
