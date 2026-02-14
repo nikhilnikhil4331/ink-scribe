@@ -104,7 +104,7 @@ export const PageBar: React.FC<PageBarProps> = ({
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onGoToPage(pageIndex)}
                   className={cn(
-                    "w-6 h-7 sm:w-8 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-medium transition-all duration-200 border flex-shrink-0",
+                    "min-w-[1.5rem] h-7 sm:min-w-[2rem] sm:h-9 px-1 rounded-md sm:rounded-lg inline-flex items-center justify-center text-[10px] sm:text-xs font-medium transition-all duration-200 border flex-shrink-0 leading-none",
                     pageIndex === currentPage - 1
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
