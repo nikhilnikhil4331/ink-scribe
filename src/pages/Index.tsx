@@ -21,7 +21,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useMood } from '@/hooks/useMood';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
@@ -44,6 +44,7 @@ const Index = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [showControls, setShowControls] = useState(true);
+  const [glassMode, setGlassMode] = useState(false);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
@@ -614,7 +615,7 @@ const Index = () => {
       scale: 0.95
     })
   };
-  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background)}>
+  return <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500", moodStyles.background, glassMode && "glass-mode")}>
       {/* Header - Apple-style glassmorphism */}
       <motion.header initial={{
       y: -20,
@@ -631,9 +632,24 @@ const Index = () => {
           {/* Logo - Premium design */}
           
 
-          {/* Center: Mood Selector */}
-          <div className="hidden md:block">
+          {/* Center: Mood Selector + Glass Toggle */}
+          <div className="hidden md:flex items-center gap-2">
             <MoodSelector currentMood={mood} onMoodChange={changeMood} />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setGlassMode(prev => !prev)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium",
+                glassMode
+                  ? "glass-liquid text-white shadow-lg"
+                  : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              )}
+              title="Toggle Glass Mode"
+            >
+              <Gem className="w-4 h-4" />
+              <span className="hidden lg:inline">Glass</span>
+            </motion.button>
           </div>
 
           {/* Right: Actions - iOS-style buttons */}
@@ -679,8 +695,20 @@ const Index = () => {
       </div>
 
       {/* Mobile Mood Selector */}
-      <div className="md:hidden px-4 py-2">
+      <div className="md:hidden px-4 py-2 flex items-center gap-2">
         <MoodSelector currentMood={mood} onMoodChange={changeMood} />
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setGlassMode(prev => !prev)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-300 text-xs font-medium flex-shrink-0",
+            glassMode
+              ? "glass-liquid text-white"
+              : "bg-secondary/50 text-muted-foreground"
+          )}
+        >
+          <Gem className="w-3.5 h-3.5" />
+        </motion.button>
       </div>
 
       {/* Mobile Floating Buttons - iOS-style FAB stack */}
