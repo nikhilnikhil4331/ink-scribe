@@ -882,30 +882,23 @@
 
 /* ============================================
    GLASS MODE - Global UI Transformation
+   Only changes colors/styling, NOT layout/position
    ============================================ */
 
 .glass-mode {
   background: radial-gradient(ellipse at 50% 30%, hsl(220 25% 12%), hsl(220 20% 6%)) !important;
-  position: relative;
-}
-
-/* All direct children in glass mode need z-index above camera */
-.glass-mode > *:not(.fixed) {
-  position: relative;
-  z-index: 1;
 }
 
 /* Header in glass mode */
 .glass-mode header,
 .glass-mode .sticky {
-  background: hsl(220 20% 6% / 0.55) !important;
+  background: hsl(220 20% 6% / 0.75) !important;
   backdrop-filter: blur(40px) saturate(1.5) !important;
   -webkit-backdrop-filter: blur(40px) saturate(1.5) !important;
   border-color: hsl(0 0% 100% / 0.08) !important;
 }
 
 /* Cards, panels, and bordered elements */
-.glass-mode .rounded-2xl[class*="border"],
 .glass-mode .panel-card,
 .glass-mode .card-apple,
 .glass-mode .glass-card {
@@ -919,7 +912,7 @@
 }
 
 /* Tab lists and control areas */
-.glass-mode [class*="bg-secondary"] {
+.glass-mode [role="tablist"] {
   background: hsl(220 20% 14% / 0.5) !important;
   border-color: hsl(0 0% 100% / 0.08) !important;
 }
@@ -933,8 +926,7 @@
 }
 
 .glass-mode .text-muted-foreground,
-.glass-mode p,
-.glass-mode span:not(.glass-liquid span) {
+.glass-mode p {
   color: hsl(220 10% 60%) !important;
 }
 
@@ -970,22 +962,14 @@
   border: 1px solid hsl(0 0% 100% / 0.06);
 }
 
-/* Main content area */
-.glass-mode main {
-  position: relative;
-  z-index: 1;
+/* Editor card background */
+.glass-mode .rounded-2xl {
+  background-color: hsl(220 20% 10% / 0.5) !important;
 }
 
-/* Mood selector pills */
+/* Page bar background */
 .glass-mode [class*="bg-background"] {
-  background: hsl(220 20% 12% / 0.5) !important;
-}
-
-/* Page bar numbers */
-.glass-mode [class*="bg-primary"][class*="rounded-full"],
-.glass-mode [class*="bg-primary"][class*="rounded-xl"] {
-  background: hsl(0 0% 100% / 0.15) !important;
-  border: 1px solid hsl(0 0% 100% / 0.2) !important;
+  background-color: hsl(220 20% 10% / 0.4) !important;
 }
 
 /* Scrollbar in glass mode */
@@ -1014,8 +998,3 @@
 .glass-mode .ink-red { color: hsl(0 84% 65%) !important; }
 .glass-mode .ink-green { color: hsl(142 65% 55%) !important; }
 .glass-mode .ink-purple { color: hsl(262 75% 65%) !important; }
-
-/* Smooth transition for all glass-mode affected elements */
-.glass-mode * {
-  transition: background-color 0.4s ease, color 0.3s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
-}
