@@ -131,7 +131,7 @@ const AdminPanelNikhil: React.FC = () => {
     activeNow: 22000,
     totalPages: 39000,
     totalExports: 18542,
-    totalRevenue: 13552,
+    totalRevenue: 14355,
     premiumUsers: 1284,
     conversionRate: 3.1,
     avgSessionDuration: '14m',
