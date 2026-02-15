@@ -124,20 +124,20 @@ const AdminPanelNikhil: React.FC = () => {
     monthly_price: 99,
   });
 
-  // KPI Data - Demo stats for 215K+ Indian users
+  // KPI Data - Demo stats for 176K+ Indian users
   const [kpiData, setKpiData] = useState({
-    totalUsers: 215442,
-    todayUsers: 19720,
-    activeNow: 112800,
-    totalPages: 200100,
-    totalExports: 95080,
+    totalUsers: 176222,
+    todayUsers: 16140,
+    activeNow: 92300,
+    totalPages: 163800,
+    totalExports: 77850,
     totalRevenue: 14355,
-    premiumUsers: 6585,
+    premiumUsers: 5390,
     conversionRate: 3.1,
     avgSessionDuration: '14m',
-    totalNotebooks: 147400,
-    aiRequests: 66120,
-    totalUploads: 43380,
+    totalNotebooks: 120650,
+    aiRequests: 54120,
+    totalUploads: 35500,
   });
 
   // Generate demo chart data for 30 days
