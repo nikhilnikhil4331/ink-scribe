@@ -885,8 +885,7 @@
    ============================================ */
 
 .glass-mode {
-  /* Transparent background so camera feed shows through */
-  background: transparent !important;
+  background: radial-gradient(ellipse at 50% 30%, hsl(220 25% 12%), hsl(220 20% 6%)) !important;
   position: relative;
 }
 
