@@ -110,7 +110,7 @@
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
             <PenTool className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">ScribeAI</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">NikNote</h1>
           <p className="text-muted-foreground">Transform your handwriting into digital magic</p>
         </motion.div>
 

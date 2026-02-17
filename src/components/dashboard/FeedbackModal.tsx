@@ -71,7 +71,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
             <h2 className="text-xl font-bold text-foreground">Send Feedback</h2>
-            <p className="text-sm text-muted-foreground mt-1">Help us improve ScribeAI</p>
+            <p className="text-sm text-muted-foreground mt-1">Help us improve NikNote</p>
           </div>
           <button
             onClick={onClose}

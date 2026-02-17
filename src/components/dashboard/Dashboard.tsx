@@ -68,7 +68,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <PenTool className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">ScribeAI</h1>
+                <h1 className="text-xl font-bold text-foreground">NikNote</h1>
                 <p className="text-xs text-muted-foreground">Your handwriting, digitized</p>
               </div>
             </div>
