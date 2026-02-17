@@ -105,7 +105,7 @@ export default function Signup() {
             <PenTool className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Create Account</h1>
-          <p className="text-muted-foreground">Join ScribeAI and transform your handwriting</p>
+          <p className="text-muted-foreground">Join NikNote and transform your handwriting</p>
         </motion.div>
 
         {/* Signup Card */}

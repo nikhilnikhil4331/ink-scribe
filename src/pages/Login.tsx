@@ -99,7 +99,7 @@ export default function Login() {
             <PenTool className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your ScribeAI account</p>
+          <p className="text-muted-foreground">Sign in to your NikNote account</p>
         </motion.div>
 
         {/* Login Card */}
