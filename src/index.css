@@ -463,20 +463,29 @@
     @apply transition-all duration-300 ease-out;
   }
 
-  /* Glass effect - Apple style */
+  /* Glass effect - Apple Vision Pro style */
   .glass {
-    @apply bg-white/80 dark:bg-black/60 backdrop-blur-2xl border-white/30 dark:border-white/10;
-    -webkit-backdrop-filter: blur(40px);
-    backdrop-filter: blur(40px);
+    @apply bg-white/75 dark:bg-black/60;
+    -webkit-backdrop-filter: blur(40px) saturate(1.4);
+    backdrop-filter: blur(40px) saturate(1.4);
+    border-color: hsl(0 0% 100% / 0.25);
   }
 
   .glass-subtle {
-    @apply bg-white/60 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/5;
+    @apply bg-white/55 dark:bg-black/40;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    backdrop-filter: blur(24px) saturate(1.2);
+    border-color: hsl(0 0% 100% / 0.15);
   }
 
   .glass-card {
-    @apply bg-card/95 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/20;
-    border: 1px solid hsl(var(--border) / 0.5);
+    @apply backdrop-blur-2xl;
+    background: hsl(var(--card) / 0.88);
+    border: 1px solid hsl(0 0% 100% / 0.2);
+    box-shadow: 
+      0 8px 32px hsl(var(--foreground) / 0.06),
+      0 2px 8px hsl(var(--foreground) / 0.03),
+      inset 0 1px 0 hsl(0 0% 100% / 0.1);
   }
 
   /* Gradient text */
@@ -559,13 +568,39 @@
 
   /* Apple-style card */
   .card-apple {
-    @apply rounded-3xl border border-border/50 bg-card/95 backdrop-blur-xl;
+    @apply rounded-3xl border bg-card/90 backdrop-blur-2xl;
+    border-color: hsl(0 0% 100% / 0.18);
     box-shadow: 
-      0 1px 1px hsl(var(--foreground) / 0.02),
-      0 2px 2px hsl(var(--foreground) / 0.02),
-      0 4px 4px hsl(var(--foreground) / 0.02),
-      0 8px 8px hsl(var(--foreground) / 0.02),
-      0 16px 16px hsl(var(--foreground) / 0.02);
+      0 1px 1px hsl(var(--foreground) / 0.03),
+      0 4px 8px hsl(var(--foreground) / 0.04),
+      0 12px 24px hsl(var(--foreground) / 0.06),
+      0 24px 48px hsl(var(--foreground) / 0.04);
+  }
+
+  /* Glass panel - premium floating panel */
+  .glass-panel {
+    @apply rounded-2xl backdrop-blur-2xl;
+    background: hsl(var(--card) / 0.85);
+    border: 1px solid hsl(0 0% 100% / 0.2);
+    box-shadow: 
+      0 8px 32px hsl(var(--foreground) / 0.08),
+      0 2px 8px hsl(var(--foreground) / 0.04),
+      inset 0 1px 0 hsl(0 0% 100% / 0.12);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+  }
+
+  /* Glass panel elevated */
+  .glass-panel-elevated {
+    @apply rounded-2xl backdrop-blur-2xl;
+    background: hsl(var(--card) / 0.92);
+    border: 1px solid hsl(0 0% 100% / 0.25);
+    box-shadow: 
+      0 12px 40px hsl(var(--foreground) / 0.12),
+      0 4px 12px hsl(var(--foreground) / 0.06),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
   }
 
   /* Floating element - iOS style */

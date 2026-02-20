@@ -628,7 +628,7 @@ const Index = () => {
       type: 'spring',
       stiffness: 300,
       damping: 30
-    }} className="sticky top-0 z-50 glass border-b border-border/30 h-14 sm:h-16 flex-shrink-0">
+    }} className="sticky top-0 z-50 glass border-b border-white/15 h-14 sm:h-16 flex-shrink-0">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-full flex items-center justify-between overflow-hidden">
           {/* Logo - Premium design */}
           
@@ -689,7 +689,7 @@ const Index = () => {
       </motion.header>
 
       {/* Page Bar - Fixed height to prevent mobile overflow */}
-      <div className="sticky top-14 sm:top-16 z-40 bg-background/50 backdrop-blur-sm py-1.5 sm:py-2 px-2 sm:px-4 h-14 sm:h-16 flex-shrink-0 overflow-hidden">
+      <div className="sticky top-14 sm:top-16 z-40 glass-subtle border-b border-white/10 py-1.5 sm:py-2 px-2 sm:px-4 h-14 sm:h-16 flex-shrink-0 overflow-hidden">
         <div className="container mx-auto max-w-4xl h-full flex items-center">
           <PageBar currentPage={currentPageIndex + 1} totalPages={totalPages} onPrevPage={handlePrevPage} onNextPage={handleNextPage} onAddPage={handleAddPage} onDeletePage={handleDeletePage} canGoPrev={canGoPrev} canGoNext={canGoNext} onGoToPage={handleGoToPage} />
         </div>
@@ -825,7 +825,7 @@ const Index = () => {
         {/* Mobile Tabs */}
         <div className="lg:hidden">
           <Tabs defaultValue="editor" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4 p-1 h-12 bg-secondary/50 rounded-2xl">
+            <TabsList className="grid w-full grid-cols-2 mb-4 p-1.5 h-12 glass-panel rounded-2xl">
               <TabsTrigger value="editor" className="gap-1 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Edit3 className="w-4 h-4" />
                 <span className="text-xs font-medium">Write</span>
@@ -843,7 +843,7 @@ const Index = () => {
             }} animate={{
               opacity: 1,
               y: 0
-            }} className={cn("rounded-2xl border border-border/50 shadow-xl p-4", moodStyles.paper)}>
+            }} className={cn("glass-panel-elevated p-4", moodStyles.paper)}>
                 <div className="flex items-center gap-2.5 mb-4">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     <Edit3 className="w-4 h-4 text-primary" />
@@ -893,7 +893,7 @@ const Index = () => {
             }} animate={{
               opacity: 1,
               y: 0
-            }} className="rounded-2xl border border-border/50 min-h-[500px] overflow-hidden shadow-xl">
+            }} className="glass-panel-elevated min-h-[500px] overflow-hidden">
                 <AnimatePresence mode="wait" custom={pageDirection}>
                   <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{
                   type: 'spring',
@@ -939,7 +939,7 @@ const Index = () => {
         }} transition={{
           delay: 0.1
         }} className="col-span-4">
-            <div className={cn("rounded-2xl border border-border/50 shadow-xl p-4 sticky top-36", moodStyles.paper)}>
+            <div className={cn("glass-panel-elevated p-4 sticky top-36", moodStyles.paper)}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -993,7 +993,7 @@ const Index = () => {
         }} transition={{
           delay: 0.2
         }} className={`${showControls ? 'col-span-5' : 'col-span-6'} transition-all duration-500 ease-out`}>
-            <div className="rounded-2xl border border-border/50 min-h-[calc(100vh-10rem)] overflow-hidden shadow-2xl">
+            <div className="glass-panel-elevated min-h-[calc(100vh-10rem)] overflow-hidden">
               <AnimatePresence mode="wait" custom={pageDirection}>
                 <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{
                 type: 'spring',
@@ -1045,7 +1045,7 @@ const Index = () => {
               opacity: 1
             }} transition={{
               delay: 0.4
-            }} className="mt-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
+            }} className="mt-4 p-4 glass-panel">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Export</h4>
                 <div className="grid grid-cols-1 gap-2">
                   <AnimatedButton variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs">

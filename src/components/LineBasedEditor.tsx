@@ -374,7 +374,9 @@ export const LineBasedEditor: React.FC<LineBasedEditorProps> = ({
     <div 
       ref={containerRef}
       className={cn(
-        "relative bg-paper rounded-xl border border-border/50 shadow-inner overflow-hidden",
+        "relative rounded-2xl border overflow-hidden",
+        "bg-paper/90 backdrop-blur-xl",
+        "border-white/15 shadow-lg",
         "transition-all duration-200",
         keyboardVisible && "pb-4"
       )}
