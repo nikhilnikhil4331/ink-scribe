@@ -13,7 +13,7 @@ const testimonials = [
   {
     name: 'Priya S.',
     role: 'Engineering Student',
-    text: 'NikNote saved me hours of rewriting lab notes. The handwriting looks so real my professor couldn't tell the difference!',
+    text: "NikNote saved me hours of rewriting lab notes. The handwriting looks so real my professor couldn't tell the difference!",
     rating: 5,
   },
   {
