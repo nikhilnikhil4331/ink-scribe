@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Share2, ChevronLeft, ChevronRight, Loader2, Crown } from 'lucide-react';
 import { NoteSettings } from '@/types/notes';
@@ -46,10 +46,9 @@ export const StepPreview: React.FC<StepPreviewProps> = ({
               <NotebookPreview
                 lines={page.lines}
                 settings={settings}
-                inlineContent={[]}
-                diagrams={[]}
-                tableData={[]}
-                isExporting={false}
+                realPenMode={false}
+                pageNumber={idx + 1}
+                totalPages={totalPages}
               />
             </div>
           ))}

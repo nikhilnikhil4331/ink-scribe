@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { NoteLine, LineInkColor } from '@/types/noteLine';
 import { LineBasedEditor } from '@/components/LineBasedEditor';
 
@@ -36,15 +36,14 @@ export const StepContent: React.FC<StepContentProps> = ({
             lines={lines}
             selectedLines={new Set()}
             currentColor={currentColor}
-            onUpdateText={onUpdateLineText}
+            realPenMode={false}
+            onLineTextChange={onUpdateLineText}
+            onLineColorChange={(id, color) => onColorChange(color)}
             onAddLine={onAddLine}
             onRemoveLine={onRemoveLine}
             onSelectLine={() => {}}
-            onClearSelection={() => {}}
-            onColorChange={onColorChange}
             onMergeLinesUp={onMergeLinesUp}
             onPaste={onPaste}
-            realPenMode={false}
           />
         </div>
       </div>
