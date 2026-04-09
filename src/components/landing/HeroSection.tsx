@@ -20,24 +20,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Floating Orbs */}
       <motion.div 
         className="absolute top-20 left-[10%] w-72 h-72 bg-primary/10 rounded-full blur-3xl"
-        animate={{ 
-          y: [0, 30, 0],
-          scale: [1, 1.1, 1],
-        }}
+        animate={{ y: [0, 30, 0], scale: [1, 1.1, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div 
         className="absolute bottom-20 right-[10%] w-96 h-96 bg-accent/10 rounded-full blur-3xl"
-        animate={{ 
-          y: [0, -40, 0],
-          scale: [1, 1.15, 1],
-        }}
+        animate={{ y: [0, -40, 0], scale: [1, 1.15, 1] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       />
 
       {/* Content */}
@@ -51,35 +40,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
           >
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">AI-Powered Handwriting</span>
+            <span className="text-sm font-medium text-primary">AI-Powered Handwriting Generator</span>
           </motion.div>
 
-          {/* Main Headline */}
+          {/* H1 — SEO keyword target */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
           >
-            <span className="text-foreground">Turn Text Into</span>
+            <span className="text-foreground">Turn Typed Text Into</span>
             <br />
             <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
-              Beautiful Handwritten
+              Realistic Handwritten
             </span>
             <br />
             <span className="text-foreground">Notes</span>
           </motion.h1>
 
-          {/* Subheadline */}
+          {/* Sub — value proposition */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Create stunning, realistic handwritten notes in seconds. 
-            Perfect for students, creators, and anyone who wants their notes 
-            to feel <span className="text-foreground font-medium">personal and authentic</span>.
+            Choose from 16+ handwriting styles, pick your paper and ink, preview instantly,
+            and export a print-ready PDF. Perfect for{' '}
+            <span className="text-foreground font-medium">students, teachers, and creators</span>.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -89,15 +78,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <button
+            <Button
+              size="lg"
               onClick={onStartWriting}
-              className="group glass-liquid h-14 px-8 text-base font-semibold text-white transition-all duration-300 hover:scale-105 cursor-pointer"
+              className="group h-14 px-8 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
-              <span className="flex items-center gap-2">
-                Start Writing
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </span>
-            </button>
+              Try Free — No Signup
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+            </Button>
             
             <Button
               size="lg"
@@ -106,10 +94,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="group h-14 px-8 text-base font-semibold rounded-full border-2 hover:bg-secondary/50 transition-all duration-300 hover:scale-105"
             >
               <Play className="w-5 h-5 mr-2 text-primary" />
-              Preview Notes
+              See Examples
             </Button>
           </motion.div>
 
+          {/* Social proof strip */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
