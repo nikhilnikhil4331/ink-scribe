@@ -1,9 +1,15 @@
 import React from 'react';
 import { LandingHeader } from './LandingHeader';
 import { HeroSection } from './HeroSection';
+import { SocialProofSection } from './SocialProofSection';
+import { HowItWorksSection } from './HowItWorksSection';
 import { FeatureShowcase } from './FeatureShowcase';
 import { PreviewSection } from './PreviewSection';
+import { PricingTeaser } from './PricingTeaser';
+import { FAQSection } from './FAQSection';
 import { CTASection } from './CTASection';
+import { DisclaimerBanner } from './DisclaimerBanner';
+import { LandingFooter } from './LandingFooter';
 
 interface LandingPageProps {
   isDark: boolean;
@@ -17,7 +23,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onStartWriting,
 }) => {
   const handlePreviewNotes = () => {
-    // Scroll to preview section
     const previewSection = document.getElementById('preview-section');
     if (previewSection) {
       previewSection.scrollIntoView({ behavior: 'smooth' });
@@ -38,32 +43,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           onPreviewNotes={handlePreviewNotes}
         />
         
+        <SocialProofSection />
+        
+        <HowItWorksSection />
+        
         <FeatureShowcase />
         
         <div id="preview-section">
           <PreviewSection />
         </div>
         
+        <PricingTeaser />
+        
+        <FAQSection />
+        
         <CTASection onStartWriting={onStartWriting} />
         
-        {/* Footer */}
-        <footer className="py-8 border-t border-border/50">
-          <div className="container mx-auto px-4 lg:px-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                © 2024 Nik Note. Made with ❤️ for note-takers everywhere.
-              </p>
-              <div className="flex items-center gap-6">
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy
-                </a>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Terms
-                </a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <DisclaimerBanner />
+        
+        <LandingFooter />
       </main>
     </div>
   );

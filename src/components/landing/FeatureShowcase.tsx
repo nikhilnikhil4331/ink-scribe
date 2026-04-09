@@ -6,45 +6,51 @@ import {
   FileText, 
   Sparkles, 
   Download, 
-  Mic 
+  Mic,
+  Sliders,
+  BookOpen,
 } from 'lucide-react';
 
 const features = [
   {
     icon: Pen,
-    title: 'Realistic Handwriting',
-    description: 'Choose from 16+ handwriting styles that look authentically written by hand.',
-    gradient: 'from-blue-500 to-cyan-500',
+    title: '16+ Handwriting Styles',
+    description: 'From neat cursive to casual print — each with adjustable randomness so it never looks robotic.',
   },
   {
     icon: Palette,
-    title: 'Custom Ink Colors',
-    description: 'Pick your perfect ink color from blues, blacks, reds, and more.',
-    gradient: 'from-purple-500 to-pink-500',
+    title: '12 Ink Colors',
+    description: 'Classic blue, black, red, green, and more. Match any notebook or assignment requirement.',
   },
   {
     icon: FileText,
-    title: 'Paper Styles',
-    description: 'Ruled, graph, dotted, or plain – choose the perfect paper for your notes.',
-    gradient: 'from-orange-500 to-red-500',
+    title: 'Multiple Paper Types',
+    description: 'Ruled, college-ruled, graph, dotted, plain, and legal paper with adjustable margins.',
+  },
+  {
+    icon: Sliders,
+    title: 'Natural Imperfections',
+    description: 'Baseline jitter, stroke variation, and spacing randomness make output look genuinely handwritten.',
+  },
+  {
+    icon: Download,
+    title: 'PDF & Image Export',
+    description: 'Export multi-page PDFs at 300 DPI. Also download individual pages as PNG images.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Save Projects & Presets',
+    description: 'Save your work, come back to edit, and reuse your favorite style combinations.',
   },
   {
     icon: Sparkles,
     title: 'AI Writing Assistant',
-    description: 'Let AI help you write better notes with smart suggestions.',
-    gradient: 'from-green-500 to-emerald-500',
-  },
-  {
-    icon: Download,
-    title: 'Easy Export',
-    description: 'Export your notes as PNG or PDF with one click.',
-    gradient: 'from-indigo-500 to-violet-500',
+    description: 'Get smart suggestions to improve your notes, fix grammar, or expand ideas.',
   },
   {
     icon: Mic,
     title: 'Voice Dictation',
-    description: 'Speak your thoughts and watch them transform into handwritten notes.',
-    gradient: 'from-pink-500 to-rose-500',
+    description: 'Speak your thoughts and watch them transform into handwritten notes in real time.',
   },
 ];
 
@@ -52,19 +58,13 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
 export const FeatureShowcase: React.FC = () => {
@@ -79,16 +79,15 @@ export const FeatureShowcase: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Everything You Need to Create
-            <br />
+          <span className="text-sm font-semibold text-primary uppercase tracking-wider">Features</span>
+          <h2 className="text-3xl sm:text-4xl font-bold mt-3 mb-4 text-foreground">
+            Everything You Need for{' '}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Perfect Notes
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Powerful features designed to make your note-taking experience 
-            effortless and beautiful.
+            Powerful tools designed to make your handwritten notes look authentic and professional.
           </p>
         </motion.div>
 
@@ -98,29 +97,23 @@ export const FeatureShowcase: React.FC = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto"
         >
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <motion.div
               key={feature.title}
               variants={itemVariants}
-              className="group relative p-6 bg-card rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
+              className="group relative p-6 bg-card rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
             >
-              {/* Icon */}
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                <feature.icon className="w-5 h-5 text-primary" />
               </div>
-
-              {/* Content */}
-              <h3 className="text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
+              <h3 className="text-base font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {feature.description}
               </p>
-
-              {/* Hover Glow */}
-              <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
             </motion.div>
           ))}
         </motion.div>
