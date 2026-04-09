@@ -38,6 +38,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/welcome" element={<Welcome />} />
               {/* Dedicated auth routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
