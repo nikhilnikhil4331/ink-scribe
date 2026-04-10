@@ -503,6 +503,23 @@ const Index = () => {
         </div>
       </motion.header>
 
+      {/* Desktop: Sidebar + Content flex row */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — desktop only */}
+        {!isMobile && (
+          <AnimatePresence>
+            {sidebarOpen && (
+              <WorkspaceSidebar
+                isOpen={sidebarOpen}
+                onToggle={() => setSidebarOpen(false)}
+              />
+            )}
+          </AnimatePresence>
+        )}
+
+        {/* Main scrollable area */}
+        <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
+
       {/* Page Bar */}
       <div className="sticky top-14 sm:top-16 z-40 glass-subtle border-b border-white/10 py-1.5 sm:py-2 px-2 sm:px-4 h-14 sm:h-16 flex-shrink-0 overflow-hidden">
         <div className="container mx-auto max-w-4xl h-full flex items-center">
