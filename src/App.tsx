@@ -39,7 +39,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              
+              <Route path="/app" element={<AppWorkspace />} />
               <Route path="/welcome" element={<Welcome />} />
               {/* Dedicated auth routes */}
               <Route path="/login" element={<Login />} />
