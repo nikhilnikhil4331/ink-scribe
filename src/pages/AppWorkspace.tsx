@@ -8,6 +8,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { usePremium } from '@/hooks/usePremium';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStreak } from '@/hooks/useStreak';
 import { exportToPDF } from '@/utils/export';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
 import { toast } from 'sonner';
@@ -32,6 +33,7 @@ const AppWorkspace = () => {
   const { triggerHaptic } = useHaptics();
   const { playClick, playSuccess } = useSoundEffects();
   const premium = usePremium();
+  const streakData = useStreak();
   const [isExporting, setIsExporting] = useState(false);
 
   const {
@@ -172,6 +174,7 @@ const AppWorkspace = () => {
         wordCount={wordCount}
         currentPage={currentPageIndex + 1}
         totalPages={totalPages}
+        currentStreak={streakData.streak.currentStreak}
       />
 
       <div className="flex-1 overflow-hidden relative">

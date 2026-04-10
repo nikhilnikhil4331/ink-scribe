@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PenLine, Palette, Eye } from 'lucide-react';
+import { PenLine, Palette, Eye, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export type AppStep = 'content' | 'style' | 'preview';
 
@@ -17,6 +18,8 @@ const NAV_ITEMS: { key: AppStep; icon: React.ElementType; label: string }[] = [
 ];
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentStep, onStepChange }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/40 safe-area-pb">
       <div className="flex items-stretch h-16 max-w-md mx-auto">
@@ -55,6 +58,16 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentStep, onStepC
             </motion.button>
           );
         })}
+
+        {/* Achievements tab */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/achievements')}
+          className="flex-1 flex flex-col items-center justify-center gap-1 text-muted-foreground"
+        >
+          <Trophy className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Badges</span>
+        </motion.button>
       </div>
     </div>
   );
