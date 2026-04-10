@@ -382,7 +382,12 @@ const Index = () => {
           {isMobile ? (
             <h1 className="text-lg font-bold text-foreground tracking-tight">NikNote</h1>
           ) : (
-            <div />
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
+                <PanelLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-sm font-bold text-foreground tracking-tight">NikNote</h1>
+            </div>
           )}
 
           {/* Center: Mood Selector + Glass Toggle (desktop only) */}
