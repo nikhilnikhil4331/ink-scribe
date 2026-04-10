@@ -3,10 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
-import AppWorkspace from "./pages/AppWorkspace";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 import { AuthPage } from "@/components/auth/AuthPage";
@@ -41,7 +40,8 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/app" element={<AppWorkspace />} />
+              {/* /app now redirects to / — unified workspace */}
+              <Route path="/app" element={<Navigate to="/" replace />} />
               <Route path="/welcome" element={<Welcome />} />
               {/* Dedicated auth routes */}
               <Route path="/login" element={<Login />} />
