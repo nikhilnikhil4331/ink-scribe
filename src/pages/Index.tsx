@@ -27,7 +27,7 @@ import { useMood } from '@/hooks/useMood';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
 import { PanelLeft } from 'lucide-react';
@@ -478,12 +478,20 @@ const Index = () => {
               </>
             ) : (
               <>
-                {/* Desktop: Full toolbar */}
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button variant="outline" size="sm" onClick={() => navigate('/ai-solver')} className="gap-1.5 rounded-full border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 h-9 px-3 sm:px-4 shadow-sm transition-all duration-200">
-                    <Brain className="w-4 h-4" />
-                    <span className="hidden sm:inline text-xs font-medium">AI Solver</span>
-                  </Button>
+                {/* Desktop: Full toolbar — Prominent AI Solver */}
+                <motion.div
+                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.04 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                >
+                  <button
+                    onClick={() => navigate('/ai-solver')}
+                    className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(102,126,234,0.4)] hover:shadow-[0_0_30px_rgba(102,126,234,0.6)] transition-all duration-300"
+                  >
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300 -z-10" />
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    <span className="hidden sm:inline">AI Solver</span>
+                  </button>
                 </motion.div>
 
                 {!premium.isPremium && (
