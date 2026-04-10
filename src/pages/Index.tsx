@@ -27,6 +27,8 @@ import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
 import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
+import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
+import { PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -59,6 +61,7 @@ const Index = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
@@ -366,7 +369,7 @@ const Index = () => {
   };
 
   return (
-    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0 py-0", moodStyles.background, glassMode && "glass-mode")}>
+    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0 py-0 flex flex-col", moodStyles.background, glassMode && "glass-mode")}>
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
@@ -379,7 +382,12 @@ const Index = () => {
           {isMobile ? (
             <h1 className="text-lg font-bold text-foreground tracking-tight">NikNote</h1>
           ) : (
-            <div />
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
+                <PanelLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-sm font-bold text-foreground tracking-tight">NikNote</h1>
+            </div>
           )}
 
           {/* Center: Mood Selector + Glass Toggle (desktop only) */}
@@ -494,6 +502,23 @@ const Index = () => {
           </div>
         </div>
       </motion.header>
+
+      {/* Desktop: Sidebar + Content flex row */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — desktop only */}
+        {!isMobile && (
+          <AnimatePresence>
+            {sidebarOpen && (
+              <WorkspaceSidebar
+                isOpen={sidebarOpen}
+                onToggle={() => setSidebarOpen(false)}
+              />
+            )}
+          </AnimatePresence>
+        )}
+
+        {/* Main scrollable area */}
+        <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
 
       {/* Page Bar */}
       <div className="sticky top-14 sm:top-16 z-40 glass-subtle border-b border-white/10 py-1.5 sm:py-2 px-2 sm:px-4 h-14 sm:h-16 flex-shrink-0 overflow-hidden">
@@ -773,6 +798,9 @@ const Index = () => {
           </div>
         </div>
       )}
+
+        </div>{/* end main scrollable area */}
+      </div>{/* end sidebar + content flex row */}
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
