@@ -316,10 +316,12 @@ export type Database = {
           cover_color: string
           created_at: string
           description: string | null
+          folder: string | null
           handwriting_model_id: string | null
           id: string
           page_size: string
           page_style: string
+          tags: string[] | null
           title: string
           updated_at: string
           user_id: string
@@ -328,10 +330,12 @@ export type Database = {
           cover_color?: string
           created_at?: string
           description?: string | null
+          folder?: string | null
           handwriting_model_id?: string | null
           id?: string
           page_size?: string
           page_style?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id: string
@@ -340,10 +344,12 @@ export type Database = {
           cover_color?: string
           created_at?: string
           description?: string | null
+          folder?: string | null
           handwriting_model_id?: string | null
           id?: string
           page_size?: string
           page_style?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
