@@ -675,17 +675,23 @@ const Index = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <div className={cn("glass-panel-elevated p-3", moodStyles.paper)}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Edit3 className="w-3.5 h-3.5 text-primary" />
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Edit3 className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">Notebook</h3>
+                          <p className="text-[10px] text-muted-foreground">
+                            {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">Notebook</h3>
-                        <p className="text-[10px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
+                      <div className="flex items-center gap-1">
+                        <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
                       </div>
                     </div>
-                    <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
-                    <div className="mt-2">
+                    <div>
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                           <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
