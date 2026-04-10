@@ -25,7 +25,8 @@ import { useMood } from '@/hooks/useMood';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText } from 'lucide-react';
+import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -55,6 +56,8 @@ const Index = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [showControls, setShowControls] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
@@ -302,6 +305,26 @@ const Index = () => {
 
   const handleReset = useCallback(() => { resetSettings(); triggerHaptic('medium'); toast.success('Settings reset to defaults'); }, [resetSettings, triggerHaptic]);
 
+
+  const handleShareImage = useCallback(async () => {
+    setShowShareMenu(false);
+    const el = document.querySelector('[data-export-page="true"]') as HTMLElement ?? previewRef.current?.getPageElements()?.[0];
+    if (!el) { toast.error('Switch to Preview first'); return; }
+    setIsSharing(true);
+    try { await shareAsImage(el, 'NikNote'); toast.success('Shared as image!'); }
+    catch (e: any) { if (e?.name !== 'AbortError') toast.error('Share failed'); }
+    finally { setIsSharing(false); }
+  }, []);
+
+  const handleSharePDF = useCallback(async () => {
+    setShowShareMenu(false);
+    const els = Array.from(document.querySelectorAll('[data-export-page="true"]')) as HTMLElement[];
+    if (!els.length) { toast.error('Switch to Preview first'); return; }
+    setIsSharing(true);
+    try { await shareAsPDF(els, 'NikNote'); toast.success('PDF ready!'); }
+    catch (e: any) { if (e?.name !== 'AbortError') toast.error('Share failed'); }
+    finally { setIsSharing(false); }
+  }, []);
   const handleColorChange = useCallback((color: typeof currentColor) => {
     if (selectedLines.size > 0) updateSelectedLinesColor(color);
     setCurrentColor(color); triggerHaptic('selection'); playClick();
@@ -584,7 +607,7 @@ const Index = () => {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="glass-panel-elevated min-h-[70vh] overflow-hidden">
+                  <div className="glass-panel-elevated min-h-[70vh] overflow-hidden relative">
                     <AnimatePresence mode="wait" custom={pageDirection}>
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                         <NotebookPreview
@@ -600,6 +623,30 @@ const Index = () => {
                         />
                       </motion.div>
                     </AnimatePresence>
+
+                    {/* Share floating button */}
+                    <div className="absolute bottom-3 right-3 z-10">
+                      <div className="relative">
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setShowShareMenu(v => !v)}
+                          disabled={isSharing}
+                          className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-secondary text-secondary-foreground border border-border/40 shadow-md disabled:opacity-50"
+                        >
+                          <Share2 className="w-3.5 h-3.5" /> Share
+                        </motion.button>
+                        {showShareMenu && (
+                          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-12 right-0 bg-popover border border-border rounded-xl shadow-xl p-1 min-w-[140px] z-50">
+                            <button onClick={handleShareImage} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-muted transition-colors text-foreground">
+                              <Image className="w-3.5 h-3.5 text-muted-foreground" /> As Image
+                            </button>
+                            <button onClick={handleSharePDF} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-muted transition-colors text-foreground">
+                              <FileText className="w-3.5 h-3.5 text-muted-foreground" /> As PDF
+                            </button>
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
