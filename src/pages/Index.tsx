@@ -113,6 +113,9 @@ const Index = () => {
   // Block editor state
   const blockEditor = useBlockEditor();
 
+  // Use block editor lines for preview when blocks have content, otherwise fall back to page lines
+  const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
+
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
 
   // When mobile Style tab is tapped, open sheet; AI tab navigates
