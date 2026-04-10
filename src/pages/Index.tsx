@@ -66,9 +66,9 @@ const Index = () => {
   const [glassMode, setGlassMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Auto-open sidebar on desktop after mount
+  // Open sidebar on desktop, close on mobile
   useEffect(() => {
-    if (!isMobile) setSidebarOpen(true);
+    setSidebarOpen(!isMobile);
   }, [isMobile]);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
