@@ -254,6 +254,7 @@ export type Database = {
           id: string
           ink_color: string
           is_default: boolean
+          letter_spacing_variation: number | null
           line_spacing: number
           name: string
           pen_pressure_feel: number | null
@@ -274,6 +275,7 @@ export type Database = {
           id?: string
           ink_color?: string
           is_default?: boolean
+          letter_spacing_variation?: number | null
           line_spacing?: number
           name?: string
           pen_pressure_feel?: number | null
@@ -294,6 +296,7 @@ export type Database = {
           id?: string
           ink_color?: string
           is_default?: boolean
+          letter_spacing_variation?: number | null
           line_spacing?: number
           name?: string
           pen_pressure_feel?: number | null
