@@ -305,6 +305,26 @@ const Index = () => {
 
   const handleReset = useCallback(() => { resetSettings(); triggerHaptic('medium'); toast.success('Settings reset to defaults'); }, [resetSettings, triggerHaptic]);
 
+
+  const handleShareImage = useCallback(async () => {
+    setShowShareMenu(false);
+    const el = document.querySelector('[data-export-page="true"]') as HTMLElement ?? previewRef.current?.getPageElements()?.[0];
+    if (!el) { toast.error('Switch to Preview first'); return; }
+    setIsSharing(true);
+    try { await shareAsImage(el, 'NikNote'); toast.success('Shared as image!'); }
+    catch (e: any) { if (e?.name !== 'AbortError') toast.error('Share failed'); }
+    finally { setIsSharing(false); }
+  }, []);
+
+  const handleSharePDF = useCallback(async () => {
+    setShowShareMenu(false);
+    const els = Array.from(document.querySelectorAll('[data-export-page="true"]')) as HTMLElement[];
+    if (!els.length) { toast.error('Switch to Preview first'); return; }
+    setIsSharing(true);
+    try { await shareAsPDF(els, 'NikNote'); toast.success('PDF ready!'); }
+    catch (e: any) { if (e?.name !== 'AbortError') toast.error('Share failed'); }
+    finally { setIsSharing(false); }
+  }, []);
   const handleColorChange = useCallback((color: typeof currentColor) => {
     if (selectedLines.size > 0) updateSelectedLinesColor(color);
     setCurrentColor(color); triggerHaptic('selection'); playClick();
