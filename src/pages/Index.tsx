@@ -64,7 +64,12 @@ const Index = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Open sidebar on desktop, close on mobile
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
@@ -400,9 +405,14 @@ const Index = () => {
         className="sticky top-0 z-50 glass border-b border-white/15 h-14 sm:h-16 flex-shrink-0"
       >
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-full flex items-center justify-between overflow-hidden">
-          {/* Left: Logo (mobile) or empty (desktop already has mood selector) */}
+          {/* Left: Logo + Sidebar toggle */}
           {isMobile ? (
-            <h1 className="text-lg font-bold text-foreground tracking-tight">NikNote</h1>
+            <div className="flex items-center gap-1.5">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
+                <PanelLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-base font-bold text-foreground tracking-tight">NikNote</h1>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
@@ -432,50 +442,58 @@ const Index = () => {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Mobile: Export PDF + ⋮ Menu */}
+            {/* Mobile: AI Solver (prominent) + Export + ⋮ */}
             {isMobile ? (
               <>
+                {/* Prominent AI Solver — mobile */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => navigate('/ai-solver')}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_12px_rgba(102,126,234,0.35)]"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI</span>
+                </motion.button>
+
                 <button
-                  className="glass-liquid gap-2 px-3 py-2 text-white font-medium text-xs flex items-center disabled:opacity-50 transition-all duration-200 rounded-xl"
+                  className="glass-liquid gap-1.5 px-2.5 py-1.5 text-white font-medium text-[11px] flex items-center disabled:opacity-50 transition-all duration-200 rounded-xl"
                   disabled={isExporting}
                   onClick={handleExportPDF}
                 >
-                  <FileDown className="w-4 h-4" />
-                  <span>{isExporting ? 'Exporting...' : 'PDF'}</span>
+                  <FileDown className="w-3.5 h-3.5" />
+                  <span>{isExporting ? '...' : 'PDF'}</span>
                 </button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
-                      <MoreVertical className="w-5 h-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
+                      <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    {/* Mood Selector items */}
-                    <DropdownMenuItem onClick={() => changeMood('calm')}>☀️ Calm Mode</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => changeMood('focus')}>✨ Focus Mode</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => changeMood('dark')}>🌙 Dark Mode</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => changeMood('vintage')}>☕ Vintage Mode</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => changeMood('study')}>📖 Study Mode</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeMood('calm')}>☀️ Calm</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeMood('focus')}>✨ Focus</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeMood('dark')}>🌙 Dark</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeMood('vintage')}>☕ Vintage</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeMood('study')}>📖 Study</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setGlassMode(p => !p)}>
-                      <Gem className="w-4 h-4 mr-2" /> {glassMode ? 'Disable' : 'Enable'} Glass Mode
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleReset}>
-                      <RotateCcw className="w-4 h-4 mr-2" /> Reset Settings
+                      <Gem className="w-4 h-4 mr-2" /> {glassMode ? 'Disable' : 'Enable'} Glass
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={toggleDark}>
                       {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                       {isDark ? 'Light Mode' : 'Dark Mode'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/ai-solver')}>
-                      <Brain className="w-4 h-4 mr-2" /> AI Solver
+                    <DropdownMenuItem onClick={handleReset}>
+                      <RotateCcw className="w-4 h-4 mr-2" /> Reset
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/notebooks')}>
+                      <FileText className="w-4 h-4 mr-2" /> My Notebooks
                     </DropdownMenuItem>
                     {!premium.isPremium && (
                       <DropdownMenuItem onClick={() => navigate('/payment')}>
-                        <Crown className="w-4 h-4 mr-2" /> Upgrade to Pro
+                        <Crown className="w-4 h-4 mr-2" /> Upgrade
                       </DropdownMenuItem>
                     )}
                     {user ? (
@@ -537,9 +555,34 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Desktop: Sidebar + Content flex row */}
+      {/* Mobile sidebar drawer overlay */}
+      {isMobile && sidebarOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <motion.div
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+            className="fixed left-0 top-0 bottom-0 w-[280px] z-[61]"
+          >
+            <WorkspaceSidebar
+              isOpen={true}
+              onToggle={() => setSidebarOpen(false)}
+            />
+          </motion.div>
+        </>
+      )}
+
+      {/* Sidebar + Content flex row */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — desktop only */}
+        {/* Sidebar — desktop only (inline) */}
         {!isMobile && (
           <AnimatePresence>
             {sidebarOpen && (
@@ -637,17 +680,23 @@ const Index = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <div className={cn("glass-panel-elevated p-3", moodStyles.paper)}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Edit3 className="w-3.5 h-3.5 text-primary" />
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Edit3 className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">Notebook</h3>
+                          <p className="text-[10px] text-muted-foreground">
+                            {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">Notebook</h3>
-                        <p className="text-[10px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
+                      <div className="flex items-center gap-1">
+                        <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
                       </div>
                     </div>
-                    <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
-                    <div className="mt-2">
+                    <div>
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                           <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
