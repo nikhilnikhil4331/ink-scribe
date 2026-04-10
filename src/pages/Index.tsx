@@ -645,7 +645,7 @@ const Index = () => {
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                         <NotebookPreview
                           ref={previewRef}
-                          lines={lines}
+                          lines={previewLines}
                           settings={settings}
                           realPenMode={realPenMode}
                           pageNumber={currentPageIndex + 1}
@@ -714,13 +714,13 @@ const Index = () => {
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
-                  <MobileLivePreview lines={lines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded((prev) => !prev)} isExpanded={isMobileLivePreviewExpanded} />
+                  <MobileLivePreview lines={previewLines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded((prev) => !prev)} isExpanded={isMobileLivePreviewExpanded} />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel-elevated min-h-[500px] overflow-hidden">
                     <AnimatePresence mode="wait" custom={pageDirection}>
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                        <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                        <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
@@ -751,7 +751,7 @@ const Index = () => {
                 <div className="glass-panel-elevated min-h-[calc(100vh-10rem)] overflow-hidden">
                   <AnimatePresence mode="wait" custom={pageDirection}>
                     <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="h-full" drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                      <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                      <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
                     </motion.div>
                   </AnimatePresence>
                 </div>
