@@ -550,9 +550,34 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Desktop: Sidebar + Content flex row */}
+      {/* Mobile sidebar overlay */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 z-[60]">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <motion.div
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+            className="absolute left-0 top-0 bottom-0 w-[280px]"
+          >
+            <WorkspaceSidebar
+              isOpen={true}
+              onToggle={() => setSidebarOpen(false)}
+            />
+          </motion.div>
+        </div>
+      )}
+
+      {/* Sidebar + Content flex row */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — desktop only */}
+        {/* Sidebar — desktop only (inline) */}
         {!isMobile && (
           <AnimatePresence>
             {sidebarOpen && (
