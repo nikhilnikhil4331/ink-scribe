@@ -25,7 +25,8 @@ import { useMood } from '@/hooks/useMood';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
-import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw } from 'lucide-react';
+import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText } from 'lucide-react';
+import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
