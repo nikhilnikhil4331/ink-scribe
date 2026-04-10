@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Block } from '@/types/block';
+import { HandwritingFont, FONT_OPTIONS } from '@/types/notes';
 
 interface RightPanelProps {
   isOpen: boolean;
@@ -16,20 +17,13 @@ interface RightPanelProps {
   blocks: Block[];
   currentPage: number;
   totalPages: number;
-  font: string;
-  onFontChange: (font: string) => void;
+  font: HandwritingFont;
+  onFontChange: (font: HandwritingFont) => void;
   inkColor: string;
   createdAt?: string;
 }
 
-const HANDWRITING_FONTS = [
-  { value: 'Caveat', label: 'Caveat' },
-  { value: 'Patrick Hand', label: 'Patrick Hand' },
-  { value: 'Kalam', label: 'Kalam' },
-  { value: 'Indie Flower', label: 'Indie Flower' },
-  { value: 'Shadows Into Light', label: 'Shadows Into Light' },
-  { value: 'Architects Daughter', label: 'Architects Daughter' },
-];
+// Use FONT_OPTIONS from the design system
 
 export const RightPanel: React.FC<RightPanelProps> = ({
   isOpen, onToggle, blocks, currentPage, totalPages,
@@ -114,14 +108,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Pen className="w-3.5 h-3.5 text-muted-foreground" />
-                <Select value={font} onValueChange={onFontChange}>
+                <Select value={font} onValueChange={(v) => onFontChange(v as HandwritingFont)}>
                   <SelectTrigger className="h-8 text-xs rounded-lg flex-1 bg-muted/50 border-0">
                     <SelectValue placeholder="Select font" />
                   </SelectTrigger>
                   <SelectContent>
-                    {HANDWRITING_FONTS.map(f => (
+                    {FONT_OPTIONS.map(f => (
                       <SelectItem key={f.value} value={f.value} className="text-xs">
-                        <span style={{ fontFamily: f.value }}>{f.label}</span>
+                        <span className={f.className}>{f.label}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
