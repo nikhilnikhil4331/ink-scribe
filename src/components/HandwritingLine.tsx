@@ -10,6 +10,12 @@ interface HandwritingLineProps {
   realPenMode: boolean;
   fontClass: string;
   isNewText?: boolean;
+  // Handwriting DNA parameters (from analysis)
+  slant?: number;          // degrees, -15 to 15
+  penPressure?: number;    // 0.1 to 1.0
+  strokeThickness?: number; // 0.5 to 3.0
+  baselineJitterAmount?: number; // 0 to 5
+  letterSpacingVariation?: number; // 0 to 3
 }
 
 interface AnimatedWordProps {
@@ -19,23 +25,23 @@ interface AnimatedWordProps {
   baselineVariation: number;
   delay: number;
   isNew: boolean;
+  letterSpacingVariation: number;
 }
 
-// Animated word component with staggered character animation
 const AnimatedWord = memo<AnimatedWordProps>(({ 
-  word, 
-  wordIndex, 
-  wordSpacing, 
-  baselineVariation, 
-  delay,
-  isNew,
+  word, wordIndex, wordSpacing, baselineVariation, delay, isNew, letterSpacingVariation,
 }) => {
-  // Slight baseline variation per word for natural handwriting feel
   const yOffset = useMemo(() => {
     return Math.sin(wordIndex * 3.7) * baselineVariation;
   }, [wordIndex, baselineVariation]);
+
+  // Per-character letter spacing variation
+  const letterStyle = useMemo(() => {
+    if (letterSpacingVariation <= 0) return undefined;
+    return { letterSpacing: `${(Math.sin(wordIndex * 5.3) * letterSpacingVariation).toFixed(2)}px` };
+  }, [wordIndex, letterSpacingVariation]);
+
   if (!isNew) {
-    // Static render for existing text
     return (
       <span 
         style={{ 
@@ -43,6 +49,7 @@ const AnimatedWord = memo<AnimatedWordProps>(({
           display: 'inline',
           position: 'relative',
           top: `${yOffset}px`,
+          ...letterStyle,
         }}
       >
         {word}
@@ -50,20 +57,16 @@ const AnimatedWord = memo<AnimatedWordProps>(({
     );
   }
 
-  // Animated render for new text
   return (
     <motion.span
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: yOffset }}
-      transition={{
-        duration: 0.15,
-        delay: delay,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
+      transition={{ duration: 0.15, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{ 
         marginRight: `${wordSpacing}px`, 
         display: 'inline',
         position: 'relative',
+        ...letterStyle,
       }}
     >
       {word.split('').map((char, charIndex) => (
@@ -71,11 +74,7 @@ const AnimatedWord = memo<AnimatedWordProps>(({
           key={charIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{
-            duration: 0.08,
-            delay: delay + charIndex * 0.025, // 25ms stagger per character
-            ease: 'easeOut',
-          }}
+          transition={{ duration: 0.08, delay: delay + charIndex * 0.025, ease: 'easeOut' }}
         >
           {char}
         </motion.span>
@@ -86,19 +85,13 @@ const AnimatedWord = memo<AnimatedWordProps>(({
 
 AnimatedWord.displayName = 'AnimatedWord';
 
-// Use forwardRef to allow refs to be passed to the component
 export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLineProps>(({
-  line,
-  lineIndex,
-  settings,
-  realPenMode,
-  fontClass,
-  isNewText = false,
+  line, lineIndex, settings, realPenMode, fontClass, isNewText = false,
+  slant = 0, penPressure = 0.5, strokeThickness = 1, baselineJitterAmount = 2, letterSpacingVariation = 0,
 }, ref) => {
   const prevTextRef = useRef(line.text);
   const [animatingWords, setAnimatingWords] = useState<Set<number>>(new Set());
   
-  // Detect which words are new for animation
   useEffect(() => {
     const prevWords = prevTextRef.current.split(' ');
     const currentWords = line.text.split(' ');
@@ -113,12 +106,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
       
       if (newWordIndices.size > 0) {
         setAnimatingWords(newWordIndices);
-        
-        // Clear animation state after animation completes
-        const timeout = setTimeout(() => {
-          setAnimatingWords(new Set());
-        }, 500);
-        
+        const timeout = setTimeout(() => setAnimatingWords(new Set()), 500);
         prevTextRef.current = line.text;
         return () => clearTimeout(timeout);
       }
@@ -133,7 +121,18 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
   const variation = generateRealPenVariation(lineIndex, realPenMode);
 
   const lineStyle = useMemo(() => {
-    const jitterX = settings.baselineJitter ? (Math.sin(lineIndex * 7) * 2) : 0;
+    // Baseline jitter with configurable amount
+    const effectiveJitterAmount = settings.baselineJitter ? baselineJitterAmount : 0;
+    const jitterX = effectiveJitterAmount > 0 ? (Math.sin(lineIndex * 7) * effectiveJitterAmount) : 0;
+
+    // Slant transform (CSS skewX — negative slant = right lean visually)
+    const skewDeg = slant ? -slant * 0.5 : 0;
+
+    // Pressure-based font weight: light pressure = 300, heavy = 700
+    const pressureWeight = Math.round(300 + penPressure * 400);
+
+    // Stroke thickness affects text-stroke (webkit) for extra weight
+    const textStrokeWidth = strokeThickness > 1.5 ? `${(strokeThickness - 1) * 0.3}px` : undefined;
 
     if (realPenMode) {
       const adjustedH = h + variation.hueShift;
@@ -141,29 +140,28 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
       return {
         color: `hsl(${adjustedH} ${s}% ${adjustedL}%)`,
         opacity: variation.opacity,
-        fontWeight: variation.thickness > 1 ? 500 : 400,
+        fontWeight: Math.max(pressureWeight, variation.thickness > 1 ? 500 : 400),
         marginLeft: `${jitterX}px`,
+        transform: skewDeg !== 0 ? `skewX(${skewDeg}deg)` : undefined,
+        WebkitTextStroke: textStrokeWidth ? `${textStrokeWidth} currentColor` : undefined,
       };
     }
 
     return {
       color: `hsl(${baseHsl})`,
       marginLeft: `${jitterX}px`,
+      fontWeight: pressureWeight,
+      transform: skewDeg !== 0 ? `skewX(${skewDeg}deg)` : undefined,
+      WebkitTextStroke: textStrokeWidth ? `${textStrokeWidth} currentColor` : undefined,
     };
-  }, [lineIndex, settings.baselineJitter, settings.strokeRandomness, realPenMode, h, s, l, baseHsl, variation]);
+  }, [lineIndex, settings.baselineJitter, realPenMode, h, s, l, baseHsl, variation, slant, penPressure, strokeThickness, baselineJitterAmount]);
 
-  // CRITICAL: Render embedded newlines as real stacked DOM blocks.
-  // Even though the editor is line-based, OCR/paste pipelines can accidentally
-  // insert "\n" inside a single line. If we render that inside a fixed-height
-  // line container, it visually overlaps and export captures the same overlap.
   const visualLines = useMemo(() => {
-    // Preserve empty lines for spacing.
     return String(line.text ?? '').split(/\r?\n/);
   }, [line.text]);
 
-  const baselineVariation = settings.baselineJitter ? 1.5 : 0;
+  const baselineVariation = settings.baselineJitter ? Math.max(1.5, baselineJitterAmount * 0.75) : 0;
 
-  // Outer wrapper: flow-based layout, never absolute/layered.
   const wrapperStyle: React.CSSProperties = {
     display: 'block',
     whiteSpace: 'pre-wrap',
@@ -171,7 +169,6 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     ...lineStyle,
   };
 
-  // Each visual line is a real block that participates in normal document flow.
   const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768;
   const effectiveLineHeightPx = isMobileViewport ? 48 : settings.lineSpacing;
 
@@ -183,31 +180,19 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     wordBreak: 'break-word',
   };
 
-  // Empty line - render with minimum height but as block element
   if (line.text === '') {
     return (
-      <div 
-        ref={ref}
-        className={fontClass}
-        style={{ ...wrapperStyle, ...visualLineStyle }}
-      >
-        {/* Invisible character to maintain line height */}
+      <div ref={ref} className={fontClass} style={{ ...wrapperStyle, ...visualLineStyle }}>
         <span className="opacity-0 select-none">&nbsp;</span>
       </div>
     );
   }
 
   return (
-    <div 
-      ref={ref}
-      className={fontClass}
-      style={wrapperStyle}
-    >
+    <div ref={ref} className={fontClass} style={wrapperStyle}>
       {visualLines.map((textLine, vIndex) => {
-        // Keep exact spacing intent: treat repeated spaces as separators.
-        // We still animate at word granularity for performance.
         const words = textLine.split(' ');
-        const baseDelay = vIndex * 0.02; // small extra stagger per visual line
+        const baseDelay = vIndex * 0.02;
 
         return (
           <div key={`${line.id}-vline-${vIndex}`} style={visualLineStyle}>
@@ -223,6 +208,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
                     baselineVariation={baselineVariation}
                     delay={baseDelay + wordIndex * 0.03}
                     isNew={isNewText || animatingWords.has(wordIndex)}
+                    letterSpacingVariation={letterSpacingVariation}
                   />
                   {wordIndex < words.length - 1 && (
                     <span style={{ marginRight: `${settings.wordSpacing}px` }}> </span>
