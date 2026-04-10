@@ -2,6 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LineBasedEditor } from '@/components/LineBasedEditor';
+import { BlockEditor } from '@/components/editor/BlockEditor';
+import { useBlockEditor } from '@/hooks/useBlockEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { MobileLivePreview } from '@/components/MobileLivePreview';
 import { PenPalette } from '@/components/PenPalette';
