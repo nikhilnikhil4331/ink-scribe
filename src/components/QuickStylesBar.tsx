@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import { LineInkColor, LINE_INK_COLORS } from '@/types/noteLine';
@@ -23,30 +23,28 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
   const [recentColors, setRecentColors] = useState<LineInkColor[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_COLORS);
-      return stored ? JSON.parse(stored) : ['black', 'blue', 'red'];
-    } catch { return ['black', 'blue', 'red']; }
+      return stored ? JSON.parse(stored) : ['black', 'blue', 'red', 'green'];
+    } catch { return ['black', 'blue', 'red', 'green']; }
   });
 
   const [recentFonts, setRecentFonts] = useState<HandwritingFont[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_FONTS);
-      return stored ? JSON.parse(stored) : ['caveat', 'kalam'];
-    } catch { return ['caveat', 'kalam']; }
+      return stored ? JSON.parse(stored) : ['caveat', 'kalam', 'patrick-hand'];
+    } catch { return ['caveat', 'kalam', 'patrick-hand']; }
   });
 
-  // Track recent colors
   useEffect(() => {
     setRecentColors(prev => {
-      const updated = [currentColor, ...prev.filter(c => c !== currentColor)].slice(0, 3);
+      const updated = [currentColor, ...prev.filter(c => c !== currentColor)].slice(0, 4);
       localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(updated));
       return updated;
     });
   }, [currentColor]);
 
-  // Track recent fonts
   useEffect(() => {
     setRecentFonts(prev => {
-      const updated = [currentFont, ...prev.filter(f => f !== currentFont)].slice(0, 2);
+      const updated = [currentFont, ...prev.filter(f => f !== currentFont)].slice(0, 3);
       localStorage.setItem(STORAGE_KEY_FONTS, JSON.stringify(updated));
       return updated;
     });
@@ -61,8 +59,8 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
       exit={{ opacity: 0, y: 10 }}
       className="fixed bottom-16 left-0 right-0 z-40 lg:hidden px-3 pb-1"
     >
-      <div className="h-11 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg flex items-center px-3 gap-2">
-        {/* Recent colors */}
+      <div className="h-11 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg flex items-center px-3 gap-1.5">
+        {/* 4 Recent colors */}
         {recentColors.map((color) => {
           const ink = LINE_INK_COLORS.find(c => c.value === color);
           if (!ink) return null;
@@ -72,7 +70,7 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
               whileTap={{ scale: 0.85 }}
               onClick={() => onColorChange(color)}
               className={cn(
-                "w-7 h-7 rounded-full border-2 flex-shrink-0 transition-all",
+                "w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all",
                 currentColor === color ? "border-primary scale-110" : "border-transparent"
               )}
               style={{ backgroundColor: ink.hex }}
@@ -80,10 +78,9 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
           );
         })}
 
-        {/* Divider */}
         <div className="w-px h-6 bg-border/50 mx-1" />
 
-        {/* Recent fonts */}
+        {/* 3 Recent fonts */}
         {recentFonts.map((font) => {
           const fontOpt = FONT_OPTIONS.find(f => f.value === font);
           if (!fontOpt) return null;
@@ -93,7 +90,7 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
               whileTap={{ scale: 0.95 }}
               onClick={() => onFontChange(font)}
               className={cn(
-                "px-2.5 py-1 rounded-lg text-xs font-medium truncate max-w-[70px] transition-all",
+                "px-2 py-1 rounded-lg text-[10px] font-medium truncate max-w-[60px] transition-all",
                 currentFont === font
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted/50"
@@ -104,7 +101,6 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
           );
         })}
 
-        {/* Open full style sheet */}
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={onOpenStyleSheet}
