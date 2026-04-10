@@ -110,6 +110,9 @@ const Index = () => {
   const [lineHistories, setLineHistories] = useState<Map<string, LineHistory>>(new Map());
   const lines = currentPage.lines;
 
+  // Block editor state
+  const blockEditor = useBlockEditor();
+
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
 
   // When mobile Style tab is tapped, open sheet; AI tab navigates
