@@ -526,6 +526,10 @@ const Index = () => {
                   </motion.div>
                 )}
 
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-secondary hidden lg:flex" onClick={() => setRightPanelOpen(p => !p)} title="Toggle properties (Ctrl+.)">
+                  <PanelRight className="w-4 h-4" />
+                </Button>
+
                 <Toolbar onExportPDF={handleExportPDF} onReset={handleReset} isDark={isDark} onToggleDark={toggleDark} isExporting={isExporting} />
               </>
             )}
@@ -830,6 +834,24 @@ const Index = () => {
       )}
 
         </div>{/* end main scrollable area */}
+
+        {/* Right Panel — desktop only */}
+        {!isMobile && (
+          <AnimatePresence>
+            {rightPanelOpen && (
+              <RightPanel
+                isOpen={rightPanelOpen}
+                onToggle={() => setRightPanelOpen(false)}
+                blocks={blockEditor.blocks}
+                currentPage={currentPageIndex + 1}
+                totalPages={totalPages}
+                font={settings.font}
+                onFontChange={(font) => updateSettings({ font })}
+                inkColor={currentColor}
+              />
+            )}
+          </AnimatePresence>
+        )}
       </div>{/* end sidebar + content flex row */}
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
