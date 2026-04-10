@@ -27,7 +27,7 @@ const COVER_COLORS = [
 
 const MyNotebooks: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { notebooks, loading, createNotebook, updateNotebook, deleteNotebook } = useNotebooks();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,6 +71,14 @@ const MyNotebooks: React.FC = () => {
     }
     return list;
   }, [notebooks, activeFolder, activeTag, searchQuery]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   if (!user) {
     navigate('/login');
