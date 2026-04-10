@@ -23,7 +23,7 @@ interface WorkspaceSidebarProps {
 
 export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({ isOpen, onToggle, onNewNote }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const { notebooks, loading, deleteNotebook } = useNotebooks();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['__unfiled']));
