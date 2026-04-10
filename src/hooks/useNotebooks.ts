@@ -12,6 +12,8 @@ export interface Notebook {
   handwriting_model_id: string | null;
   page_style: string;
   page_size: string;
+  folder: string | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
