@@ -30,7 +30,8 @@ import { toast } from 'sonner';
 import { Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn, Brain, Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
-import { PanelLeft } from 'lucide-react';
+import { RightPanel } from '@/components/workspace/RightPanel';
+import { PanelLeft, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -64,6 +65,7 @@ const Index = () => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
@@ -117,6 +119,18 @@ const Index = () => {
   const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
 
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
+
+  // Ctrl+. toggle for right panel
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '.') {
+        e.preventDefault();
+        setRightPanelOpen(p => !p);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // When mobile Style tab is tapped, open sheet; AI tab navigates
   const handleMobileTabChange = useCallback((tab: MobileTab) => {
