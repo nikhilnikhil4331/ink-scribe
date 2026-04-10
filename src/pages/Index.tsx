@@ -799,6 +799,9 @@ const Index = () => {
         </div>
       )}
 
+        </div>{/* end main scrollable area */}
+      </div>{/* end sidebar + content flex row */}
+
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
