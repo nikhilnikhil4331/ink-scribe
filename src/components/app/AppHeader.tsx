@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, MoreVertical, Undo2, Redo2, Moon, Sun, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Download, MoreVertical, Undo2, Redo2, Sparkles, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AppHeaderProps {
@@ -12,10 +11,11 @@ interface AppHeaderProps {
   wordCount: number;
   currentPage: number;
   totalPages: number;
+  currentStreak: number;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
-  title, onTitleChange, onExport, isExporting, wordCount, currentPage, totalPages,
+  title, onTitleChange, onExport, isExporting, wordCount, currentPage, totalPages, currentStreak,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -26,7 +26,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       animate={{ y: 0, opacity: 1 }}
       className="h-13 flex items-center justify-between px-4 border-b border-border/30 bg-background/95 backdrop-blur-lg z-40 flex-shrink-0"
     >
-      {/* Left: Editable Title */}
+      {/* Left: Editable Title + Stats */}
       <div className="flex-1 min-w-0 mr-3">
         {isEditing ? (
           <input
@@ -40,7 +40,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="text-sm font-semibold text-foreground truncate block max-w-[180px]"
+            className="text-sm font-semibold text-foreground truncate block max-w-[160px]"
           >
             {title || 'Untitled Note'}
           </button>
@@ -52,8 +52,24 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Export + More */}
-      <div className="flex items-center gap-2">
+      {/* Right: Streak + Export + More */}
+      <div className="flex items-center gap-1.5">
+        {/* Streak Badge */}
+        <motion.div
+          className={cn(
+            "flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold",
+            currentStreak > 0
+              ? "bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400"
+              : "bg-muted/50 text-muted-foreground"
+          )}
+          animate={currentStreak > 0 ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <Flame className={cn("w-3.5 h-3.5", currentStreak > 0 && "text-orange-500")} />
+          <span>{currentStreak}</span>
+        </motion.div>
+
+        {/* Export */}
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={onExport}
@@ -65,7 +81,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           )}
         >
           <Download className="w-3.5 h-3.5" />
-          {isExporting ? 'Exporting...' : 'Export'}
+          {isExporting ? '...' : 'Export'}
         </motion.button>
 
         {/* More menu */}
