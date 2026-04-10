@@ -621,7 +621,7 @@ const Index = () => {
                     <div className="mt-2">
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                          <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                         </motion.div>
                       </AnimatePresence>
                     </div>
@@ -707,7 +707,7 @@ const Index = () => {
                     <div className="mb-3"><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></div>
                     <AnimatePresence mode="wait" custom={pageDirection}>
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                        <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                        <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
@@ -737,7 +737,7 @@ const Index = () => {
                   </div>
                   <AnimatePresence mode="wait" custom={pageDirection}>
                     <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                      <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                      <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                     </motion.div>
                   </AnimatePresence>
                   <div className="mt-4"><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></div>
