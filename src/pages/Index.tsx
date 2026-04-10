@@ -104,15 +104,18 @@ const Index = () => {
 
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
 
-  // When mobile Style tab is tapped, open sheet
+  // When mobile Style tab is tapped, open sheet; AI tab navigates
   const handleMobileTabChange = useCallback((tab: MobileTab) => {
     if (tab === 'style') {
       setShowMobileStyleSheet(true);
-      // Don't change active tab, keep current view
+      return;
+    }
+    if (tab === 'ai') {
+      navigate('/ai-solver');
       return;
     }
     setMobileTab(tab);
-  }, []);
+  }, [navigate]);
 
   // Track editor focus for QuickStylesBar
   useEffect(() => {
@@ -526,6 +529,12 @@ const Index = () => {
         onColorChange={handleColorChange}
         realPenMode={realPenMode}
         onRealPenModeChange={setRealPenMode}
+        isListening={quickDictation.isListening}
+        onToggleVoice={() => {
+          if (!premium.isPremium) { requirePremium('voice_dictation'); return; }
+          if (!quickDictation.isSupported) return;
+          if (quickDictation.isListening) quickDictation.stop(); else quickDictation.start();
+        }}
       />
 
       {/* Main Content */}
