@@ -369,7 +369,7 @@ const Index = () => {
   };
 
   return (
-    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0 py-0", moodStyles.background, glassMode && "glass-mode")}>
+    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-500 relative my-0 py-0 flex flex-col", moodStyles.background, glassMode && "glass-mode")}>
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
