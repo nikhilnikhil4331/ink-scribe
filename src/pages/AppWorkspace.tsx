@@ -212,6 +212,7 @@ const AppWorkspace = () => {
                 onExportPDF={handleExportPDF}
                 isExporting={isExporting}
                 isPremium={premium.isPremium}
+                docTitle={docTitle}
               />
             )}
           </motion.div>
