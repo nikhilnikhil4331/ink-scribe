@@ -33,6 +33,7 @@ const AppWorkspace = () => {
   const { triggerHaptic } = useHaptics();
   const { playClick, playSuccess } = useSoundEffects();
   const premium = usePremium();
+  const streakData = useStreak();
   const [isExporting, setIsExporting] = useState(false);
 
   const {
