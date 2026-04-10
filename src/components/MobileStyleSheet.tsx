@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Palette, Type, FileText, Sparkles, Mic, MicOff, Sliders } from 'lucide-react';
-import { NoteSettings, FONT_OPTIONS, PAGE_STYLE_OPTIONS, INK_COLOR_OPTIONS } from '@/types/notes';
+import { X, Palette, Type, Sparkles, Mic, MicOff, FileText } from 'lucide-react';
+import { NoteSettings, FONT_OPTIONS, PAGE_STYLE_OPTIONS } from '@/types/notes';
 import { LineInkColor, LINE_INK_COLORS } from '@/types/noteLine';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -9,13 +9,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-
-const INK_COLOR_MAP: Record<string, string> = {
-  blue: 'hsl(215 85% 40%)', black: 'hsl(220 20% 12%)', red: 'hsl(0 72% 50%)',
-  green: 'hsl(145 65% 38%)', purple: 'hsl(265 60% 50%)', brown: 'hsl(25 55% 38%)',
-  teal: 'hsl(175 60% 38%)', orange: 'hsl(28 92% 52%)', pink: 'hsl(340 82% 48%)',
-  navy: 'hsl(230 70% 30%)', burgundy: 'hsl(340 85% 30%)', gold: 'hsl(38 95% 50%)',
-};
 
 interface MobileStyleSheetProps {
   isOpen: boolean;
@@ -26,16 +19,20 @@ interface MobileStyleSheetProps {
   onColorChange: (color: LineInkColor) => void;
   realPenMode: boolean;
   onRealPenModeChange: (enabled: boolean) => void;
+  // Voice input
+  isListening?: boolean;
+  onToggleVoice?: () => void;
+  voiceSupported?: boolean;
 }
 
 export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
-  isOpen, onClose, settings, updateSettings, currentColor, onColorChange, realPenMode, onRealPenModeChange,
+  isOpen, onClose, settings, updateSettings, currentColor, onColorChange, 
+  realPenMode, onRealPenModeChange, isListening, onToggleVoice, voiceSupported = true,
 }) => {
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -44,7 +41,6 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
           />
 
-          {/* Sheet */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: '0%' }}
@@ -80,10 +76,10 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
             {/* Content */}
             <ScrollArea className="h-[calc(75vh-80px)]">
               <div className="p-5 space-y-6">
-                {/* INK COLORS — 3x4 grid */}
+                {/* INK COLORS */}
                 <section>
-                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">
-                    Ink Colors
+                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Palette className="w-3 h-3" /> Ink Colors
                   </Label>
                   <div className="grid grid-cols-4 gap-2">
                     {LINE_INK_COLORS.map((ink) => (
@@ -98,10 +94,7 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
                             : "border-transparent hover:bg-muted/50"
                         )}
                       >
-                        <div
-                          className="w-7 h-7 rounded-full shadow-inner"
-                          style={{ backgroundColor: ink.hex }}
-                        />
+                        <div className="w-7 h-7 rounded-full shadow-inner" style={{ backgroundColor: ink.hex }} />
                         <span className="text-[9px] font-medium text-muted-foreground">{ink.label}</span>
                       </motion.button>
                     ))}
@@ -110,8 +103,8 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
 
                 {/* FONT SELECTION */}
                 <section>
-                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">
-                    Font Style
+                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Type className="w-3 h-3" /> Font Style
                   </Label>
                   <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto">
                     {FONT_OPTIONS.filter(f => f.value !== 'custom').map((font) => (
@@ -137,8 +130,8 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
 
                 {/* PAPER TYPE */}
                 <section>
-                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">
-                    Paper Type
+                  <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <FileText className="w-3 h-3" /> Paper Type
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
                     {PAGE_STYLE_OPTIONS.slice(0, 9).map((style) => (
@@ -171,36 +164,55 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
                         <span className="text-xs text-foreground">Font Size</span>
                         <span className="text-xs font-medium text-primary">{settings.fontSize}px</span>
                       </div>
-                      <Slider
-                        value={[settings.fontSize]}
-                        onValueChange={([v]) => updateSettings({ fontSize: v })}
-                        min={16} max={40} step={1}
-                      />
+                      <Slider value={[settings.fontSize]} onValueChange={([v]) => updateSettings({ fontSize: v })} min={16} max={40} step={1} />
                     </div>
                     <div>
                       <div className="flex justify-between mb-1.5">
                         <span className="text-xs text-foreground">Line Spacing</span>
                         <span className="text-xs font-medium text-primary">{settings.lineSpacing}px</span>
                       </div>
-                      <Slider
-                        value={[settings.lineSpacing]}
-                        onValueChange={([v]) => updateSettings({ lineSpacing: v })}
-                        min={24} max={60} step={2}
-                      />
+                      <Slider value={[settings.lineSpacing]} onValueChange={([v]) => updateSettings({ lineSpacing: v })} min={24} max={60} step={2} />
                     </div>
                     <div>
                       <div className="flex justify-between mb-1.5">
                         <span className="text-xs text-foreground">Word Spacing</span>
                         <span className="text-xs font-medium text-primary">{settings.wordSpacing}px</span>
                       </div>
-                      <Slider
-                        value={[settings.wordSpacing]}
-                        onValueChange={([v]) => updateSettings({ wordSpacing: v })}
-                        min={2} max={12} step={1}
-                      />
+                      <Slider value={[settings.wordSpacing]} onValueChange={([v]) => updateSettings({ wordSpacing: v })} min={2} max={12} step={1} />
                     </div>
                   </div>
                 </section>
+
+                {/* VOICE INPUT */}
+                {onToggleVoice && (
+                  <section>
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={onToggleVoice}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all",
+                        isListening
+                          ? "border-red-500/50 bg-red-500/10"
+                          : "border-border/50 hover:border-primary/40"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center",
+                        isListening ? "bg-red-500/20" : "bg-primary/10"
+                      )}>
+                        {isListening ? <MicOff className="w-5 h-5 text-red-500" /> : <Mic className="w-5 h-5 text-primary" />}
+                      </div>
+                      <div className="text-left">
+                        <span className="text-sm font-medium block">
+                          {isListening ? 'Stop Listening' : 'Voice Input'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {isListening ? 'Tap to stop dictation' : 'Speak to type hands-free'}
+                        </span>
+                      </div>
+                    </motion.button>
+                  </section>
+                )}
 
                 {/* REAL PEN MODE */}
                 <section>
@@ -212,14 +224,10 @@ export const MobileStyleSheet: React.FC<MobileStyleSheetProps> = ({
                         <p className="text-[10px] text-muted-foreground">Varies ink shade & thickness</p>
                       </div>
                     </div>
-                    <Switch
-                      checked={realPenMode}
-                      onCheckedChange={onRealPenModeChange}
-                    />
+                    <Switch checked={realPenMode} onCheckedChange={onRealPenModeChange} />
                   </div>
                 </section>
 
-                {/* Bottom padding for safe area */}
                 <div className="h-8" />
               </div>
             </ScrollArea>
