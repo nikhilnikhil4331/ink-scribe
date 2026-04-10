@@ -2,6 +2,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LineBasedEditor } from '@/components/LineBasedEditor';
+import { BlockEditor } from '@/components/editor/BlockEditor';
+import { useBlockEditor } from '@/hooks/useBlockEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { MobileLivePreview } from '@/components/MobileLivePreview';
 import { PenPalette } from '@/components/PenPalette';
@@ -107,6 +109,12 @@ const Index = () => {
   const [realPenMode, setRealPenMode] = useState(false);
   const [lineHistories, setLineHistories] = useState<Map<string, LineHistory>>(new Map());
   const lines = currentPage.lines;
+
+  // Block editor state
+  const blockEditor = useBlockEditor();
+
+  // Use block editor lines for preview when blocks have content, otherwise fall back to page lines
+  const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
 
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
 
@@ -616,7 +624,7 @@ const Index = () => {
                     <div className="mt-2">
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                          <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                         </motion.div>
                       </AnimatePresence>
                     </div>
@@ -637,7 +645,7 @@ const Index = () => {
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                         <NotebookPreview
                           ref={previewRef}
-                          lines={lines}
+                          lines={previewLines}
                           settings={settings}
                           realPenMode={realPenMode}
                           pageNumber={currentPageIndex + 1}
@@ -702,17 +710,17 @@ const Index = () => {
                     <div className="mb-3"><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></div>
                     <AnimatePresence mode="wait" custom={pageDirection}>
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                        <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                        <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
-                  <MobileLivePreview lines={lines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded((prev) => !prev)} isExpanded={isMobileLivePreviewExpanded} />
+                  <MobileLivePreview lines={previewLines} settings={settings} realPenMode={realPenMode} isVisible={showMobileLivePreview} onToggle={() => setIsMobileLivePreviewExpanded((prev) => !prev)} isExpanded={isMobileLivePreviewExpanded} />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel-elevated min-h-[500px] overflow-hidden">
                     <AnimatePresence mode="wait" custom={pageDirection}>
                       <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                        <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                        <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
                       </motion.div>
                     </AnimatePresence>
                   </motion.div>
@@ -732,7 +740,7 @@ const Index = () => {
                   </div>
                   <AnimatePresence mode="wait" custom={pageDirection}>
                     <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                      <LineBasedEditor lines={lines} selectedLines={selectedLines} currentColor={currentColor} realPenMode={realPenMode} onLineTextChange={updateLineText} onLineColorChange={updateLineColor} onSelectLine={selectLine} onAddLine={addLine} onRemoveLine={removeLine} onPaste={handlePaste} onMergeLinesUp={mergeLinesUp} />
+                      <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
                     </motion.div>
                   </AnimatePresence>
                   <div className="mt-4"><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></div>
@@ -743,7 +751,7 @@ const Index = () => {
                 <div className="glass-panel-elevated min-h-[calc(100vh-10rem)] overflow-hidden">
                   <AnimatePresence mode="wait" custom={pageDirection}>
                     <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="h-full" drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(_, info) => { if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage(); else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage(); }}>
-                      <NotebookPreview ref={previewRef} lines={lines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                      <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
                     </motion.div>
                   </AnimatePresence>
                 </div>
