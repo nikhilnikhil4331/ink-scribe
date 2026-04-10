@@ -21,6 +21,7 @@ import { AISolverPage } from "@/components/ai/AISolverPage";
 import History from "./pages/History";
 import Account from "./pages/Account";
 import Achievements from "./pages/Achievements";
+import MyNotebooks from "./pages/MyNotebooks";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => {
               <Route path="/history" element={<History />} />
               <Route path="/account" element={<Account />} />
               <Route path="/achievements" element={<Achievements />} />
+              <Route path="/notebooks" element={<MyNotebooks />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
