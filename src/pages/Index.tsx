@@ -60,6 +60,7 @@ const Index = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
