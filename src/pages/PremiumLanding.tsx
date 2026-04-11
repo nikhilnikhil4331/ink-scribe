@@ -129,6 +129,39 @@ const PremiumLanding: React.FC = () => {
         <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black to-transparent" />
       </header>
 
+      {/* ──── VIDEO SHOWCASE ──── */}
+      <SectionWrapper className="py-20 md:py-28">
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-sm font-semibold tracking-widest uppercase text-orange-400/80">Watch the magic</span>
+            <h2 className="mt-3 text-3xl md:text-5xl font-extrabold text-white">
+              See Niknote in{' '}
+              <span className="bg-gradient-to-r from-orange-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">Action</span>
+            </h2>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="relative rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl shadow-purple-500/10"
+          >
+            {/* Glow behind video */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/10 via-pink-500/10 to-purple-600/10 blur-2xl rounded-3xl" />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="relative w-full rounded-2xl"
+              poster=""
+            >
+              <source src="/NikNote-Promo.mp4" type="video/mp4" />
+            </video>
+          </motion.div>
+        </div>
+      </SectionWrapper>
+
       {/* ──── FEATURE 1 — HANDWRITING ──── */}
       <SectionWrapper id="features" className="py-32 md:py-40">
         <GlowOrb className="w-[600px] h-[600px] bg-pink-500/10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
