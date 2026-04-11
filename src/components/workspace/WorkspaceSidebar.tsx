@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, FolderClosed, FolderOpen, Star, Tag, Trash2, Plus, Search,
-  ChevronRight, ChevronDown, PanelLeftClose, Heart, Sparkles, Settings, MoreHorizontal
+  ChevronRight, ChevronDown, PanelLeftClose, Sparkles, Settings, MoreHorizontal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNotebooks, Notebook } from '@/hooks/useNotebooks';
