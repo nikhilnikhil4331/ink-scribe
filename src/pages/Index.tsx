@@ -360,32 +360,37 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-colors duration-500", moodStyles.background, glassMode && "glass-mode")}>
+    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500", moodStyles.background, glassMode && "glass-mode")}>
 
-      {/* ============ HEADER ============ */}
-      <header className="sticky top-0 z-50 bg-sidebar/80 backdrop-blur-xl border-b border-border/40 h-14 flex-shrink-0">
-        <div className="h-full px-3 lg:px-5 flex items-center justify-between gap-2">
+      {/* ============ HEADER — Floating Glass Bar ============ */}
+      <header className="sticky top-0 z-50 mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14 flex-shrink-0">
+        <div className="h-full px-4 lg:px-5 flex items-center justify-between gap-2">
           {/* Left: toggle + logo */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20" onClick={() => setSidebarOpen(p => !p)}>
               <PanelLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent select-none">
-              NikNote
-            </h1>
+            <div className="flex items-center gap-1.5">
+              <span className="text-pink-500 text-lg">❤️</span>
+              <h1 className="text-sm font-bold tracking-tight text-foreground select-none">
+                Lovable
+              </h1>
+            </div>
           </div>
 
           {/* Center: Mood pills (desktop) */}
           {!isMobile && (
-            <div className="flex items-center gap-2 flex-shrink min-w-0">
+            <div className="flex items-center gap-1.5 flex-shrink min-w-0">
               <MoodSelector currentMood={mood} onMoodChange={changeMood} />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setGlassMode(p => !p)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all",
-                  glassMode ? "bg-primary/20 text-primary shadow-sm" : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200",
+                  glassMode
+                    ? "bg-white/30 text-foreground shadow-sm backdrop-blur-sm"
+                    : "bg-white/10 text-foreground/70 hover:bg-white/20 hover:text-foreground"
                 )}
               >
                 <Gem className="w-4 h-4" />
@@ -395,20 +400,20 @@ const Index = () => {
           )}
 
           {/* Right actions */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {isMobile ? (
               <>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate('/ai-solver')}
-                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_12px_rgba(102,126,234,0.35)]"
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_16px_rgba(127,90,240,0.4)]"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>AI</span>
                 </motion.button>
 
                 <button
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-foreground/10 text-foreground disabled:opacity-50"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-white/15 backdrop-blur-sm text-foreground disabled:opacity-50"
                   disabled={isExporting}
                   onClick={handleExportPDF}
                 >
@@ -418,11 +423,11 @@ const Index = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 bg-white/80 backdrop-blur-2xl border-white/30">
                     <DropdownMenuItem onClick={() => changeMood('calm')}>☀️ Calm</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('focus')}>✨ Focus</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('dark')}>🌙 Dark</DropdownMenuItem>
@@ -451,7 +456,7 @@ const Index = () => {
                 <motion.div whileTap={{ scale: 0.93 }} whileHover={{ scale: 1.04 }}>
                   <button
                     onClick={() => navigate('/ai-solver')}
-                    className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(102,126,234,0.4)] hover:shadow-[0_0_30px_rgba(102,126,234,0.6)] transition-all"
+                    className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(127,90,240,0.4)] hover:shadow-[0_0_30px_rgba(127,90,240,0.6)] transition-all"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 blur-md transition-opacity -z-10" />
                     <Sparkles className="w-4 h-4 animate-pulse" />
@@ -460,7 +465,7 @@ const Index = () => {
                 </motion.div>
 
                 {user ? <HeaderProfileButton /> : (
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="gap-1.5 rounded-full h-9 px-3">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="gap-1.5 rounded-full h-9 px-3 hover:bg-white/20">
                     <LogIn className="w-4 h-4" />
                     <span className="text-xs font-medium">Sign In</span>
                   </Button>
@@ -494,22 +499,24 @@ const Index = () => {
       </AnimatePresence>
 
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="flex flex-1 overflow-hidden min-h-0 mt-2 mx-3 mb-3 gap-3">
 
         {/* LEFT SIDEBAR — desktop only */}
         {!isMobile && (
           <AnimatePresence>
             {sidebarOpen && (
-              <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+              <div className="rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+                <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+              </div>
             )}
           </AnimatePresence>
         )}
 
         {/* ======== CENTER CONTENT ======== */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden gap-3">
 
           {/* Page Bar */}
-          <div className="flex-shrink-0 border-b border-border/30 bg-background/50 backdrop-blur-sm px-3 py-1.5">
+          <div className="flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-sm px-3 py-1.5">
             <div className="max-w-4xl mx-auto">
               <PageBar
                 currentPage={currentPageIndex + 1}
@@ -532,14 +539,14 @@ const Index = () => {
                 <AnimatePresence mode="wait">
                   {mobileTab === 'write' && (
                     <motion.div key="write" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-                      <div className={cn("rounded-2xl border border-border/40 bg-card p-3 shadow-sm", moodStyles.paper)}>
+                      <div className={cn("rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl p-3 shadow-sm", moodStyles.paper)}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
                               <Edit3 className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-sm">Notebook</h3>
+                              <h3 className="font-semibold text-sm">Lovable</h3>
                               <p className="text-[10px] text-muted-foreground">
                                 {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
                               </p>
@@ -557,7 +564,7 @@ const Index = () => {
                   )}
                   {mobileTab === 'preview' && (
                     <motion.div key="preview" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-                      <div className="rounded-2xl border border-border/40 bg-card shadow-sm overflow-hidden min-h-[70vh] relative">
+                      <div className="rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl shadow-sm overflow-hidden min-h-[70vh] relative">
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                             <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
@@ -565,13 +572,13 @@ const Index = () => {
                         </AnimatePresence>
                         <div className="absolute bottom-3 right-3 z-10">
                           <div className="relative">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-secondary text-secondary-foreground border border-border/40 shadow-md disabled:opacity-50">
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-white/30 backdrop-blur-sm text-foreground border border-white/25 shadow-md disabled:opacity-50">
                               <Share2 className="w-3.5 h-3.5" /> Share
                             </motion.button>
                             {showShareMenu && (
-                              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-12 right-0 bg-popover border border-border rounded-xl shadow-xl p-1 min-w-[140px] z-50">
-                                <button onClick={handleShareImage} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-muted transition-colors text-foreground"><Image className="w-3.5 h-3.5 text-muted-foreground" /> As Image</button>
-                                <button onClick={handleSharePDF} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-muted transition-colors text-foreground"><FileText className="w-3.5 h-3.5 text-muted-foreground" /> As PDF</button>
+                              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-12 right-0 bg-white/80 backdrop-blur-2xl border border-white/30 rounded-xl shadow-xl p-1 min-w-[140px] z-50">
+                                <button onClick={handleShareImage} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><Image className="w-3.5 h-3.5 text-muted-foreground" /> As Image</button>
+                                <button onClick={handleSharePDF} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><FileText className="w-3.5 h-3.5 text-muted-foreground" /> As PDF</button>
                               </motion.div>
                             )}
                           </div>
@@ -586,19 +593,19 @@ const Index = () => {
 
           {/* ---- DESKTOP 3-PANE CONTENT ---- */}
           {!isMobile && (
-            <div className="flex-1 flex overflow-hidden min-h-0">
-              {/* Editor pane */}
-              <div className="w-[380px] xl:w-[420px] flex-shrink-0 border-r border-border/30 overflow-hidden flex flex-col">
+            <div className="flex-1 flex overflow-hidden min-h-0 gap-3">
+              {/* Editor pane — glass card */}
+              <div className="w-[380px] xl:w-[420px] flex-shrink-0 rounded-2xl bg-white/25 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                    <div className={cn("rounded-2xl border border-border/40 bg-card p-4 shadow-sm", moodStyles.paper)}>
+                    <div className={cn("rounded-xl bg-white/40 backdrop-blur-sm p-4", moodStyles.paper)}>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Edit3 className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-sm text-foreground">Notebook</h3>
+                            <h3 className="font-semibold text-sm text-foreground">Lovable</h3>
                             <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
                           </div>
                         </div>
@@ -616,11 +623,11 @@ const Index = () => {
                 </ScrollArea>
               </div>
 
-              {/* Preview pane (center) */}
-              <div className="flex-1 overflow-hidden flex flex-col min-w-0">
+              {/* Preview pane (center) — glass card */}
+              <div className="flex-1 overflow-hidden flex flex-col min-w-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                    <div className="rounded-2xl border border-border/40 bg-card shadow-sm overflow-hidden min-h-[calc(100vh-12rem)]">
+                    <div className="rounded-xl bg-white/40 backdrop-blur-sm overflow-hidden min-h-[calc(100vh-14rem)]">
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div
                           key={currentPage.id}
@@ -656,8 +663,8 @@ const Index = () => {
                 </ScrollArea>
               </div>
 
-              {/* Right: Pen Palette pane */}
-              <div className="w-[280px] xl:w-[300px] flex-shrink-0 border-l border-border/30 overflow-hidden flex flex-col">
+              {/* Right: Pen Palette pane — glass card */}
+              <div className="w-[280px] xl:w-[300px] flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
                 <ScrollArea className="flex-1">
                   <div className="p-3">
                     <PenPalette
@@ -677,16 +684,16 @@ const Index = () => {
                     />
 
                     {/* Quick Export */}
-                    <div className="mt-3 p-3 rounded-2xl border border-border/40 bg-card shadow-sm">
+                    <div className="mt-3 p-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/20">
                       <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quick Export</h4>
-                      <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs w-full">
+                      <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs w-full bg-white/30 border-white/25 hover:bg-white/40">
                         <FileDown className="w-3.5 h-3.5" /> Export PDF
                       </Button>
                     </div>
 
                     {/* Page Controls toggle */}
                     <div className="mt-3">
-                      <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)} className="w-full gap-2 rounded-xl text-xs">
+                      <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)} className="w-full gap-2 rounded-xl text-xs hover:bg-white/20">
                         <Settings2 className="w-4 h-4" /> {showControls ? 'Hide' : 'Show'} Controls
                       </Button>
                       <AnimatePresence>
@@ -704,6 +711,7 @@ const Index = () => {
           )}
         </div>
       </div>
+
 
       {/* ============ MOBILE PANELS ============ */}
       <SlidePanel isOpen={showPenPanel} onClose={() => setShowPenPanel(false)} title="Pen Palette" icon={<Palette className="w-4 h-4 text-primary" />} side="right">
