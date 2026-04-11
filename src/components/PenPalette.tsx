@@ -47,7 +47,7 @@ export const PenPalette: React.FC<PenPaletteProps> = ({
   });
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-card rounded-2xl border border-border/80 shadow-sm">
+    <div className="flex flex-col gap-4 p-4 bg-white/30 backdrop-blur-sm rounded-2xl border border-white/20 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5">

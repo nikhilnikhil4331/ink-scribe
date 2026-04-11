@@ -76,7 +76,7 @@ interface MoodSelectorProps {
 
 export const MoodSelector: React.FC<MoodSelectorProps> = ({ currentMood, onMoodChange }) => {
   return (
-    <div className="flex items-center gap-1.5 p-1 bg-secondary/50 rounded-xl">
+    <div className="flex items-center gap-1 p-1 bg-white/15 backdrop-blur-sm rounded-xl">
       {moods.map((mood) => (
         <motion.button
           key={mood.id}
@@ -86,8 +86,8 @@ export const MoodSelector: React.FC<MoodSelectorProps> = ({ currentMood, onMoodC
           className={cn(
             "flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200",
             currentMood === mood.id
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              ? "bg-white/40 shadow-sm text-foreground backdrop-blur-sm"
+              : "text-foreground/60 hover:text-foreground hover:bg-white/20"
           )}
         >
           <span className={cn(
