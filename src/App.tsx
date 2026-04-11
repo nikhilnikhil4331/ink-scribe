@@ -21,6 +21,7 @@ import History from "./pages/History";
 import Account from "./pages/Account";
 import Achievements from "./pages/Achievements";
 import MyNotebooks from "./pages/MyNotebooks";
+import PremiumLanding from "./pages/PremiumLanding";
 
 const queryClient = new QueryClient();
 
