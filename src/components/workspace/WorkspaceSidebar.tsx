@@ -71,8 +71,10 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({ isOpen, onTo
       {/* Header with Lovable branding */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/15">
         <div className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
-          <span className="text-base font-bold text-foreground tracking-tight">Lovable</span>
+          <span className="text-base">✨</span>
+          <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "'Satisfy', cursive" }}>
+            <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">Niknote</span>
+          </span>
         </div>
         <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-white/20" onClick={onToggle}>
           <PanelLeftClose className="w-4 h-4 text-muted-foreground" />

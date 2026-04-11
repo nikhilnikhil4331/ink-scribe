@@ -371,9 +371,9 @@ const Index = () => {
               <PanelLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-1.5">
-              <span className="text-pink-500 text-lg">❤️</span>
-              <h1 className="text-sm font-bold tracking-tight text-foreground select-none">
-                Lovable
+              <span className="text-lg">✨</span>
+              <h1 className="text-lg font-bold tracking-tight select-none" style={{ fontFamily: "'Satisfy', cursive" }}>
+                <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">Niknote</span>
               </h1>
             </div>
           </div>
@@ -546,7 +546,7 @@ const Index = () => {
                               <Edit3 className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-sm">Lovable</h3>
+                              <h3 className="font-semibold text-sm">Niknote</h3>
                               <p className="text-[10px] text-muted-foreground">
                                 {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
                               </p>
@@ -605,7 +605,7 @@ const Index = () => {
                             <Edit3 className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-sm text-foreground">Lovable</h3>
+                            <h3 className="font-semibold text-sm text-foreground">Niknote</h3>
                             <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
                           </div>
                         </div>
