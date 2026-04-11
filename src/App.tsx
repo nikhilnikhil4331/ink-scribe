@@ -21,6 +21,7 @@ import History from "./pages/History";
 import Account from "./pages/Account";
 import Achievements from "./pages/Achievements";
 import MyNotebooks from "./pages/MyNotebooks";
+import PremiumLanding from "./pages/PremiumLanding";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => {
               <Route path="/account" element={<Account />} />
               <Route path="/achievements" element={<Achievements />} />
               <Route path="/notebooks" element={<MyNotebooks />} />
+              <Route path="/landing" element={<PremiumLanding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
