@@ -1,98 +1,133 @@
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
-import { loadFont } from "@remotion/google-fonts/SpaceGrotesk";
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from "remotion";
+import { loadFont } from "@remotion/google-fonts/Inter";
 
-const { fontFamily: spaceFam } = loadFont("normal", { weights: ["600", "700"], subsets: ["latin"] });
+const { fontFamily } = loadFont("normal", { weights: ["700", "900"], subsets: ["latin"] });
 
 export const Scene5CTA: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleScale = spring({ frame, fps, config: { damping: 10, stiffness: 80 } });
-  const titleOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  const titleOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const titleScale = spring({ frame, fps, config: { damping: 12, stiffness: 80 } });
 
-  const urlOpacity = interpolate(frame, [40, 55], [0, 1], { extrapolateRight: "clamp" });
-  const urlY = interpolate(spring({ frame: frame - 40, fps, config: { damping: 18 } }), [0, 1], [20, 0]);
+  const subOpacity = interpolate(frame, [20, 35], [0, 1], { extrapolateRight: "clamp" });
 
-  const badgeOpacity = interpolate(frame, [60, 75], [0, 1], { extrapolateRight: "clamp" });
-  const badgeScale = spring({ frame: frame - 60, fps, config: { damping: 12 } });
+  const ctaOpacity = interpolate(frame, [35, 50], [0, 1], { extrapolateRight: "clamp" });
+  const ctaScale = spring({ frame: frame - 35, fps, config: { damping: 10, stiffness: 100 } });
 
-  const glowIntensity = 0.3 + 0.2 * Math.sin(frame * 0.06);
+  const urlOpacity = interpolate(frame, [55, 70], [0, 1], { extrapolateRight: "clamp" });
+  const urlY = interpolate(spring({ frame: frame - 55, fps, config: { damping: 18 } }), [0, 1], [15, 0]);
 
-  // Shimmer effect on button
-  const shimmerX = interpolate(frame, [70, 130], [-300, 600], { extrapolateRight: "clamp", extrapolateLeft: "clamp" });
+  const glowPulse = 0.4 + 0.3 * Math.sin(frame * 0.05);
+
+  /* Shimmer across button */
+  const shimmerX = interpolate(frame, [50, 120], [-400, 600], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+
+  /* Logo entrance */
+  const logoOpacity = interpolate(frame, [75, 90], [0, 1], { extrapolateRight: "clamp" });
+  const logoScale = spring({ frame: frame - 75, fps, config: { damping: 14 } });
 
   return (
-    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-      {/* Central glow */}
+    <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", fontFamily }}>
+      {/* Big center glow */}
       <div style={{
         position: "absolute",
-        width: 800,
+        width: 1000,
         height: 800,
         borderRadius: "50%",
-        background: `radial-gradient(circle, rgba(99,102,241,${glowIntensity}), transparent 60%)`,
-        filter: "blur(80px)",
+        background: `radial-gradient(ellipse, rgba(249,115,22,${glowPulse * 0.15}), rgba(236,72,153,${glowPulse * 0.1}) 40%, transparent 70%)`,
+        filter: "blur(60px)",
       }} />
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40, position: "relative" }}>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0, textAlign: "center" }}>
+
+        {/* Title */}
         <div style={{
-          fontFamily: spaceFam,
-          fontSize: 72,
-          fontWeight: 700,
           opacity: titleOpacity,
           transform: `scale(${titleScale})`,
-          background: "linear-gradient(135deg, #ffffff 0%, #c4b5fd 40%, #f9a8d4 80%, #ffffff 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          textAlign: "center",
-          lineHeight: 1.2,
+          fontSize: 82,
+          fontWeight: 900,
+          lineHeight: 1.1,
+          letterSpacing: -2,
         }}>
-          Start Writing<br />Beautifully
+          <span style={{ color: "white" }}>Ready to Write</span>
+          <br />
+          <span style={{
+            background: "linear-gradient(135deg, #fb923c, #ec4899, #a855f7)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>Beautifully?</span>
         </div>
 
-        {/* CTA button */}
+        {/* Sub */}
         <div style={{
-          opacity: badgeOpacity,
-          transform: `scale(${badgeScale})`,
-          padding: "20px 60px",
-          borderRadius: 50,
-          background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
-          boxShadow: "0 10px 40px rgba(99,102,241,0.4)",
-          overflow: "hidden",
+          opacity: subOpacity,
+          marginTop: 20,
+          fontSize: 24,
+          color: "rgba(255,255,255,0.4)",
+          maxWidth: 600,
+        }}>
+          Join thousands of students who've made their notes smarter, faster, and more personal.
+        </div>
+
+        {/* CTA */}
+        <div style={{
+          opacity: ctaOpacity,
+          transform: `scale(${ctaScale})`,
+          marginTop: 40,
           position: "relative",
         }}>
-          {/* Shimmer */}
           <div style={{
             position: "absolute",
-            top: 0,
-            left: shimmerX,
-            width: 100,
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-            transform: "skewX(-20deg)",
+            inset: -24,
+            borderRadius: 60,
+            background: "linear-gradient(135deg, #fb923c, #ec4899, #a855f7)",
+            filter: "blur(35px)",
+            opacity: glowPulse * 0.6,
           }} />
-          <span style={{
-            fontFamily: spaceFam,
-            fontSize: 28,
-            fontWeight: 700,
-            color: "white",
-            letterSpacing: 1,
+          <div style={{
             position: "relative",
+            padding: "22px 64px",
+            borderRadius: 60,
+            background: "linear-gradient(135deg, #fb923c, #ec4899, #a855f7)",
+            fontSize: 28,
+            fontWeight: 900,
+            color: "white",
+            overflow: "hidden",
           }}>
-            Try NikNote Free →
-          </span>
+            {/* Shimmer */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: shimmerX,
+              width: 120,
+              height: "100%",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+              transform: "skewX(-20deg)",
+            }} />
+            <span style={{ position: "relative", display: "flex", alignItems: "center", gap: 10 }}>
+              Get Started — It's Free
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+            </span>
+          </div>
         </div>
 
         {/* URL */}
         <div style={{
           opacity: urlOpacity,
           transform: `translateY(${urlY}px)`,
-          fontFamily: spaceFam,
-          fontSize: 24,
-          color: "rgba(255,255,255,0.4)",
-          fontWeight: 600,
+          marginTop: 28,
+          fontSize: 20,
+          color: "rgba(255,255,255,0.25)",
+          fontWeight: 700,
           letterSpacing: 2,
         }}>
           homenik.lovable.app
+        </div>
+
+        {/* Logo */}
+        <div style={{ opacity: logoOpacity, transform: `scale(${logoScale})`, marginTop: 30 }}>
+          <Img src={staticFile("images/logo.png")} style={{ height: 50, objectFit: "contain", opacity: 0.5 }} />
         </div>
       </div>
     </AbsoluteFill>
