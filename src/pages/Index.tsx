@@ -499,16 +499,218 @@ const Index = () => {
       </AnimatePresence>
 
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="flex flex-1 overflow-hidden min-h-0 mt-2 mx-3 mb-3 gap-3">
 
         {/* LEFT SIDEBAR — desktop only */}
         {!isMobile && (
           <AnimatePresence>
             {sidebarOpen && (
-              <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+              <div className="rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+                <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+              </div>
             )}
           </AnimatePresence>
         )}
+
+        {/* ======== CENTER CONTENT ======== */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden gap-3">
+
+          {/* Page Bar */}
+          <div className="flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-sm px-3 py-1.5">
+            <div className="max-w-4xl mx-auto">
+              <PageBar
+                currentPage={currentPageIndex + 1}
+                totalPages={totalPages}
+                onPrevPage={handlePrevPage}
+                onNextPage={handleNextPage}
+                onAddPage={handleAddPage}
+                onDeletePage={handleDeletePage}
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+                onGoToPage={handleGoToPage}
+              />
+            </div>
+          </div>
+
+          {/* ---- MOBILE CONTENT ---- */}
+          {isMobile && (
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3 pb-20">
+                <AnimatePresence mode="wait">
+                  {mobileTab === 'write' && (
+                    <motion.div key="write" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                      <div className={cn("rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl p-3 shadow-sm", moodStyles.paper)}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <Edit3 className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-sm">Lovable</h3>
+                              <p className="text-[10px] text-muted-foreground">
+                                {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
+                              </p>
+                            </div>
+                          </div>
+                          <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
+                        </div>
+                        <AnimatePresence mode="wait" custom={pageDirection}>
+                          <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+                            <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )}
+                  {mobileTab === 'preview' && (
+                    <motion.div key="preview" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
+                      <div className="rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl shadow-sm overflow-hidden min-h-[70vh] relative">
+                        <AnimatePresence mode="wait" custom={pageDirection}>
+                          <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                          </motion.div>
+                        </AnimatePresence>
+                        <div className="absolute bottom-3 right-3 z-10">
+                          <div className="relative">
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-white/30 backdrop-blur-sm text-foreground border border-white/25 shadow-md disabled:opacity-50">
+                              <Share2 className="w-3.5 h-3.5" /> Share
+                            </motion.button>
+                            {showShareMenu && (
+                              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-12 right-0 bg-white/80 backdrop-blur-2xl border border-white/30 rounded-xl shadow-xl p-1 min-w-[140px] z-50">
+                                <button onClick={handleShareImage} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><Image className="w-3.5 h-3.5 text-muted-foreground" /> As Image</button>
+                                <button onClick={handleSharePDF} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><FileText className="w-3.5 h-3.5 text-muted-foreground" /> As PDF</button>
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
+
+          {/* ---- DESKTOP 3-PANE CONTENT ---- */}
+          {!isMobile && (
+            <div className="flex-1 flex overflow-hidden min-h-0 gap-3">
+              {/* Editor pane — glass card */}
+              <div className="w-[380px] xl:w-[420px] flex-shrink-0 rounded-2xl bg-white/25 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
+                <ScrollArea className="flex-1">
+                  <div className="p-4">
+                    <div className={cn("rounded-xl bg-white/40 backdrop-blur-sm p-4", moodStyles.paper)}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Edit3 className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm text-foreground">Lovable</h3>
+                            <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <AnimatePresence mode="wait" custom={pageDirection}>
+                        <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
+                        </motion.div>
+                      </AnimatePresence>
+                      <div className="mt-4">
+                        <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Preview pane (center) — glass card */}
+              <div className="flex-1 overflow-hidden flex flex-col min-w-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+                <ScrollArea className="flex-1">
+                  <div className="p-4">
+                    <div className="rounded-xl bg-white/40 backdrop-blur-sm overflow-hidden min-h-[calc(100vh-14rem)]">
+                      <AnimatePresence mode="wait" custom={pageDirection}>
+                        <motion.div
+                          key={currentPage.id}
+                          custom={pageDirection}
+                          variants={pageVariants}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(_, info) => {
+                            if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage();
+                            else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage();
+                          }}
+                        >
+                          <NotebookPreview
+                            ref={previewRef}
+                            lines={previewLines}
+                            settings={settings}
+                            realPenMode={realPenMode}
+                            pageNumber={currentPageIndex + 1}
+                            totalPages={totalPages}
+                            inlineContent={inlineContent}
+                            onUpdateContent={updateContent}
+                            onDeleteContent={removeContent}
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Right: Pen Palette pane — glass card */}
+              <div className="w-[280px] xl:w-[300px] flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
+                <ScrollArea className="flex-1">
+                  <div className="p-3">
+                    <PenPalette
+                      currentColor={currentColor}
+                      onColorChange={handleColorChange}
+                      selectedCount={selectedLines.size}
+                      onUndo={handleUndo}
+                      onRedo={handleRedo}
+                      canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false}
+                      canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false}
+                      realPenMode={realPenMode}
+                      onRealPenModeChange={setRealPenMode}
+                      currentText={getPlainText()}
+                      onInsertText={(text) => handlePaste(text)}
+                      premiumLocked={!premium.isPremium}
+                      onPremiumTap={() => requirePremium('ai_writing')}
+                    />
+
+                    {/* Quick Export */}
+                    <div className="mt-3 p-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/20">
+                      <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quick Export</h4>
+                      <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs w-full bg-white/30 border-white/25 hover:bg-white/40">
+                        <FileDown className="w-3.5 h-3.5" /> Export PDF
+                      </Button>
+                    </div>
+
+                    {/* Page Controls toggle */}
+                    <div className="mt-3">
+                      <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)} className="w-full gap-2 rounded-xl text-xs hover:bg-white/20">
+                        <Settings2 className="w-4 h-4" /> {showControls ? 'Hide' : 'Show'} Controls
+                      </Button>
+                      <AnimatePresence>
+                        {showControls && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-3 overflow-hidden">
+                            <ControlPanel {...controlPanelProps} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
         {/* ======== CENTER CONTENT ======== */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
