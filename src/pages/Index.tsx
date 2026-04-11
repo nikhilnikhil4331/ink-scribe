@@ -360,32 +360,37 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-colors duration-500", moodStyles.background, glassMode && "glass-mode")}>
+    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500", moodStyles.background, glassMode && "glass-mode")}>
 
-      {/* ============ HEADER ============ */}
-      <header className="sticky top-0 z-50 bg-sidebar/80 backdrop-blur-xl border-b border-border/40 h-14 flex-shrink-0">
-        <div className="h-full px-3 lg:px-5 flex items-center justify-between gap-2">
+      {/* ============ HEADER — Floating Glass Bar ============ */}
+      <header className="sticky top-0 z-50 mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14 flex-shrink-0">
+        <div className="h-full px-4 lg:px-5 flex items-center justify-between gap-2">
           {/* Left: toggle + logo */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setSidebarOpen(p => !p)}>
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20" onClick={() => setSidebarOpen(p => !p)}>
               <PanelLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent select-none">
-              NikNote
-            </h1>
+            <div className="flex items-center gap-1.5">
+              <span className="text-pink-500 text-lg">❤️</span>
+              <h1 className="text-sm font-bold tracking-tight text-foreground select-none">
+                Lovable
+              </h1>
+            </div>
           </div>
 
           {/* Center: Mood pills (desktop) */}
           {!isMobile && (
-            <div className="flex items-center gap-2 flex-shrink min-w-0">
+            <div className="flex items-center gap-1.5 flex-shrink min-w-0">
               <MoodSelector currentMood={mood} onMoodChange={changeMood} />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setGlassMode(p => !p)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all",
-                  glassMode ? "bg-primary/20 text-primary shadow-sm" : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200",
+                  glassMode
+                    ? "bg-white/30 text-foreground shadow-sm backdrop-blur-sm"
+                    : "bg-white/10 text-foreground/70 hover:bg-white/20 hover:text-foreground"
                 )}
               >
                 <Gem className="w-4 h-4" />
@@ -395,20 +400,20 @@ const Index = () => {
           )}
 
           {/* Right actions */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {isMobile ? (
               <>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate('/ai-solver')}
-                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_12px_rgba(102,126,234,0.35)]"
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_16px_rgba(127,90,240,0.4)]"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>AI</span>
                 </motion.button>
 
                 <button
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-foreground/10 text-foreground disabled:opacity-50"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-white/15 backdrop-blur-sm text-foreground disabled:opacity-50"
                   disabled={isExporting}
                   onClick={handleExportPDF}
                 >
@@ -418,11 +423,11 @@ const Index = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 bg-white/80 backdrop-blur-2xl border-white/30">
                     <DropdownMenuItem onClick={() => changeMood('calm')}>☀️ Calm</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('focus')}>✨ Focus</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('dark')}>🌙 Dark</DropdownMenuItem>
@@ -451,7 +456,7 @@ const Index = () => {
                 <motion.div whileTap={{ scale: 0.93 }} whileHover={{ scale: 1.04 }}>
                   <button
                     onClick={() => navigate('/ai-solver')}
-                    className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(102,126,234,0.4)] hover:shadow-[0_0_30px_rgba(102,126,234,0.6)] transition-all"
+                    className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(127,90,240,0.4)] hover:shadow-[0_0_30px_rgba(127,90,240,0.6)] transition-all"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 blur-md transition-opacity -z-10" />
                     <Sparkles className="w-4 h-4 animate-pulse" />
@@ -460,7 +465,7 @@ const Index = () => {
                 </motion.div>
 
                 {user ? <HeaderProfileButton /> : (
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="gap-1.5 rounded-full h-9 px-3">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="gap-1.5 rounded-full h-9 px-3 hover:bg-white/20">
                     <LogIn className="w-4 h-4" />
                     <span className="text-xs font-medium">Sign In</span>
                   </Button>
