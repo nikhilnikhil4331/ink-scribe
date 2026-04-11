@@ -24,12 +24,12 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
 import {
-  Settings2, Eye, Edit3, FileDown, Palette, Mic, MicOff, Crown, LogIn,
+  Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles
 } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
-import { PanelLeft, PanelRight } from 'lucide-react';
+import { PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -41,7 +41,7 @@ import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
-import { AIWritingAssistant } from '@/components/AIWritingAssistant';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';

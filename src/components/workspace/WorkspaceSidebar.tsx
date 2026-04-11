@@ -71,7 +71,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({ isOpen, onTo
       animate={{ width: 280, opacity: 1 }}
       exit={{ width: 0, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-      className="h-full md:h-[calc(100vh-3.5rem)] border-r border-border/50 bg-sidebar flex flex-col flex-shrink-0 overflow-hidden"
+      className="h-full border-r border-border/50 bg-sidebar flex flex-col flex-shrink-0 overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-border/30">
