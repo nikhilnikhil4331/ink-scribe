@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Crown, Mic, Sparkles, Wand2 } from "lucide-react";
+import { Crown, Mic, Sparkles, Wand2, CreditCard } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface PaywallModalProps {
   open: boolean;
@@ -90,9 +91,10 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }
           </div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-muted-foreground">
-            Pay securely via UPI • Instant activation
-          </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <CreditCard className="h-3.5 w-3.5" />
+            <span>Secured by Razorpay • UPI, Cards, Wallets</span>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
