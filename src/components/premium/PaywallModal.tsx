@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Crown, Mic, Sparkles, Wand2, CreditCard } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 
 export interface PaywallModalProps {
   open: boolean;
