@@ -218,6 +218,36 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_usage: {
+        Row: {
+          created_at: string
+          feature_name: string
+          id: string
+          updated_at: string
+          usage_count: number
+          usage_month: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_name: string
+          id?: string
+          updated_at?: string
+          usage_count?: number
+          usage_month?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_name?: string
+          id?: string
+          updated_at?: string
+          usage_count?: number
+          usage_month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           created_at: string
@@ -411,7 +441,9 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          onboarding_completed: boolean
           updated_at: string
+          use_case: string | null
           user_id: string
         }
         Insert: {
@@ -419,7 +451,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           updated_at?: string
+          use_case?: string | null
           user_id: string
         }
         Update: {
@@ -427,7 +461,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           updated_at?: string
+          use_case?: string | null
           user_id?: string
         }
         Relationships: []
