@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PremiumProvider } from "@/contexts/PremiumContext";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
@@ -22,11 +23,11 @@ import Account from "./pages/Account";
 import Achievements from "./pages/Achievements";
 import MyNotebooks from "./pages/MyNotebooks";
 import PremiumLanding from "./pages/PremiumLanding";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Force light mode on app load - remove dark class and set localStorage
   useEffect(() => {
     document.documentElement.classList.remove("dark");
     localStorage.setItem("theme", "light");
@@ -35,36 +36,35 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* /app now redirects to / — unified workspace */}
-              <Route path="/app" element={<Navigate to="/" replace />} />
-              <Route path="/welcome" element={<Welcome />} />
-              {/* Dedicated auth routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              {/* Legacy auth route - redirects to login */}
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/upgrade" element={<Upgrade />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
-              <Route path="/ai-solver" element={<AISolverPage />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/achievements" element={<Achievements />} />
-              <Route path="/notebooks" element={<MyNotebooks />} />
-              <Route path="/landing" element={<PremiumLanding />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <PremiumProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/app" element={<Navigate to="/" replace />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/upgrade" element={<Upgrade />} />
+                <Route path="/payment" element={<Payment />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
+                <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
+                <Route path="/ai-solver" element={<AISolverPage />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/achievements" element={<Achievements />} />
+                <Route path="/notebooks" element={<MyNotebooks />} />
+                <Route path="/landing" element={<PremiumLanding />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </PremiumProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
