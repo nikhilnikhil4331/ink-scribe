@@ -1,19 +1,34 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Crown, Mic, Sparkles, Wand2, CreditCard } from "lucide-react";
-
+import { Crown, Mic, Sparkles, Wand2, CreditCard, Brain, FileImage, BookOpen, Volume2 } from "lucide-react";
+import { type PremiumFeature } from "@/contexts/PremiumContext";
 
 export interface PaywallModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onPurchased?: () => void;
+  feature?: PremiumFeature;
+  usedCount?: number;
+  limitCount?: number;
 }
 
-const features = [
-  { icon: Mic, label: "Voice Dictation", desc: "Speak to write" },
-  { icon: Wand2, label: "AI Writing Assistant", desc: "Smart suggestions" },
-  { icon: Sparkles, label: "AI Style Matcher", desc: "Match any handwriting" },
+const featureLabels: Record<PremiumFeature, { icon: any; label: string; desc: string }> = {
+  ai_note_generator: { icon: Wand2, label: "AI Note Generator", desc: "Generate unlimited notes with AI" },
+  ai_solver: { icon: Brain, label: "AI Solver", desc: "Unlimited problem solving" },
+  ai_text_tools: { icon: Sparkles, label: "AI Text Tools", desc: "Rewrite, summarize & more" },
+  handwriting_styles: { icon: Wand2, label: "Handwriting DNA", desc: "Unlimited custom styles" },
+  image_pdf_convert: { icon: FileImage, label: "Image/PDF to Notes", desc: "Unlimited conversions" },
+  voice_to_notes: { icon: Volume2, label: "Voice to Notes", desc: "Unlimited transcription" },
+  ai_flashcards: { icon: BookOpen, label: "AI Flashcards", desc: "Unlimited decks & cards" },
+};
+
+const allFeatures = [
+  { icon: Wand2, label: "AI Note Generator", desc: "Unlimited AI-generated notes" },
+  { icon: Brain, label: "AI Solver", desc: "Unlimited problem solving" },
+  { icon: Sparkles, label: "AI Text Tools", desc: "Rewrite, summarize, expand" },
+  { icon: Mic, label: "Voice Dictation", desc: "Unlimited voice transcription" },
+  { icon: FileImage, label: "Image/PDF to Notes", desc: "Unlimited conversions" },
+  { icon: BookOpen, label: "AI Flashcards", desc: "Unlimited decks & cards" },
 ];
 
 const plans = [
@@ -21,13 +36,15 @@ const plans = [
   { code: "monthly", label: "Monthly", price: "₹99", period: "/month", popular: true },
 ];
 
-export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }) => {
+export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, feature, usedCount, limitCount }) => {
   const navigate = useNavigate();
 
   const handleSelectPlan = (planCode: string) => {
     onOpenChange(false);
     navigate(`/payment?plan=${planCode}`);
   };
+
+  const triggeredFeature = feature ? featureLabels[feature] : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,9 +57,9 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }
                 <Crown className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <DialogTitle className="text-xl">Go Premium</DialogTitle>
+                <DialogTitle className="text-xl">Upgrade to Premium</DialogTitle>
                 <DialogDescription className="text-sm">
-                  Unlock all features
+                  Unlock all AI features
                 </DialogDescription>
               </div>
             </div>
@@ -50,14 +67,27 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange }
         </div>
 
         <div className="p-6 pt-2 space-y-5">
-          {/* Features */}
-          <div className="space-y-2.5">
-            {features.map((f, i) => (
+          {/* Usage warning */}
+          {triggeredFeature && usedCount !== undefined && limitCount !== undefined && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <div className="flex items-center gap-2 text-sm font-medium text-amber-700">
+                <triggeredFeature.icon className="h-4 w-4" />
+                {triggeredFeature.label}
+              </div>
+              <p className="text-xs text-amber-600/80 mt-1">
+                You've used {usedCount}/{limitCount} free uses. Upgrade for unlimited access!
+              </p>
+            </div>
+          )}
+
+          {/* All Premium Features */}
+          <div className="space-y-2">
+            {allFeatures.map((f, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
               >
-                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <f.icon className="h-4 w-4 text-primary" />
                 </div>
                 <div>
