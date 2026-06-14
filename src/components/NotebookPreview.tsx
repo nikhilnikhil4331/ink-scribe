@@ -374,6 +374,7 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
     return (
       <div 
         ref={containerRef} 
+        data-preview-container="true"
         className={`h-full overflow-y-auto scroll-smooth relative ${forExport ? 'p-0' : 'p-3 sm:p-6'}`}
       >
         <div className="flex flex-col items-center gap-4 sm:gap-6">

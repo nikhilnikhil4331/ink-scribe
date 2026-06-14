@@ -273,27 +273,74 @@ const Index = () => {
 
   const handleExportPDF = useCallback(async () => {
     const text = getPlainText();
-    if (!text.trim() && !settings.table.enabled && diagrams.length === 0) { toast.error('Please add some content first'); return; }
-    setExportMount(true);
-    await new Promise<void>(r => requestAnimationFrame(() => r()));
-    await new Promise<void>(r => requestAnimationFrame(() => r()));
-    const exportElements = Array.from(exportContainerRef.current?.querySelectorAll('[data-export-page="true"]') ?? []) as HTMLElement[];
-    const elements = exportElements.length > 0 ? exportElements : previewRef.current?.getPageElements() ?? [];
-    if (!elements || elements.length === 0) { setExportMount(false); toast.error('No pages to export'); return; }
-    setIsExporting(true); setExportProgress(null); triggerHaptic('medium');
-    const toastId = toast.loading(elements.length > 1 ? `Creating PDF: Page 1 of ${elements.length}...` : 'Creating PDF...');
+    if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
+      toast.error('Please add some content first');
+      return;
+    }
+    
+    setIsExporting(true);
+    setExportProgress(null);
+    triggerHaptic('medium');
+    
+    const toastId = toast.loading('Preparing PDF...');
+    
     try {
+      // FIX: Mount offscreen export container with proper dimensions
+      setExportMount(true);
+      
+      // Wait for React to render the offscreen pages
+      await new Promise<void>(r => setTimeout(r, 500));
+      await document.fonts.ready;
+      
+      // Try to find export pages in offscreen container first
+      let elements: HTMLElement[] = [];
+      
+      if (exportContainerRef.current) {
+        const offscreenPages = exportContainerRef.current.querySelectorAll('[data-export-page="true"]');
+        elements = Array.from(offscreenPages) as HTMLElement[];
+      }
+      
+      // Fallback: Use visible preview pages
+      if (elements.length === 0) {
+        elements = previewRef.current?.getPageElements() ?? [];
+      }
+      
+      // Last fallback: Search entire document for visible export pages
+      if (elements.length === 0) {
+        const allExportPages = document.querySelectorAll('[data-export-page="true"]');
+        elements = Array.from(allExportPages).filter(el => {
+          const rect = (el as HTMLElement).getBoundingClientRect();
+          return rect.width > 50 && rect.height > 50;
+        }) as HTMLElement[];
+      }
+      
+      if (elements.length === 0) {
+        throw new Error('No pages found. Make sure the preview is visible with content.');
+      }
+      
+      toast.loading(`Creating PDF: ${elements.length} page(s)...`, { id: toastId });
+      
       await exportToPDF(elements, 'handwritten-notes', settings.pageSize, (progress) => {
         setExportProgress(progress);
-        if (elements.length > 1) toast.loading(`Creating PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
+        toast.loading(`Creating PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
       });
-      toast.success(elements.length > 1 ? `PDF with ${elements.length} pages exported!` : 'PDF exported!', { id: toastId });
-      playSuccess(); triggerHaptic('success');
+      
+      toast.success(elements.length > 1 ? `PDF with ${elements.length} pages exported! 📄` : 'PDF exported! 📄', { id: toastId });
+      playSuccess();
+      triggerHaptic('success');
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Export failed: ${msg}`, { id: toastId, action: { label: 'Retry', onClick: () => handleExportPDF() } });
+      console.error('PDF export error:', msg);
+      toast.error(`Export failed: ${msg}`, {
+        id: toastId,
+        action: { label: 'Retry', onClick: () => handleExportPDF() }
+      });
       triggerHaptic('error');
-    } finally { setIsExporting(false); setExportProgress(null); setExportMount(false); }
+    } finally {
+      setIsExporting(false);
+      setExportProgress(null);
+      setExportMount(false);
+    }
   }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length, triggerHaptic, playSuccess]);
 
   const handleReset = useCallback(() => { resetSettings(); triggerHaptic('medium'); toast.success('Settings reset'); }, [resetSettings, triggerHaptic]);
