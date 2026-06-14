@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NikNote — Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e8e0ff 50%, #fff0f5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .offline-card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 24px;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    p {
+      font-size: 15px;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .handwriting {
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      color: #3b82f6;
+      margin-top: 16px;
+      transform: rotate(-2deg);
+    }
+    .retry-btn {
+      background: linear-gradient(135deg, #3b82f6, #7c3aed);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+    }
+    .retry-btn:active {
+      transform: scale(0.97);
+    }
+    .tip {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="offline-card">
+    <div class="icon">✍️</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Don't worry — your notes are safe!</p>
+    <button class="retry-btn" onclick="window.location.reload()">
+      Try Again
+    </button>
+    <div class="handwriting">NikNote will be back when you're online ✨</div>
+    <div class="tip">💡 Tip: Your saved notes are still accessible offline</div>
+  </div>
+</body>
+</html>
