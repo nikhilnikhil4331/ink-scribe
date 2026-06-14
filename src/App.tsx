@@ -29,6 +29,7 @@ import Onboarding from "./pages/Onboarding";
 
 // Lazy load heavy pages for better performance
 const AISolverPage = lazy(() => import("@/components/ai/AISolverPage").then(m => ({ default: m.AISolverPage })));
+const AI4Page = lazy(() => import("@/components/ai4/AI4Page").then(m => ({ default: m.AI4Page })));
 
 // Page loading fallback
 const PageLoader = () => (
@@ -82,6 +83,7 @@ const App = () => {
                     <Route path="/admin-login" element={<AdminLogin />} />
                     <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
                     <Route path="/ai-solver" element={<AISolverPage />} />
+                    <Route path="/ai" element={<AI4Page />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />

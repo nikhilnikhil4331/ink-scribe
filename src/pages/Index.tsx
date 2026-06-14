@@ -452,11 +452,11 @@ const Index = () => {
               <>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => navigate('/ai-solver')}
+                  onClick={() => navigate('/ai')}
                   className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_16px_rgba(127,90,240,0.4)]"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI</span>
+                  <span>AI 4.0</span>
                 </motion.button>
 
                 <button
@@ -502,12 +502,12 @@ const Index = () => {
                 {/* Desktop: AI Solver glow button */}
                 <motion.div whileTap={{ scale: 0.93 }} whileHover={{ scale: 1.04 }}>
                   <button
-                    onClick={() => navigate('/ai-solver')}
+                    onClick={() => navigate('/ai')}
                     className="relative group flex items-center gap-2 h-9 px-5 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(127,90,240,0.4)] hover:shadow-[0_0_30px_rgba(127,90,240,0.6)] transition-all"
                   >
                     <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 blur-md transition-opacity -z-10" />
                     <Sparkles className="w-4 h-4 animate-pulse" />
-                    AI Solver
+                    AI 4.0
                   </button>
                 </motion.div>
 
