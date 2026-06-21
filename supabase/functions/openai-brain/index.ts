@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
-const MAX_REQUESTS_PER_WINDOW = 25; // 25 AI brain requests per hour
+const MAX_REQUESTS_PER_WINDOW = 30; // 30 AI brain requests per hour (increased for multi-agent)
 
 async function checkRateLimit(
   supabase: any,
@@ -47,7 +47,10 @@ async function checkRateLimit(
   return { allowed: true, remaining, resetAt };
 }
 
+// ============================================================
 // AI Provider Configuration
+// ============================================================
+
 interface AIProvider {
   name: string;
   baseUrl: string;
@@ -64,9 +67,9 @@ const providers: AIProvider[] = [
     name: "openai",
     baseUrl: "https://api.openai.com/v1",
     models: {
-      vision: "gpt-4o",           // Best for image analysis
-      reasoning: "gpt-4o",         // Best for complex reasoning/essays
-      fast: "gpt-4o-mini",         // Fast and cheap for simple text
+      vision: "gpt-4o",
+      reasoning: "gpt-4o",
+      fast: "gpt-4o-mini",
     },
     getKey: () => Deno.env.get("OPENAI_API_KEY"),
   },
@@ -74,15 +77,133 @@ const providers: AIProvider[] = [
     name: "lovable",
     baseUrl: "https://ai.gateway.lovable.dev/v1",
     models: {
-      vision: "google/gemini-2.5-pro",    // Vision capable
-      reasoning: "google/gemini-2.5-pro", // Strong reasoning
-      fast: "google/gemini-2.5-flash",    // Fast fallback
+      vision: "google/gemini-2.5-pro",
+      reasoning: "google/gemini-2.5-pro",
+      fast: "google/gemini-2.5-flash",
     },
     getKey: () => Deno.env.get("LOVABLE_API_KEY"),
   },
 ];
 
-// Mode to model type mapping
+// ============================================================
+// NikNote 4.0 Agent System Prompts
+// ============================================================
+
+const AGENT_PROMPTS: Record<string, string> = {
+  teacher: `You are an expert AI Teacher on NikNote — a learning platform for Indian students.
+Your job is to EXPLAIN concepts clearly, like a real teacher would.
+RULES:
+- Start with a simple 2-line summary anyone can understand
+- Then explain in 3 levels: Beginner → Intermediate → Exam-focused
+- Use real-life examples Indian students relate to (cricket, chai, traffic, etc.)
+- Include important formulas, definitions, and keywords
+- Always add "Exam Tip" at the end
+- Keep responses structured with clear headings
+- Be warm, encouraging, but precise
+- Use Hinglish when it helps understanding
+- Response MUST be under 800 words`,
+
+  notes: `You are the Notes Agent on NikNote — you create BEAUTIFUL, STRUCTURED notes.
+RULES:
+- Create well-organized notes with clear headings and subheadings
+- Use bullet points for key information
+- Highlight IMPORTANT keywords in **bold**
+- Include formulas in separate lines
+- Add "📝 Remember" boxes for critical points
+- Add "⚠️ Common Mistake" warnings where students often go wrong
+- Structure: Title → Overview → Key Concepts → Formulas → Examples → Summary
+- Make notes that a student can revise in 10 minutes
+- Include 3-5 practice questions at the end`,
+
+  research: `You are the Research Agent on NikNote — you find ACCURATE, VERIFIED information.
+RULES:
+- Provide factually correct information from reliable sources
+- Cite sources when possible (NCERT, standard textbooks)
+- Cross-verify important claims
+- Present multiple perspectives when relevant
+- Flag any controversial or disputed information
+- Keep information concise and exam-relevant`,
+
+  diagram: `You are the Diagram Agent on NikNote — you describe and suggest visual learning aids.
+RULES:
+- When a topic is mentioned, suggest what diagrams would help understanding
+- Describe diagrams in detail so they can be created
+- Include flowcharts for processes
+- Include labeled diagrams for structures
+- Include graphs for relationships
+- Suggest Mermaid.js syntax for diagrams where applicable
+- Always explain WHY the diagram helps`,
+
+  revision: `You are the Revision Agent on NikNote — you create CONCISE revision materials.
+RULES:
+- Create ultra-short summaries (1 page max)
+- Use mnemonics where possible
+- Create "cheat sheet" style revision notes
+- Highlight ONLY what's important for exams
+- Group related concepts together
+- Add memory tricks and shortcuts
+- Create before/after comparison tables`,
+
+  quiz: `You are the Quiz Agent on NikNote — you create ENGAGING tests and MCQs.
+RULES:
+- Create 5-10 MCQs per topic
+- Include easy, medium, and hard questions
+- Always provide explanations for correct AND wrong answers
+- Include "trick questions" that test deep understanding
+- Add assertion-reason type questions (common in Indian exams)
+- Add numerical problems where applicable
+- Mark difficulty level for each question`,
+
+  assignment: `You are the Assignment Agent on NikNote — you help students complete assignments.
+RULES:
+- Understand the assignment requirement
+- Provide a step-by-step approach
+- Give a structure/template for the answer
+- Suggest key points to include
+- Help format the answer properly
+- Add references and citations
+- DO NOT write the full answer — guide the student to write it themselves`,
+
+  doubt: `You are the Doubt Solver Agent on NikNote — you answer questions INSTANTLY.
+RULES:
+- Answer directly and clearly
+- If the doubt is unclear, ask clarifying questions
+- Provide examples to illustrate the answer
+- Reference related concepts the student should know
+- Suggest what to study next
+- Be patient and encouraging
+- Never make the student feel dumb`,
+
+  productivity: `You are the Productivity Agent on NikNote — you create study plans and schedules.
+RULES:
+- Create realistic study schedules based on exam dates
+- Include breaks (Pomodoro technique)
+- Suggest priority order for topics
+- Include revision slots
+- Create daily, weekly, and monthly plans
+- Add tips for better focus and retention
+- Suggest group study topics
+- Keep plans flexible`,
+
+  handwriting: `You are the Handwriting Analysis Agent on NikNote.
+RULES:
+- Analyze uploaded handwriting samples
+- Identify: slant, pressure, stroke thickness, baseline drift, spacing, size variation
+- Generate HandwritingDNA parameters
+- Provide matching recommendations
+- Give feedback on handwriting characteristics`,
+
+  document: `You are the Document Intelligence Agent on NikNote.
+RULES:
+- Read and understand uploaded documents (PDF, images)
+- Extract key information and concepts
+- Generate summaries
+- Identify important formulas, definitions, and diagrams
+- Create structured notes from documents
+- Suggest study topics from the document`,
+};
+
+// Legacy mode-to-prompt mapping (for backward compatibility)
 const modeToModelType: Record<string, 'vision' | 'reasoning' | 'fast'> = {
   solve: 'reasoning',
   essay: 'reasoning',
@@ -93,6 +214,21 @@ const modeToModelType: Record<string, 'vision' | 'reasoning' | 'fast'> = {
   template: 'fast',
   notes: 'fast',
   ocr_solve: 'vision',
+};
+
+// Agent to model type mapping (new)
+const agentToModelType: Record<string, 'vision' | 'reasoning' | 'fast'> = {
+  teacher: 'reasoning',
+  notes: 'fast',
+  research: 'reasoning',
+  diagram: 'fast',
+  revision: 'fast',
+  quiz: 'fast',
+  assignment: 'reasoning',
+  doubt: 'fast',
+  productivity: 'fast',
+  handwriting: 'vision',
+  document: 'vision',
 };
 
 interface ChatMessage {
@@ -106,15 +242,23 @@ interface AIRequest {
   imageBase64?: string;
   mode?: string;
   stream?: boolean;
+  // NikNote 4.0 Agent fields
+  messages?: ChatMessage[];
+  agent?: string;
+  temperature?: number;
+  max_tokens?: number;
 }
 
 /**
- * Intelligently routes AI requests to the appropriate model based on:
- * 1. Whether an image is present (use vision model)
- * 2. The action/mode type (essay/solve = reasoning, simple tasks = fast)
- * 3. Content length (long content = reasoning model)
+ * Select model type based on request type
+ * Priority: agent > image > action > content length
  */
 function selectModelType(request: AIRequest): 'vision' | 'reasoning' | 'fast' {
+  // New: Agent-based routing
+  if (request.agent && agentToModelType[request.agent]) {
+    return agentToModelType[request.agent];
+  }
+
   // Image input always requires vision model
   if (request.imageBase64) {
     return 'vision';
@@ -136,9 +280,15 @@ function selectModelType(request: AIRequest): 'vision' | 'reasoning' | 'fast' {
 }
 
 /**
- * Build system prompt based on mode and action
+ * Build system prompt — supports both legacy and agent-based
  */
-function buildSystemPrompt(action: string, mode: string): string {
+function buildSystemPrompt(request: AIRequest): string {
+  // New: Agent-specific prompt
+  if (request.agent && AGENT_PROMPTS[request.agent]) {
+    return AGENT_PROMPTS[request.agent];
+  }
+
+  // Legacy: action/mode-based prompt
   const modePrompts: Record<string, string> = {
     student: "You are a helpful tutor for school students. Use simple language, provide step-by-step explanations, and be encouraging. Format solutions clearly with numbered steps.",
     college: "You are an academic assistant for college students. Provide detailed, well-structured responses with proper citations when applicable. Use academic language and thorough explanations.",
@@ -157,16 +307,7 @@ function buildSystemPrompt(action: string, mode: string): string {
     ocr_solve: "I've extracted text from an image. Analyze this homework/assignment question and provide a complete, step-by-step solution. Show all work clearly."
   };
 
-  return `${modePrompts[mode] || modePrompts.student}
-
-${actionPrompts[action] || "Help the user with their request."}
-
-Format your response using Markdown for better readability:
-- Use **bold** for important terms
-- Use numbered lists for steps
-- Use headers (##) to organize sections
-- Use code blocks for formulas or code
-- Use bullet points for key takeaways`;
+  return `${modePrompts[request.mode || 'student'] || modePrompts.student}\n\n${actionPrompts[request.action] || "Help the user with their request."}\n\nFormat your response using Markdown for better readability:\n- Use **bold** for important terms\n- Use numbered lists for steps\n- Use headers (##) to organize sections\n- Use code blocks for formulas or code\n- Use bullet points for key takeaways`;
 }
 
 /**
@@ -176,7 +317,9 @@ async function makeAIRequest(
   messages: ChatMessage[],
   modelType: 'vision' | 'reasoning' | 'fast',
   stream: boolean,
-  hasImage: boolean
+  hasImage: boolean,
+  temperature: number = 0.7,
+  maxTokens: number = 4096
 ): Promise<{ response: Response; provider: string; model: string }> {
   
   for (const provider of providers) {
@@ -187,14 +330,11 @@ async function makeAIRequest(
     console.log(`Trying ${provider.name} with model ${model} (type: ${modelType})`);
 
     try {
-      // Transform messages for Lovable AI vision (use inline_data format for images)
       let requestMessages = messages;
       
       if (provider.name === "lovable" && hasImage) {
-        // Lovable/Gemini supports vision but needs proper format
         requestMessages = messages.map(m => {
           if (typeof m.content === "string") return m;
-          // Convert OpenAI format to Gemini-compatible format
           const textPart = (m.content as { type: string; text?: string }[]).find(p => p.type === "text");
           const imagePart = (m.content as { type: string; image_url?: { url: string } }[]).find(p => p.type === "image_url");
           
@@ -221,19 +361,17 @@ async function makeAIRequest(
           model,
           messages: requestMessages,
           stream,
-          max_tokens: 4096,
-          temperature: 0.7,
+          max_tokens: maxTokens,
+          temperature,
         }),
       });
 
-      // Check for quota/rate limit errors and try next provider
       if (!response.ok) {
         const status = response.status;
         if (status === 429 || status === 402) {
           console.log(`${provider.name} quota/rate limit, trying next provider`);
           continue;
         }
-        // Other errors, try next provider
         const errorText = await response.text();
         console.error(`${provider.name} error ${status}: ${errorText}`);
         continue;
@@ -316,39 +454,46 @@ serve(async (req) => {
       content, 
       imageBase64, 
       mode = "student",
-      stream = false 
+      stream = false,
+      messages: providedMessages,
+      agent,
+      temperature = 0.7,
+      max_tokens = 2000,
     } = body;
 
-    console.log(`AI Brain: action=${action}, mode=${mode}, hasImage=${!!imageBase64}, contentLength=${content?.length || 0}`);
+    console.log(`AI Brain: agent=${agent || 'none'}, action=${action}, mode=${mode}, hasImage=${!!imageBase64}, hasMessages=${!!providedMessages}`);
 
     // Intelligent model selection
     const modelType = selectModelType(body);
     console.log(`Selected model type: ${modelType}`);
 
-    // Build system prompt
-    const systemPrompt = buildSystemPrompt(action, mode);
-
     // Build messages array
-    const messages: ChatMessage[] = [
-      { role: "system", content: systemPrompt }
-    ];
+    let messages: ChatMessage[];
 
-    // Handle image input for OCR/vision tasks
-    if (imageBase64) {
-      messages.push({
-        role: "user",
-        content: [
-          { type: "text", text: content || "Please analyze this image and solve any problems shown." },
-          { 
-            type: "image_url", 
-            image_url: { 
-              url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}` 
-            } 
-          }
-        ]
-      });
+    if (providedMessages && providedMessages.length > 0) {
+      // New agent-based: use provided messages (already include system prompt from agent)
+      messages = providedMessages;
     } else {
-      messages.push({ role: "user", content });
+      // Legacy: build from action/content
+      const systemPrompt = buildSystemPrompt(body);
+      messages = [{ role: "system", content: systemPrompt }];
+
+      if (imageBase64) {
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: content || "Please analyze this image and solve any problems shown." },
+            { 
+              type: "image_url", 
+              image_url: { 
+                url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}` 
+              } 
+            }
+          ]
+        });
+      } else {
+        messages.push({ role: "user", content });
+      }
     }
 
     // Make AI request with automatic fallback
@@ -356,17 +501,19 @@ serve(async (req) => {
       messages,
       modelType,
       stream,
-      !!imageBase64
+      !!imageBase64,
+      temperature,
+      max_tokens
     );
 
     // Log activity for tracking
     try {
       await supabase.from('activity_logs').insert({
         user_id: userId,
-        action: imageBase64 ? 'ai_vision_process' : 'ai_document_process',
+        action: imageBase64 ? 'ai_vision_process' : agent ? `ai_agent_${agent}` : 'ai_document_process',
         category: 'ai',
-        details: { action, mode, modelType, provider, hasImage: !!imageBase64, contentLength: content?.length || 0 },
-        page_url: '/ai-solver',
+        details: { action, mode, agent, modelType, provider, hasImage: !!imageBase64, contentLength: content?.length || 0 },
+        page_url: agent ? '/ai' : '/ai-solver',
       });
     } catch (logError) {
       console.warn("Failed to log activity:", logError);
@@ -393,10 +540,12 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        result,
+        content: result,  // New format for agent responses
+        result,           // Legacy format
         provider,
         model,
         modelType,
+        agent: agent || null,
         usage: data.usage
       }),
       { 

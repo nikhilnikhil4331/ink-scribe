@@ -2,6 +2,12 @@ import React, { useMemo, useEffect, useState, useRef, memo, forwardRef } from 'r
 import { motion } from 'framer-motion';
 import { NoteLine, LINE_INK_COLORS, generateRealPenVariation } from '@/types/noteLine';
 import { NoteSettings } from '@/types/notes';
+import {
+  HandwritingDNA,
+  getDefaultDNA,
+  generateLineVariation,
+  generateWordVariation,
+} from '@/components/handwriting-dna/HandwritingDNAEngine';
 
 interface HandwritingLineProps {
   line: NoteLine;
@@ -10,12 +16,14 @@ interface HandwritingLineProps {
   realPenMode: boolean;
   fontClass: string;
   isNewText?: boolean;
-  // Handwriting DNA parameters (from analysis)
-  slant?: number;          // degrees, -15 to 15
-  penPressure?: number;    // 0.1 to 1.0
-  strokeThickness?: number; // 0.5 to 3.0
-  baselineJitterAmount?: number; // 0 to 5
-  letterSpacingVariation?: number; // 0 to 3
+  // Legacy DNA parameters (from analysis) — still supported
+  slant?: number;
+  penPressure?: number;
+  strokeThickness?: number;
+  baselineJitterAmount?: number;
+  letterSpacingVariation?: number;
+  // NEW: Full DNA profile from HandwritingDNAEngine v2
+  dna?: HandwritingDNA;
 }
 
 interface AnimatedWordProps {
@@ -26,10 +34,12 @@ interface AnimatedWordProps {
   delay: number;
   isNew: boolean;
   letterSpacingVariation: number;
+  // DNA v2 per-word variation
+  wordCSS?: React.CSSProperties;
 }
 
-const AnimatedWord = memo<AnimatedWordProps>(({ 
-  word, wordIndex, wordSpacing, baselineVariation, delay, isNew, letterSpacingVariation,
+const AnimatedWord = memo<AnimatedWordProps>(({
+  word, wordIndex, wordSpacing, baselineVariation, delay, isNew, letterSpacingVariation, wordCSS,
 }) => {
   const yOffset = useMemo(() => {
     return Math.sin(wordIndex * 3.7) * baselineVariation;
@@ -41,17 +51,24 @@ const AnimatedWord = memo<AnimatedWordProps>(({
     return { letterSpacing: `${(Math.sin(wordIndex * 5.3) * letterSpacingVariation).toFixed(2)}px` };
   }, [wordIndex, letterSpacingVariation]);
 
+  // Merge DNA word CSS with existing styles
+  const mergedStyle: React.CSSProperties = {
+    marginRight: `${wordSpacing}px`,
+    display: 'inline',
+    position: 'relative' as const,
+    top: `${yOffset}px`,
+    ...letterStyle,
+    ...(wordCSS || {}),
+  };
+
+  // If wordCSS provides its own top, override the default jitter
+  if (wordCSS?.top !== undefined) {
+    mergedStyle.top = wordCSS.top;
+  }
+
   if (!isNew) {
     return (
-      <span 
-        style={{ 
-          marginRight: `${wordSpacing}px`, 
-          display: 'inline',
-          position: 'relative',
-          top: `${yOffset}px`,
-          ...letterStyle,
-        }}
-      >
+      <span style={mergedStyle}>
         {word}
       </span>
     );
@@ -62,11 +79,12 @@ const AnimatedWord = memo<AnimatedWordProps>(({
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: yOffset }}
       transition={{ duration: 0.15, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{ 
-        marginRight: `${wordSpacing}px`, 
+      style={{
+        marginRight: `${wordSpacing}px`,
         display: 'inline',
         position: 'relative',
         ...letterStyle,
+        ...(wordCSS || {}),
       }}
     >
       {word.split('').map((char, charIndex) => (
@@ -87,15 +105,17 @@ AnimatedWord.displayName = 'AnimatedWord';
 
 export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLineProps>(({
   line, lineIndex, settings, realPenMode, fontClass, isNewText = false,
-  slant = 0, penPressure = 0.5, strokeThickness = 1, baselineJitterAmount = 2, letterSpacingVariation = 0,
+  slant: propSlant = 0, penPressure: propPenPressure = 0.5, strokeThickness: propStrokeThickness = 1,
+  baselineJitterAmount: propBaselineJitter = 2, letterSpacingVariation: propLetterSpacingVar = 0,
+  dna,
 }, ref) => {
   const prevTextRef = useRef(line.text);
   const [animatingWords, setAnimatingWords] = useState<Set<number>>(new Set());
-  
+
   useEffect(() => {
     const prevWords = prevTextRef.current.split(' ');
     const currentWords = line.text.split(' ');
-    
+
     if (line.text !== prevTextRef.current) {
       const newWordIndices = new Set<number>();
       currentWords.forEach((word, index) => {
@@ -103,7 +123,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
           newWordIndices.add(index);
         }
       });
-      
+
       if (newWordIndices.size > 0) {
         setAnimatingWords(newWordIndices);
         const timeout = setTimeout(() => setAnimatingWords(new Set()), 500);
@@ -111,7 +131,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
         return () => clearTimeout(timeout);
       }
     }
-    
+
     prevTextRef.current = line.text;
   }, [line.text]);
 
@@ -119,6 +139,22 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
   const baseHsl = inkColor?.hsl || '220 20% 12%';
   const [h, s, l] = baseHsl.split(' ').map(v => parseFloat(v));
   const variation = generateRealPenVariation(lineIndex, realPenMode);
+
+  // Resolve DNA params: prefer full DNA profile, fall back to individual props
+  const resolvedDNA = dna || getDefaultDNA();
+  const slant = dna ? dna.slant : propSlant;
+  const penPressure = dna ? dna.penPressure : propPenPressure;
+  const strokeThickness = dna ? dna.strokeThickness : propStrokeThickness;
+  const baselineJitterAmount = dna ? dna.baselineDrift : propBaselineJitter;
+  const letterSpacingVariation = dna ? dna.letterSpacing : propLetterSpacingVar;
+
+  // Generate DNA-powered line variation (v2)
+  const dnaLineCSS = useMemo(() => {
+    if (dna) {
+      return generateLineVariation(dna, lineIndex);
+    }
+    return undefined;
+  }, [dna, lineIndex]);
 
   const lineStyle = useMemo(() => {
     // Baseline jitter with configurable amount
@@ -134,33 +170,47 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     // Stroke thickness affects text-stroke (webkit) for extra weight
     const textStrokeWidth = strokeThickness > 1.5 ? `${(strokeThickness - 1) * 0.3}px` : undefined;
 
-    if (realPenMode) {
+    // Base style from legacy calculation
+    const baseStyle = realPenMode ? (() => {
       const adjustedH = h + variation.hueShift;
       const adjustedL = Math.max(10, Math.min(50, l + (variation.thickness - 1) * 20));
       return {
         color: `hsl(${adjustedH} ${s}% ${adjustedL}%)`,
         opacity: variation.opacity,
-        fontWeight: Math.max(pressureWeight, variation.thickness > 1 ? 500 : 400),
+        fontWeight: Math.max(pressureWeight, variation.thickness > 1 ? 500 : 400) as number,
         marginLeft: `${jitterX}px`,
         transform: skewDeg !== 0 ? `skewX(${skewDeg}deg)` : undefined,
         WebkitTextStroke: textStrokeWidth ? `${textStrokeWidth} currentColor` : undefined,
       };
-    }
-
-    return {
+    })() : {
       color: `hsl(${baseHsl})`,
       marginLeft: `${jitterX}px`,
-      fontWeight: pressureWeight,
+      fontWeight: pressureWeight as number,
       transform: skewDeg !== 0 ? `skewX(${skewDeg}deg)` : undefined,
       WebkitTextStroke: textStrokeWidth ? `${textStrokeWidth} currentColor` : undefined,
     };
-  }, [lineIndex, settings.baselineJitter, realPenMode, h, s, l, baseHsl, variation, slant, penPressure, strokeThickness, baselineJitterAmount]);
+
+    // Merge DNA line variation if available (v2)
+    if (dnaLineCSS) {
+      return {
+        ...baseStyle,
+        ...dnaLineCSS,
+        // Preserve color from baseStyle (DNA doesn't control ink color)
+        color: baseStyle.color,
+      };
+    }
+
+    return baseStyle;
+  }, [lineIndex, settings.baselineJitter, realPenMode, h, s, l, baseHsl, variation, slant, penPressure, strokeThickness, baselineJitterAmount, dnaLineCSS]);
 
   const visualLines = useMemo(() => {
     return String(line.text ?? '').split(/\r?\n/);
   }, [line.text]);
 
-  const baselineVariation = settings.baselineJitter ? Math.max(1.5, baselineJitterAmount * 0.75) : 0;
+  // Use DNA-driven baseline variation when available
+  const baselineVariation = dna
+    ? (dna.baselineDrift * 0.75)
+    : (settings.baselineJitter ? Math.max(1.5, baselineJitterAmount * 0.75) : 0);
 
   const wrapperStyle: React.CSSProperties = {
     display: 'block',
@@ -209,9 +259,10 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
                     delay={baseDelay + wordIndex * 0.03}
                     isNew={isNewText || animatingWords.has(wordIndex)}
                     letterSpacingVariation={letterSpacingVariation}
+                    wordCSS={dna ? generateWordVariation(dna, lineIndex, wordIndex) : undefined}
                   />
                   {wordIndex < words.length - 1 && (
-                    <span style={{ marginRight: `${settings.wordSpacing}px` }}> </span>
+                    <span style={{ marginRight: `${dna ? dna.wordSpacing : settings.wordSpacing}px` }}> </span>
                   )}
                 </React.Fragment>
               ))

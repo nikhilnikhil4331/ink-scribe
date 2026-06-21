@@ -38,6 +38,7 @@ import {
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
 import { InlineDiagram } from '@/types/noteLine';
 import { useAutoPagination } from '@/hooks/useAutoPagination';
+import { useHandwritingDNAOptional } from '@/contexts/HandwritingDNAContext';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
@@ -79,6 +80,7 @@ const Index = () => {
   const { tableData, updateTableData } = useTableData(settings.table.rows, settings.table.columns);
   const { content: inlineContent, addImage, addDiagram: addInlineDiagram, updateContent, removeContent } = useInlineContent();
   const { mood, changeMood, styles: moodStyles } = useMood();
+  const dnaContext = useHandwritingDNAOptional();
   const previewRef = useRef<NotebookPreviewHandle>(null);
   const isPastingRef = useRef(false);
   const exportContainerRef = useRef<HTMLDivElement>(null);
@@ -116,7 +118,7 @@ const Index = () => {
   // Mobile tab handler
   const handleMobileTabChange = useCallback((tab: MobileTab) => {
     if (tab === 'style') { setShowMobileStyleSheet(true); return; }
-    if (tab === 'ai') { navigate('/ai-solver'); return; }
+    if (tab === 'ai') { navigate('/ai'); return; }
     setMobileTab(tab);
   }, [navigate]);
 
@@ -614,7 +616,7 @@ const Index = () => {
                       <div className="rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl shadow-sm overflow-hidden min-h-[70vh] relative">
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} dna={dnaContext?.dna} />
                           </motion.div>
                         </AnimatePresence>
                         <div className="absolute bottom-3 right-3 z-10">
@@ -702,6 +704,7 @@ const Index = () => {
                             inlineContent={inlineContent}
                             onUpdateContent={updateContent}
                             onDeleteContent={removeContent}
+                            dna={dnaContext?.dna}
                           />
                         </motion.div>
                       </AnimatePresence>
@@ -807,7 +810,7 @@ const Index = () => {
           <div className="flex flex-col gap-6">
             {pages.map((page, idx) => (
               <div key={page.id} style={{ width: 794, height: 1123 }}>
-                <NotebookPreview lines={page.lines} settings={settings} realPenMode={realPenMode} pageNumber={idx + 1} totalPages={pages.length} forExport />
+                <NotebookPreview lines={page.lines} settings={settings} realPenMode={realPenMode} pageNumber={idx + 1} totalPages={pages.length} forExport dna={dnaContext?.dna} />
               </div>
             ))}
           </div>

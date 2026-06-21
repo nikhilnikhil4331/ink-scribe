@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PremiumProvider } from "@/contexts/PremiumContext";
+import { HandwritingDNAProvider } from "@/contexts/HandwritingDNAContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
 import { Skeleton } from "@/components/SkeletonLoader";
@@ -30,6 +31,7 @@ import Onboarding from "./pages/Onboarding";
 // Lazy load heavy pages for better performance
 const AISolverPage = lazy(() => import("@/components/ai/AISolverPage").then(m => ({ default: m.AISolverPage })));
 const AI4Page = lazy(() => import("@/components/ai4/AI4Page").then(m => ({ default: m.AI4Page })));
+const DocumentIntelligence = lazy(() => import("@/components/document-intelligence/DocumentIntelligence").then(m => ({ default: m.default })));
 
 // Page loading fallback
 const PageLoader = () => (
@@ -64,6 +66,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PremiumProvider>
+            <HandwritingDNAProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -84,6 +87,7 @@ const App = () => {
                     <Route path="/admin-panel-nikhil" element={<AdminPanelNikhil />} />
                     <Route path="/ai-solver" element={<AISolverPage />} />
                     <Route path="/ai" element={<AI4Page />} />
+                    <Route path="/documents" element={<DocumentIntelligence />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />
@@ -95,6 +99,7 @@ const App = () => {
               </BrowserRouter>
               <InstallBanner />
             </TooltipProvider>
+            </HandwritingDNAProvider>
           </PremiumProvider>
         </AuthProvider>
       </QueryClientProvider>

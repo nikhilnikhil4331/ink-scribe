@@ -6,6 +6,7 @@ import { DEFAULT_RESPONSIVE_MARGINS, calculateLinesPerPage } from '@/hooks/useRe
 import { HandwritingLine } from './HandwritingLine';
 import { InlineContent } from '@/types/noteLine';
 import { InlineContentRenderer } from './InlineContentRenderer';
+import { HandwritingDNA } from '@/components/handwriting-dna/HandwritingDNAEngine';
 
 interface NotebookPreviewProps {
   lines: NoteLine[];
@@ -17,6 +18,7 @@ interface NotebookPreviewProps {
   inlineContent?: InlineContent[];
   onUpdateContent?: (id: string, updates: Partial<InlineContent>) => void;
   onDeleteContent?: (id: string) => void;
+  dna?: HandwritingDNA;
 }
 
 export interface NotebookPreviewHandle {
@@ -44,6 +46,7 @@ const NotebookPage = memo<{
   pageRef: React.RefCallback<HTMLDivElement>;
   scale: number;
   forExport: boolean;
+  dna?: HandwritingDNA;
 }>(({
   pageLines,
   pageIndex,
@@ -64,6 +67,7 @@ const NotebookPage = memo<{
   pageRef,
   scale,
   forExport,
+  dna,
 }) => {
   const getTextColor = (): string => {
     if (isBlueprint) return 'hsl(200 80% 80%)';
@@ -187,6 +191,7 @@ const NotebookPage = memo<{
                 realPenMode={realPenMode}
                 fontClass={fontClass}
                 isNewText={false}
+                dna={dna}
               />
             );
           })}
@@ -400,6 +405,7 @@ export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreview
               pageRef={(el) => { pageRefs.current[pageIndex] = el; }}
               scale={scale}
               forExport={forExport}
+              dna={dna}
             />
           ))}
 

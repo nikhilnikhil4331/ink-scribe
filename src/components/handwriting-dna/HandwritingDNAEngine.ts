@@ -140,7 +140,7 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Get default DNA values
  */
-function getDefaultDNA(): HandwritingDNA {
+export function getDefaultDNA(): HandwritingDNA {
   return {
     slant: 0,
     strokeThickness: 1.0,

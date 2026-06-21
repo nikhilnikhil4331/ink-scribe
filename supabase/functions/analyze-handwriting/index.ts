@@ -118,18 +118,20 @@ serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+
+    if (!LOVABLE_API_KEY && !OPENAI_API_KEY) {
       return new Response(
         JSON.stringify({ error: "Service configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Calling Lovable AI for forensic handwriting analysis...");
+    console.log("Calling AI for forensic handwriting analysis (DNA v2)...");
 
-    const systemPrompt = `You are an expert forensic handwriting analyst and typographer. Analyze the uploaded handwriting sample image with EXTREME precision.
+    const systemPrompt = `You are an expert forensic handwriting analyst and typographer. Analyze the uploaded handwriting sample image with EXTREME precision for NikNote 4.0's Handwriting DNA Engine.
 
-Your task is to find the CLOSEST matching Google Font from this list and then provide exact calibration parameters:
+Your task is to find the CLOSEST matching Google Font from this list and provide EXACT calibration parameters for 14 DNA variables:
 
 Available Fonts (use exact key):
 - "caveat" — casual, slightly rushed, natural flow
@@ -149,20 +151,29 @@ Available Fonts (use exact key):
 - "cedarville-cursive" — classic cursive, connected
 - "la-belle-aurore" — vintage, romantic, elegant
 
-Return a JSON object with these EXACT fields:
+Return a JSON object with these EXACT 14 DNA fields + metadata:
+
 {
   "suggestedFont": "font-key from list above",
-  "fontSize": number (14-32, size relative to ruled lines if visible),
+  "fontSize": number (14-40, size relative to ruled lines if visible),
   "lineSpacing": number (24-60, gap between baselines in px),
   "wordSpacing": number (2-12, gap between words in px),
   "inkColor": "blue" | "black" | "red" | "green" | "purple" | "brown" | "teal" | "orange" | "pink" | "navy" | "burgundy" | "gold",
+  
   "slant": number (-15 to 15, degrees; negative = left lean, 0 = upright, positive = right lean),
   "strokeThickness": number (0.5-3.0, pen stroke weight),
-  "penPressureFeel": number (0.1-1.0, 0.1=very light feathery, 1.0=very heavy bold),
-  "baselineJitter": true/false (does writing wobble vertically?),
-  "baselineJitterAmount": number (0-5, how much vertical wobble in px),
-  "strokeRandomness": true/false (does thickness vary naturally?),
-  "letterSpacingVariation": number (0-3, inconsistency between letter gaps),
+  "penPressure": number (0.1-1.0, 0.1=very light feathery, 1.0=very heavy bold),
+  "baselineDrift": number (0-5, how much writing drifts from baseline in px),
+  "letterSpacing": number (0-5, average letter spacing in px),
+  "characterSize": number (16-40, character height in px),
+  "sizeVariation": number (0-0.3, coefficient of size variation across characters),
+  
+  "strokeSpeed": number (0.5-2.0, estimated writing speed; 0.5=slow/careful, 2.0=fast/rushed),
+  "imperfectionLevel": number (0-1.0, how imperfect/natural the writing is; 0=perfect/robotic, 1.0=very messy),
+  "curveSmoothness": number (0-1.0, how smooth the curves are; 0=sharp/angular, 1.0=very smooth),
+  "connectionStyle": "print" | "cursive" | "mixed",
+  "loopSize": number (0.5-1.5, size of loops in letters like e, l, g; 0.5=tight, 1.5=large),
+  
   "analysisNotes": "2-3 sentence explanation of why this font and parameters were chosen",
   "confidence": number (0-1, how confident you are in the match),
   "qualityWarning": null or "string describing image quality issues"
@@ -171,55 +182,127 @@ Return a JSON object with these EXACT fields:
 CRITICAL ANALYSIS CHECKLIST:
 1. SLANT — Is writing tilted left, right, or upright? Measure precisely in degrees.
 2. PRESSURE — Are strokes thick/bold or thin/light? Look at line weight variation.
-3. SPACING — Are letters crowded or spread apart? Are words close or far?
-4. BASELINE — Does writing stay on the line or drift up/down? How much wobble?
-5. SIZE — How large are letters relative to ruled lines (if visible)?
-6. CONNECTIONS — Are letters connected (cursive) or separate (print)?
-7. IMAGE QUALITY — If the image is blurry, poorly lit, or hard to read, set qualityWarning.
+3. STROKE THICKNESS — How thick are individual pen strokes?
+4. SPACING — Are letters crowded or spread apart? Are words close or far?
+5. BASELINE DRIFT — Does writing stay on the line or drift up/down? How much wobble?
+6. SIZE — How large are letters relative to ruled lines (if visible)?
+7. SIZE VARIATION — Do characters vary in size? Some bigger, some smaller?
+8. SPEED — Does the writing look rushed (thinner, more connected, less precise) or careful?
+9. IMPERFECTIONS — How "human" is the writing? Imperfect spacing, varying thickness, etc.
+10. CURVES — Are letter curves smooth and flowing or sharp and angular?
+11. CONNECTIONS — Are letters connected (cursive) or separate (print) or mixed?
+12. LOOPS — Are loops in letters like e, l, g, d tight or large and open?
+13. IMAGE QUALITY — If the image is blurry, poorly lit, or hard to read, set qualityWarning.
 
-The goal is to make the digital output INDISTINGUISHABLE from the original handwriting.
+The goal is to make the digital output 95-99% INDISTINGUISHABLE from the original handwriting.
 Respond ONLY with the raw JSON object. No markdown, no explanation, just JSON.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Analyze this handwriting sample with forensic precision. Return ONLY the JSON object."
-              },
-              {
-                type: "image_url",
-                image_url: { url: imageBase64 }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.15,
-      }),
-    });
+    // Try primary provider, fallback to secondary
+    let response: Response | null = null;
+    let usedProvider = '';
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
+    // Try OpenAI first for vision (better at detailed analysis)
+    if (OPENAI_API_KEY) {
+      try {
+        console.log("Trying OpenAI for handwriting analysis...");
+        response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${OPENAI_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: systemPrompt },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Analyze this handwriting sample with forensic precision for DNA v2. Return ONLY the JSON object with all 14 DNA parameters."
+                  },
+                  {
+                    type: "image_url",
+                    image_url: { url: imageBase64 }
+                  }
+                ]
+              }
+            ],
+            max_tokens: 2000,
+            temperature: 0.15,
+          }),
+        });
+        
+        if (response.ok) {
+          usedProvider = 'openai';
+        } else if (response.status === 429 || response.status === 402) {
+          console.log("OpenAI quota/rate limit, trying Lovable...");
+          response = null;
+        } else {
+          const errText = await response.text();
+          console.error("OpenAI error:", response.status, errText);
+          response = null;
+        }
+      } catch (err) {
+        console.error("OpenAI request failed:", err);
+        response = null;
+      }
+    }
+
+    // Fallback to Lovable
+    if (!response && LOVABLE_API_KEY) {
+      try {
+        console.log("Trying Lovable for handwriting analysis...");
+        response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: systemPrompt },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "Analyze this handwriting sample with forensic precision for DNA v2. Return ONLY the JSON object with all 14 DNA parameters."
+                  },
+                  {
+                    type: "image_url",
+                    image_url: { url: imageBase64 }
+                  }
+                ]
+              }
+            ],
+            max_tokens: 2000,
+            temperature: 0.15,
+          }),
+        });
+        
+        if (response.ok) {
+          usedProvider = 'lovable';
+        }
+      } catch (err) {
+        console.error("Lovable request failed:", err);
+      }
+    }
+
+    if (!response || !response.ok) {
+      const status = response?.status || 500;
+      const errorText = response ? await response.text() : 'No provider available';
+      console.error("All providers failed:", status, errorText);
       
-      if (response.status === 429) {
+      if (status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (status === 402) {
         return new Response(
           JSON.stringify({ error: "API credits required. Please add credits to continue." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -248,29 +331,53 @@ Respond ONLY with the raw JSON object. No markdown, no explanation, just JSON.`;
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleanContent);
       
-      // Normalize with safe defaults
+      // Normalize with safe defaults — all 14 DNA parameters
       analysisResult = {
+        // Font & basic settings
         suggestedFont: parsed.suggestedFont || 'caveat',
         fontSize: Math.min(40, Math.max(14, parsed.fontSize || 24)),
         lineSpacing: Math.min(60, Math.max(24, parsed.lineSpacing || 32)),
         wordSpacing: Math.min(12, Math.max(2, parsed.wordSpacing || 4)),
         inkColor: parsed.inkColor || 'blue',
+        
+        // Core DNA parameters (6)
         slant: Math.min(15, Math.max(-15, parsed.slant || 0)),
         strokeThickness: Math.min(3, Math.max(0.5, parsed.strokeThickness || 1)),
-        penPressureFeel: Math.min(1, Math.max(0.1, parsed.penPressureFeel || 0.5)),
-        baselineJitter: parsed.baselineJitter ?? true,
-        baselineJitterAmount: Math.min(5, Math.max(0, parsed.baselineJitterAmount || 2)),
-        strokeRandomness: parsed.strokeRandomness ?? true,
-        letterSpacingVariation: Math.min(3, Math.max(0, parsed.letterSpacingVariation || 0)),
+        penPressure: Math.min(1, Math.max(0.1, parsed.penPressure || parsed.penPressureFeel || 0.5)),
+        baselineDrift: Math.min(5, Math.max(0, parsed.baselineDrift || parsed.baselineJitterAmount || 1)),
+        letterSpacing: Math.min(5, Math.max(0, parsed.letterSpacing || parsed.letterSpacingVariation || 0.5)),
+        characterSize: Math.min(40, Math.max(16, parsed.characterSize || parsed.fontSize || 24)),
+        sizeVariation: Math.min(0.3, Math.max(0, parsed.sizeVariation || 0.1)),
+        
+        // Advanced DNA parameters (4)
+        strokeSpeed: Math.min(2, Math.max(0.5, parsed.strokeSpeed || 1.0)),
+        imperfectionLevel: Math.min(1, Math.max(0, parsed.imperfectionLevel || 0.2)),
+        curveSmoothness: Math.min(1, Math.max(0, parsed.curveSmoothness || 0.8)),
+        connectionStyle: ['print', 'cursive', 'mixed'].includes(parsed.connectionStyle) ? parsed.connectionStyle : 'mixed',
+        loopSize: Math.min(1.5, Math.max(0.5, parsed.loopSize || 1.0)),
+        
+        // Backward compat fields (mapped from DNA)
+        penPressureFeel: Math.min(1, Math.max(0.1, parsed.penPressure || parsed.penPressureFeel || 0.5)),
+        baselineJitter: parsed.baselineDrift > 0.5,
+        baselineJitterAmount: Math.min(5, Math.max(0, parsed.baselineDrift || 1)),
+        strokeRandomness: (parsed.imperfectionLevel || 0.2) > 0.3,
+        letterSpacingVariation: Math.min(3, Math.max(0, parsed.letterSpacing || 0)),
+        
+        // Metadata
         analysisNotes: parsed.analysisNotes || '',
         confidence: Math.min(1, Math.max(0, parsed.confidence || 0.85)),
         qualityWarning: parsed.qualityWarning || null,
+        
+        // DNA v2 marker
+        dnaVersion: '2.0',
       };
       
-      console.log("Forensic analysis complete:", JSON.stringify({
+      console.log(`Forensic DNA v2 analysis complete (${usedProvider}):`, JSON.stringify({
         font: analysisResult.suggestedFont,
         slant: analysisResult.slant,
-        pressure: analysisResult.penPressureFeel,
+        pressure: analysisResult.penPressure,
+        speed: analysisResult.strokeSpeed,
+        imperfection: analysisResult.imperfectionLevel,
         confidence: analysisResult.confidence,
       }));
     } catch (parseError) {

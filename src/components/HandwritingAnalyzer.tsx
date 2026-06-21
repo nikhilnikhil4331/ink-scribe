@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { NoteSettings, HandwritingFont, InkColor, FONT_OPTIONS } from '@/types/notes';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useHandwritingDNAOptional } from '@/contexts/HandwritingDNAContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -44,6 +45,7 @@ const ANALYSIS_MESSAGES = [
 ];
 
 export const HandwritingAnalyzer: React.FC<HandwritingAnalyzerProps> = ({ onApplyStyle }) => {
+  const dnaContext = useHandwritingDNAOptional();
   const [step, setStep] = useState<AnalysisStep>('upload');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -130,7 +132,21 @@ export const HandwritingAnalyzer: React.FC<HandwritingAnalyzerProps> = ({ onAppl
       strokeRandomness: analysisResult.strokeRandomness,
       inkColor: analysisResult.inkColor,
     });
-    toast.success('Style applied! Check your preview ✨');
+    // Also save to DNA context for v2
+    if (dnaContext) {
+      dnaContext.updateDNA({
+        slant: analysisResult.slant || 0,
+        strokeThickness: analysisResult.strokeThickness || 1,
+        penPressure: analysisResult.penPressureFeel || 0.5,
+        baselineDrift: analysisResult.baselineJitterAmount || 1,
+        letterSpacing: analysisResult.letterSpacingVariation || 0,
+        characterSize: analysisResult.fontSize || 24,
+        closestFont: analysisResult.suggestedFont || 'caveat',
+        confidence: analysisResult.confidence || 0.7,
+        sampleQuality: analysisResult.qualityWarning ? 'fair' : 'good',
+      });
+    }
+    toast.success('Style applied! DNA saved ✨');
   };
 
   const clearAndReset = () => {
