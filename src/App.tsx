@@ -1,3 +1,7 @@
+// ============================================================
+// NikNote 4.0 — App Entry (SAFE — reverted to working base)
+// ============================================================
+
 import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,10 +10,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PremiumProvider } from "@/contexts/PremiumContext";
-import { HandwritingDNAProvider } from "@/contexts/HandwritingDNAContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
-import { Skeleton } from "@/components/SkeletonLoader";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
@@ -27,26 +29,31 @@ import Achievements from "./pages/Achievements";
 import MyNotebooks from "./pages/MyNotebooks";
 import PremiumLanding from "./pages/PremiumLanding";
 import Onboarding from "./pages/Onboarding";
-import QA from "./pages/QA";
 
-// Lazy load heavy pages for better performance
-const AISolverPage = lazy(() => import("@/components/ai/AISolverPage").then(m => ({ default: m.AISolverPage })));
-const AI4Page = lazy(() => import("@/components/ai4/AI4Page").then(m => ({ default: m.AI4Page })));
-const DocumentIntelligence = lazy(() => import("@/components/document-intelligence/DocumentIntelligence").then(m => ({ default: m.default })));
+// Lazy load heavy/new pages — if they crash, main app stays alive
+const AISolverPage = lazy(() =>
+  import("@/components/ai/AISolverPage").then(m => ({ default: m.AISolverPage }))
+);
+const AI4Page = lazy(() =>
+  import("@/components/ai4/AI4Page").then(m => ({ default: m.AI4Page }))
+);
+const DocumentIntelligence = lazy(() =>
+  import("@/components/document-intelligence/DocumentIntelligence").then(m => ({ default: m.default }))
+);
+const QAPage = lazy(() =>
+  import("@/pages/QA").then(m => ({ default: m.default }))
+);
 
-// Page loading fallback
+// Simple page loader
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-background">
+  <div className="flex items-center justify-center min-h-screen bg-white">
     <div className="text-center">
-      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-        <span className="text-xl">✍️</span>
-      </div>
-      <Skeleton className="h-4 w-24 mx-auto" />
+      <div className="text-2xl mb-3">✍️</div>
+      <div className="text-sm text-gray-400">Loading...</div>
     </div>
   </div>
 );
 
-// Register Service Worker in production
 import { registerServiceWorker } from "@/hooks/useServiceWorkerRegistration";
 
 const queryClient = new QueryClient();
@@ -55,8 +62,6 @@ const App = () => {
   useEffect(() => {
     document.documentElement.classList.remove("dark");
     localStorage.setItem("theme", "light");
-
-    // Register PWA service worker
     if (import.meta.env.PROD) {
       registerServiceWorker();
     }
@@ -67,7 +72,6 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PremiumProvider>
-            <HandwritingDNAProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -89,7 +93,7 @@ const App = () => {
                     <Route path="/ai-solver" element={<AISolverPage />} />
                     <Route path="/ai" element={<AI4Page />} />
                     <Route path="/documents" element={<DocumentIntelligence />} />
-                    <Route path="/qa" element={<QA />} />
+                    <Route path="/qa" element={<QAPage />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />
@@ -101,7 +105,6 @@ const App = () => {
               </BrowserRouter>
               <InstallBanner />
             </TooltipProvider>
-            </HandwritingDNAProvider>
           </PremiumProvider>
         </AuthProvider>
       </QueryClientProvider>
