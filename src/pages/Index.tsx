@@ -39,6 +39,7 @@ import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHis
 import { InlineDiagram } from '@/types/noteLine';
 import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { useHandwritingDNAOptional } from '@/contexts/HandwritingDNAContext';
+import { SmartEditor, EditorSuggestion } from '@/components/smart-editor/SmartEditor';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
 import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
@@ -666,6 +667,18 @@ const Index = () => {
                       </AnimatePresence>
                       <div className="mt-4">
                         <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
+                      </div>
+                      {/* Smart Editor Suggestions — AI-powered real-time help */}
+                      <div className="mt-3">
+                        <SmartEditor
+                          currentText={blockEditor.blocks.map(b => b.content).join('\n')}
+                          onAccept={(suggestion: EditorSuggestion) => {
+                            if (suggestion.insertText) {
+                              blockEditor.importText(suggestion.insertText.replace(/^\n/, ''));
+                            }
+                          }}
+                          isFocused={true}
+                        />
                       </div>
                     </div>
                   </div>

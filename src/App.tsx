@@ -27,6 +27,7 @@ import Achievements from "./pages/Achievements";
 import MyNotebooks from "./pages/MyNotebooks";
 import PremiumLanding from "./pages/PremiumLanding";
 import Onboarding from "./pages/Onboarding";
+import QA from "./pages/QA";
 
 // Lazy load heavy pages for better performance
 const AISolverPage = lazy(() => import("@/components/ai/AISolverPage").then(m => ({ default: m.AISolverPage })));
@@ -88,6 +89,7 @@ const App = () => {
                     <Route path="/ai-solver" element={<AISolverPage />} />
                     <Route path="/ai" element={<AI4Page />} />
                     <Route path="/documents" element={<DocumentIntelligence />} />
+                    <Route path="/qa" element={<QA />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />
