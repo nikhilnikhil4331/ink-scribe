@@ -175,18 +175,7 @@ function generateLocalSuggestions(text: string, topic?: string): EditorSuggestio
   return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 5);
 }
 
-// ============================================================
-// useDebounce hook (inline to avoid import issues)
-// ============================================================
-
-function useDebounceValue<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debouncedValue;
-}
+// Using useDebounce from @/hooks/useDebounce
 
 // ============================================================
 // Smart Editor Component
@@ -207,7 +196,7 @@ export const SmartEditor: React.FC<SmartEditorProps> = ({
   const lastSuggestionTime = useRef(0);
 
   // Debounce text to avoid computing suggestions on every keystroke
-  const debouncedText = useDebounceValue(currentText, 800);
+  const debouncedText = useDebounce(currentText, 800);
 
   // Generate suggestions when text changes
   useEffect(() => {

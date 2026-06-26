@@ -5,6 +5,8 @@
 // slant, baseline drift, word/letter spacing, size variation
 // ============================================================
 
+import type { CSSProperties } from 'react';
+
 export interface HandwritingDNA {
   // Core parameters
   slant: number;              // -15 to 15 degrees
@@ -166,8 +168,8 @@ export function getDefaultDNA(): HandwritingDNA {
  * Apply Handwriting DNA to CSS styles
  * This is how we make generated text look like the student's handwriting
  */
-export function dnaToCSS(dna: HandwritingDNA): React.CSSProperties {
-  const styles: React.CSSProperties = {};
+export function dnaToCSS(dna: HandwritingDNA): CSSProperties {
+  const styles: CSSProperties = {};
 
   // Slant — CSS skewX
   if (dna.slant !== 0) {
@@ -205,8 +207,8 @@ export function dnaToCSS(dna: HandwritingDNA): React.CSSProperties {
 export function generateLineVariation(
   dna: HandwritingDNA,
   lineIndex: number
-): React.CSSProperties {
-  const variation: React.CSSProperties = {};
+): CSSProperties {
+  const variation: CSSProperties = {};
 
   // Seed-based pseudo-random using lineIndex
   const seed = (n: number) => Math.sin(lineIndex * n * 7.3) * 0.5 + 0.5;
@@ -244,8 +246,8 @@ export function generateWordVariation(
   dna: HandwritingDNA,
   lineIndex: number,
   wordIndex: number
-): React.CSSProperties {
-  const variation: React.CSSProperties = {};
+): CSSProperties {
+  const variation: CSSProperties = {};
 
   const seed = (n: number) => Math.sin((lineIndex * 100 + wordIndex) * n * 5.3) * 0.5 + 0.5;
 

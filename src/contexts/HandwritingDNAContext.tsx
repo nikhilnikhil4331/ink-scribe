@@ -5,6 +5,7 @@
 // ============================================================
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import type { CSSProperties } from 'react';
 import {
   HandwritingDNA,
   DNA_PROFILES,
@@ -32,11 +33,11 @@ interface HandwritingDNAContextType {
   // Analysis confidence
   confidence: number;
   // DNA-powered CSS for a line
-  getLineCSS: (lineIndex: number) => React.CSSProperties;
+  getLineCSS: (lineIndex: number) => CSSProperties;
   // DNA-powered CSS for a word
-  getWordCSS: (lineIndex: number, wordIndex: number) => React.CSSProperties;
+  getWordCSS: (lineIndex: number, wordIndex: number) => CSSProperties;
   // Base DNA CSS
-  getBaseCSS: () => React.CSSProperties;
+  getBaseCSS: () => CSSProperties;
   // Calculate similarity with another DNA
   getSimilarity: (otherDNA: HandwritingDNA) => number;
   // Reset to defaults
