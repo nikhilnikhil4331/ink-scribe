@@ -220,7 +220,7 @@ const NotebookPage = memo<{
 NotebookPage.displayName = 'NotebookPage';
 
 export const NotebookPreview = forwardRef<NotebookPreviewHandle, NotebookPreviewProps>(
-  ({ lines, settings, realPenMode, forExport = false, inlineContent, onUpdateContent, onDeleteContent }, ref) => {
+  ({ lines, settings, realPenMode, forExport = false, inlineContent, onUpdateContent, onDeleteContent, dna }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
     const isMobile = useIsMobile();
