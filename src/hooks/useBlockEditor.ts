@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Block, createBlock, BlockType } from '@/types/block';
 import { NoteLine, generateLineId, LineInkColor } from '@/types/noteLine';
 
@@ -9,9 +9,21 @@ import { NoteLine, generateLineId, LineInkColor } from '@/types/noteLine';
  */
 export const useBlockEditor = () => {
   const [blocks, setBlocks] = useState<Block[]>([createBlock('text', '')]);
+  const currentColorRef = useRef<LineInkColor>('black');
 
   const updateBlocks = useCallback((newBlocks: Block[]) => {
     setBlocks(newBlocks.length > 0 ? newBlocks : [createBlock('text', '')]);
+  }, []);
+
+  // Set the current ink color — used for new blocks and color changes
+  const setCurrentColor = useCallback((color: LineInkColor) => {
+    currentColorRef.current = color;
+  }, []);
+
+  // Update color of ALL blocks (when user picks a new color with no selection)
+  const updateAllBlockColors = useCallback((color: LineInkColor) => {
+    currentColorRef.current = color;
+    setBlocks(prev => prev.map(b => ({ ...b, color })));
   }, []);
 
   // Convert blocks to NoteLine[] for preview compatibility
@@ -35,7 +47,7 @@ export const useBlockEditor = () => {
         return {
           id: `line-${block.id}`,
           text,
-          color: (block.color || 'blue') as LineInkColor,
+          color: (block.color || currentColorRef.current) as LineInkColor,
           timestamp: Date.now(),
         };
       });
@@ -64,5 +76,7 @@ export const useBlockEditor = () => {
     lines,
     getPlainText,
     importText,
+    setCurrentColor,
+    updateAllBlockColors,
   };
 };

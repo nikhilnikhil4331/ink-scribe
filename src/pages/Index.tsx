@@ -367,8 +367,11 @@ const Index = () => {
 
   const handleColorChange = useCallback((color: typeof currentColor) => {
     if (selectedLines.size > 0) updateSelectedLinesColor(color);
+    // Always update the block editor color so preview reflects the change
+    blockEditor.updateAllBlockColors(color);
+    blockEditor.setCurrentColor(color);
     setCurrentColor(color); triggerHaptic('selection'); playClick();
-  }, [selectedLines, updateSelectedLinesColor, triggerHaptic, playClick]);
+  }, [selectedLines, updateSelectedLinesColor, blockEditor, triggerHaptic, playClick]);
 
   const handleUndo = useCallback(() => { if (firstSelectedLineId) { undoLine(firstSelectedLineId); triggerHaptic('light'); } }, [firstSelectedLineId, undoLine, triggerHaptic]);
   const handleRedo = useCallback(() => { if (firstSelectedLineId) { redoLine(firstSelectedLineId); triggerHaptic('light'); } }, [firstSelectedLineId, redoLine, triggerHaptic]);
