@@ -614,7 +614,7 @@ const Index = () => {
                         </div>
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                            <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
+                            <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
                           </motion.div>
                         </AnimatePresence>
                       </div>
@@ -670,7 +670,7 @@ const Index = () => {
                       </div>
                       <AnimatePresence mode="wait" custom={pageDirection}>
                         <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} />
+                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
                         </motion.div>
                       </AnimatePresence>
                       <div className="mt-4">

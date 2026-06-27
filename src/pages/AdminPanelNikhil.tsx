@@ -83,35 +83,8 @@ const AdminPanelNikhil: React.FC = () => {
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
 
-  // Data states - Demo Indian users list
-  const demoIndianUsers: UserData[] = [
-    { id: 'u1', display_name: 'Rahul Sharma', created_at: '2024-12-15T10:30:00Z', is_premium: true, email: 'rahul.sharma@gmail.com' },
-    { id: 'u2', display_name: 'Priya Singh', created_at: '2024-12-18T14:20:00Z', is_premium: true, email: 'priya.singh@yahoo.com' },
-    { id: 'u3', display_name: 'Amit Kumar', created_at: '2024-12-20T09:15:00Z', is_premium: true, email: 'amit.kumar@hotmail.com' },
-    { id: 'u4', display_name: 'Sneha Patel', created_at: '2024-12-22T16:45:00Z', is_premium: true, email: 'sneha.patel@gmail.com' },
-    { id: 'u5', display_name: 'Vikram Reddy', created_at: '2024-12-25T11:30:00Z', is_premium: true, email: 'vikram.reddy@outlook.com' },
-    { id: 'u6', display_name: 'Ananya Gupta', created_at: '2024-12-28T08:00:00Z', is_premium: false, email: 'ananya.gupta@gmail.com' },
-    { id: 'u7', display_name: 'Arjun Nair', created_at: '2025-01-02T13:20:00Z', is_premium: false, email: 'arjun.nair@yahoo.co.in' },
-    { id: 'u8', display_name: 'Kavya Iyer', created_at: '2025-01-05T17:10:00Z', is_premium: true, email: 'kavya.iyer@gmail.com' },
-    { id: 'u9', display_name: 'Rohan Mehta', created_at: '2025-01-08T10:45:00Z', is_premium: false, email: 'rohan.mehta@rediffmail.com' },
-    { id: 'u10', display_name: 'Ishita Verma', created_at: '2025-01-10T15:30:00Z', is_premium: false, email: 'ishita.verma@gmail.com' },
-    { id: 'u11', display_name: 'Karthik Rajan', created_at: '2025-01-12T09:00:00Z', is_premium: true, email: 'karthik.rajan@gmail.com' },
-    { id: 'u12', display_name: 'Neha Agarwal', created_at: '2025-01-15T14:15:00Z', is_premium: false, email: 'neha.agarwal@yahoo.com' },
-    { id: 'u13', display_name: 'Siddharth Joshi', created_at: '2025-01-18T11:20:00Z', is_premium: false, email: 'siddharth.joshi@gmail.com' },
-    { id: 'u14', display_name: 'Pooja Deshmukh', created_at: '2025-01-20T16:00:00Z', is_premium: true, email: 'pooja.deshmukh@hotmail.com' },
-    { id: 'u15', display_name: 'Aditya Saxena', created_at: '2025-01-22T08:30:00Z', is_premium: false, email: 'aditya.saxena@gmail.com' },
-    { id: 'u16', display_name: 'Riya Kapoor', created_at: '2025-01-25T13:45:00Z', is_premium: false, email: 'riya.kapoor@outlook.com' },
-    { id: 'u17', display_name: 'Manish Tiwari', created_at: '2025-01-28T10:10:00Z', is_premium: true, email: 'manish.tiwari@gmail.com' },
-    { id: 'u18', display_name: 'Shreya Bose', created_at: '2025-01-30T15:20:00Z', is_premium: false, email: 'shreya.bose@yahoo.co.in' },
-    { id: 'u19', display_name: 'Deepak Chauhan', created_at: '2025-02-01T09:30:00Z', is_premium: false, email: 'deepak.chauhan@gmail.com' },
-    { id: 'u20', display_name: 'Megha Srivastava', created_at: '2025-02-03T14:00:00Z', is_premium: true, email: 'megha.srivastava@gmail.com' },
-    { id: 'u21', display_name: 'Rajesh Pillai', created_at: '2025-02-05T11:15:00Z', is_premium: false, email: 'rajesh.pillai@hotmail.com' },
-    { id: 'u22', display_name: 'Divya Menon', created_at: '2025-02-06T16:30:00Z', is_premium: false, email: 'divya.menon@gmail.com' },
-    { id: 'u23', display_name: 'Suresh Yadav', created_at: '2025-02-07T08:45:00Z', is_premium: true, email: 'suresh.yadav@yahoo.com' },
-    { id: 'u24', display_name: 'Anjali Mishra', created_at: '2025-02-08T13:00:00Z', is_premium: false, email: 'anjali.mishra@gmail.com' },
-    { id: 'u25', display_name: 'Varun Bhatt', created_at: '2025-02-09T10:00:00Z', is_premium: false, email: 'varun.bhatt@outlook.com' },
-  ];
-  const [users, setUsers] = useState<UserData[]>(demoIndianUsers);
+  // Data states — zero users, start fresh
+  const [users, setUsers] = useState<UserData[]>([]);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [settings, setSettings] = useState<AppSettings>({
@@ -126,18 +99,18 @@ const AdminPanelNikhil: React.FC = () => {
 
   // KPI Data - Demo stats for 176K+ Indian users
   const [kpiData, setKpiData] = useState({
-    totalUsers: 176222,
-    todayUsers: 16140,
-    activeNow: 92300,
-    totalPages: 163800,
-    totalExports: 77850,
-    totalRevenue: 14355,
-    premiumUsers: 5390,
-    conversionRate: 3.1,
-    avgSessionDuration: '14m',
-    totalNotebooks: 120650,
-    aiRequests: 54120,
-    totalUploads: 35500,
+    totalUsers: 0,
+    todayUsers: 0,
+    activeNow: 0,
+    totalPages: 0,
+    totalExports: 0,
+    totalRevenue: 0,
+    premiumUsers: 0,
+    conversionRate: 0,
+    avgSessionDuration: '0m',
+    totalNotebooks: 0,
+    aiRequests: 0,
+    totalUploads: 0,
   });
 
   // Generate demo chart data for 30 days

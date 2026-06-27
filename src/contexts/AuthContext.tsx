@@ -143,10 +143,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         },
       });
-      return { error: error as Error | null };
+      if (error) {
+        // Check if Google provider is not configured
+        if (error.message?.includes('provider') || error.message?.includes('not enabled') || error.message?.includes('Unsupported')) {
+          return { error: new Error('Google sign-in is not configured yet. Please use email sign-in instead, or ask admin to enable Google OAuth in Supabase dashboard.') };
+        }
+        return { error: error as Error };
+      }
+      return { error: null };
     } catch (err) {
       console.error('Google sign in error:', err);
-      return { error: err instanceof Error ? err : new Error('Google sign in failed') };
+      return { error: new Error('Google sign-in failed. Please try email sign-in instead.') };
     }
   }, []);
 

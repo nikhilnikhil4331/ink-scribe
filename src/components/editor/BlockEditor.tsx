@@ -1,21 +1,25 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { GripVertical, Trash2, Plus } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Block, BlockType, createBlock, detectBlockPrefix, generateBlockId } from '@/types/block';
 import { SlashCommandMenu } from './SlashCommandMenu';
-import { LineInkColor } from '@/types/noteLine';
+import { LineInkColor, LINE_INK_COLORS } from '@/types/noteLine';
 
 interface BlockEditorProps {
   blocks: Block[];
   onBlocksChange: (blocks: Block[]) => void;
   currentColor?: LineInkColor;
+  onColorChange?: (color: LineInkColor) => void;
 }
 
-export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange, currentColor = 'blue' }) => {
+export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange, currentColor = 'blue', onColorChange }) => {
   const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
   const [slashMenu, setSlashMenu] = useState<{ blockId: string; query: string; position: { top: number; left: number } } | null>(null);
+  const [showInlineColor, setShowInlineColor] = useState<string | null>(null);
+  const [typingBlockId, setTypingBlockId] = useState<string | null>(null);
   const inputRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
+  const typingTimerRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Focus a block by id
   const focusBlock = useCallback((id: string, cursorPos?: number) => {
@@ -36,17 +40,17 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
 
   const addBlockAfter = useCallback((afterId: string, type: BlockType = 'text', content = ''): string => {
     const newBlock = createBlock(type, content);
+    newBlock.color = currentColor;
     const idx = blocks.findIndex(b => b.id === afterId);
     const newBlocks = [...blocks];
     newBlocks.splice(idx + 1, 0, newBlock);
     onBlocksChange(newBlocks);
     focusBlock(newBlock.id, 0);
     return newBlock.id;
-  }, [blocks, onBlocksChange, focusBlock]);
+  }, [blocks, onBlocksChange, focusBlock, currentColor]);
 
   const removeBlock = useCallback((id: string) => {
     if (blocks.length <= 1) {
-      // Don't remove last block, just clear it
       updateBlock(id, { content: '', type: 'text' });
       return;
     }
@@ -59,6 +63,12 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
   }, [blocks, onBlocksChange, updateBlock, focusBlock]);
 
   const handleTextChange = useCallback((blockId: string, text: string) => {
+    // Typing animation
+    setTypingBlockId(blockId);
+    const existing = typingTimerRef.current.get(blockId);
+    if (existing) clearTimeout(existing);
+    typingTimerRef.current.set(blockId, setTimeout(() => setTypingBlockId(null), 800));
+
     // Check for slash command
     if (text === '/') {
       const el = inputRefs.current.get(blockId);
@@ -86,7 +96,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
       setSlashMenu(null);
     }
 
-    // Detect prefix shortcuts (e.g., "# ", "- ", "[] ")
+    // Detect prefix shortcuts
     const prefixMatch = detectBlockPrefix(text);
     if (prefixMatch) {
       updateBlock(blockId, { type: prefixMatch.type, content: prefixMatch.remaining });
@@ -114,7 +124,6 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
 
-    // Don't handle if slash menu is open (it has its own keyboard handler)
     if (slashMenu?.blockId === blockId) return;
 
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -124,27 +133,22 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
       const before = block.content.slice(0, cursorPos);
       const after = block.content.slice(cursorPos);
 
-      // If enter on a list/todo block with no content, convert to text
       if (!block.content.trim() && ['bullet', 'numbered', 'todo'].includes(block.type)) {
         updateBlock(blockId, { type: 'text' });
         return;
       }
 
-      // Split block at cursor
       updateBlock(blockId, { content: before });
-      // Continue list type for bullets/numbered/todo
       const nextType = ['bullet', 'numbered', 'todo'].includes(block.type) ? block.type : 'text';
       addBlockAfter(blockId, nextType, after);
     }
 
     if (e.key === 'Backspace' && e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
-      // If block type is not text, convert to text first
       if (block.type !== 'text') {
         e.preventDefault();
         updateBlock(blockId, { type: 'text' });
         return;
       }
-      // Merge with previous block
       const idx = blocks.findIndex(b => b.id === blockId);
       if (idx > 0) {
         e.preventDefault();
@@ -179,7 +183,6 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
       }
     }
 
-    // Tab for indent (todo/bullet/numbered only)
     if (e.key === 'Tab' && ['bullet', 'numbered', 'todo'].includes(block.type)) {
       e.preventDefault();
       const currentIndent = block.indent || 0;
@@ -196,6 +199,64 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
     addBlockAfter(lastBlock.id);
   }, [blocks, addBlockAfter]);
 
+  // Handle paste — auto split into new lines
+  const handlePaste = useCallback((blockId: string, e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    if (!text) return;
+
+    const lines = text.replace(/\r/g, '').split('\n');
+    if (lines.length <= 1) {
+      // Single line — just insert
+      const el = e.currentTarget as HTMLTextAreaElement;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const block = blocks.find(b => b.id === blockId);
+      if (!block) return;
+      const newContent = block.content.slice(0, start) + text + block.content.slice(end);
+      updateBlock(blockId, { content: newContent });
+      setTimeout(() => focusBlock(blockId, start + text.length), 0);
+      return;
+    }
+
+    // Multi-line — split into separate blocks
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return;
+    const el = e.currentTarget as HTMLTextAreaElement;
+    const cursorPos = el.selectionStart;
+    const beforeCursor = block.content.slice(0, cursorPos);
+    const afterCursor = block.content.slice(el.selectionEnd);
+
+    // Update current block with first line
+    updateBlock(blockId, { content: beforeCursor + lines[0] });
+
+    // Create new blocks for remaining lines
+    const newBlocks: Block[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const nb = createBlock('text', lines[i]);
+      nb.color = currentColor;
+      newBlocks.push(nb);
+    }
+
+    // Add afterCursor to last new block
+    if (newBlocks.length > 0) {
+      newBlocks[newBlocks.length - 1].content += afterCursor;
+    } else {
+      updateBlock(blockId, { content: beforeCursor + lines[0] + afterCursor });
+    }
+
+    // Insert all new blocks after current
+    const idx = blocks.findIndex(b => b.id === blockId);
+    const updated = [...blocks];
+    updated.splice(idx + 1, 0, ...newBlocks);
+    onBlocksChange(updated);
+
+    // Focus last new block
+    if (newBlocks.length > 0) {
+      setTimeout(() => focusBlock(newBlocks[newBlocks.length - 1].id, newBlocks[newBlocks.length - 1].content.length), 50);
+    }
+  }, [blocks, onBlocksChange, updateBlock, focusBlock, currentColor]);
+
   return (
     <div className="block-editor relative">
       <Reorder.Group
@@ -211,11 +272,17 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
             index={idx}
             totalBlocks={blocks.length}
             isFocused={focusedBlockId === block.id}
-            onFocus={() => setFocusedBlockId(block.id)}
+            isTyping={typingBlockId === block.id}
+            currentColor={currentColor}
+            showInlineColor={showInlineColor === block.id}
+            onFocus={() => { setFocusedBlockId(block.id); setShowInlineColor(null); }}
             onTextChange={(text) => handleTextChange(block.id, text)}
             onKeyDown={(e) => handleKeyDown(block.id, e)}
+            onPaste={(e) => handlePaste(block.id, e)}
             onToggleTodo={() => updateBlock(block.id, { checked: !block.checked })}
             onDelete={() => removeBlock(block.id)}
+            onToggleColor={() => setShowInlineColor(showInlineColor === block.id ? null : block.id)}
+            onColorPick={(color) => { updateBlock(block.id, { color }); onColorChange?.(color); setShowInlineColor(null); }}
             inputRef={(el) => {
               if (el) inputRefs.current.set(block.id, el);
               else inputRefs.current.delete(block.id);
@@ -247,26 +314,33 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
   );
 };
 
-// Individual block container with drag handle and rendering
+// Individual block container
 interface BlockContainerProps {
   block: Block;
   index: number;
   totalBlocks: number;
   isFocused: boolean;
+  isTyping: boolean;
+  currentColor: LineInkColor;
+  showInlineColor: boolean;
   onFocus: () => void;
   onTextChange: (text: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onPaste: (e: React.ClipboardEvent) => void;
   onToggleTodo: () => void;
   onDelete: () => void;
+  onToggleColor: () => void;
+  onColorPick: (color: LineInkColor) => void;
   inputRef: (el: HTMLTextAreaElement | null) => void;
 }
 
 const BlockContainer: React.FC<BlockContainerProps> = ({
-  block, index, isFocused, onFocus, onTextChange, onKeyDown, onToggleTodo, onDelete, inputRef,
+  block, index, isFocused, isTyping, currentColor, showInlineColor,
+  onFocus, onTextChange, onKeyDown, onPaste, onToggleTodo, onDelete,
+  onToggleColor, onColorPick, inputRef,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current;
     if (el) {
@@ -275,7 +349,6 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
     }
   }, [block.content]);
 
-  // Set both refs
   const setRef = useCallback((el: HTMLTextAreaElement | null) => {
     (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
     inputRef(el);
@@ -294,12 +367,14 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
   }
 
   const indentPx = (block.indent || 0) * 24;
+  const blockColor = (block.color || currentColor) as LineInkColor;
+  const inkData = LINE_INK_COLORS.find(c => c.value === blockColor);
 
   return (
     <Reorder.Item value={block} dragListener={false}>
       <div
         className={cn(
-          "group relative flex items-start gap-0 rounded-lg transition-colors min-h-[32px]",
+          "group relative flex items-start gap-0 rounded-lg transition-all min-h-[32px]",
           isFocused && "bg-muted/30"
         )}
         style={{ paddingLeft: indentPx }}
@@ -309,35 +384,94 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
         {/* Block type prefix */}
         <BlockPrefix block={block} onToggleTodo={onToggleTodo} />
 
-        {/* Content area */}
-        <textarea
-          ref={setRef}
-          value={block.content}
-          onChange={(e) => onTextChange(e.target.value)}
-          onKeyDown={onKeyDown}
-          onFocus={onFocus}
-          placeholder={getPlaceholder(block.type)}
-          rows={1}
-          className={cn(
-            "flex-1 bg-transparent border-0 outline-none resize-none py-1.5 px-1 text-foreground placeholder:text-muted-foreground/40 leading-relaxed",
-            getBlockTextClass(block.type)
-          )}
-        />
+        {/* Content area with typing animation */}
+        <div className="flex-1 relative">
+          {/* Typing indicator — floating dot */}
+          <AnimatePresence>
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0, y: -5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0, y: -5 }}
+                className="absolute -top-1 -right-1 z-10"
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.6, repeat: Infinity }}
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-[8px]"
+                  style={{ backgroundColor: inkData?.hex || '#1a1a2e' }}
+                >
+                  ✨
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <DeleteButton onDelete={onDelete} />
+          <textarea
+            ref={setRef}
+            value={block.content}
+            onChange={(e) => onTextChange(e.target.value)}
+            onKeyDown={onKeyDown}
+            onPaste={onPaste}
+            onFocus={onFocus}
+            placeholder={getPlaceholder(block.type)}
+            rows={1}
+            className={cn(
+              "flex-1 bg-transparent border-0 outline-none resize-none py-1.5 px-1 placeholder:text-muted-foreground/40 leading-relaxed w-full",
+              getBlockTextClass(block.type)
+            )}
+          />
+
+          {/* Inline color picker */}
+          <AnimatePresence>
+            {showInlineColor && (
+              <motion.div
+                initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                className="absolute left-0 top-full mt-1 z-50 bg-white/95 backdrop-blur-xl rounded-xl border border-white/30 shadow-lg p-2 flex gap-1"
+              >
+                {LINE_INK_COLORS.map((ink) => (
+                  <button
+                    key={ink.value}
+                    onClick={() => onColorPick(ink.value)}
+                    className={cn(
+                      "w-5 h-5 rounded-full border-2 transition-transform hover:scale-125",
+                      blockColor === ink.value ? "border-primary scale-110" : "border-transparent"
+                    )}
+                    style={{ backgroundColor: ink.hex }}
+                    title={ink.label}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Color + Delete buttons */}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+          <button
+            onClick={onToggleColor}
+            className="p-1 rounded hover:bg-muted/50 transition-colors"
+            title="Change color"
+          >
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: inkData?.hex || '#1a1a2e' }} />
+          </button>
+          <DeleteButton onDelete={onDelete} />
+        </div>
       </div>
     </Reorder.Item>
   );
 };
 
-// Drag handle (visible on hover)
+// Drag handle
 const DragHandle: React.FC = () => (
   <div className="flex items-center justify-center w-6 h-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0 mt-0.5">
     <GripVertical className="w-4 h-4 text-muted-foreground/50" />
   </div>
 );
 
-// Delete button (visible on hover)
+// Delete button
 const DeleteButton: React.FC<{ onDelete: () => void }> = ({ onDelete }) => (
   <button
     onClick={onDelete}
@@ -348,7 +482,7 @@ const DeleteButton: React.FC<{ onDelete: () => void }> = ({ onDelete }) => (
   </button>
 );
 
-// Block type prefix (bullet, number, checkbox, quote bar, etc.)
+// Block type prefix
 const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void }> = ({ block, onToggleTodo }) => {
   switch (block.type) {
     case 'bullet':
@@ -359,23 +493,14 @@ const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void }> = ({ blo
       );
     case 'numbered':
       return (
-        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-sm text-muted-foreground font-medium">
-          {/* Index would need to be passed — for now show bullet */}
-          •
-        </div>
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-sm text-muted-foreground font-medium">•</div>
       );
     case 'todo':
       return (
-        <button
-          onClick={onToggleTodo}
-          className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5"
-          tabIndex={-1}
-        >
+        <button onClick={onToggleTodo} className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5" tabIndex={-1}>
           <div className={cn(
             "w-4 h-4 rounded border-2 transition-colors flex items-center justify-center",
-            block.checked
-              ? "bg-primary border-primary text-primary-foreground"
-              : "border-muted-foreground/40 hover:border-primary"
+            block.checked ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40 hover:border-primary"
           )}>
             {block.checked && (
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -393,9 +518,7 @@ const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void }> = ({ blo
       );
     case 'callout':
       return (
-        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">
-          💡
-        </div>
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">💡</div>
       );
     default:
       return null;
