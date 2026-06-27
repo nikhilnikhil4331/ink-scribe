@@ -55,7 +55,6 @@ export const AI4Page: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [showDNAPanel, setShowDNAPanel] = useState(false);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -217,10 +216,10 @@ export const AI4Page: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowDNAPanel(!showDNAPanel)}
+              onClick={() => navigate('/')}
               className="gap-1.5 rounded-xl text-xs"
             >
-              <Pen className="w-3 h-3" /> DNA
+              <Pen className="w-3 h-3" /> Editor
             </Button>
             <Button
               variant="outline"
@@ -253,22 +252,6 @@ export const AI4Page: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* DNA Profile Panel (toggle) */}
-      <AnimatePresence>
-        {showDNAPanel && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="border-b border-border/50 bg-muted/20 overflow-hidden"
-          >
-            <div className="px-4 py-3 max-w-3xl mx-auto">
-              <DNAProfileSelector />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
