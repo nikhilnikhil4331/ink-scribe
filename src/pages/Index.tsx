@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BlockEditor } from '@/components/editor/BlockEditor';
 import { useBlockEditor } from '@/hooks/useBlockEditor';
+import { SmartEditor, EditorSuggestion } from '@/components/smart-editor/SmartEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
@@ -116,6 +117,16 @@ const Index = () => {
 
   const blockEditor = useBlockEditor();
   const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
+
+  // Auto-trigger onboarding for new users
+  useEffect(() => {
+    if (user) {
+      const hasSeenOnboarding = localStorage.getItem('niknote_onboarding_done');
+      if (!hasSeenOnboarding) {
+        navigate('/onboarding');
+      }
+    }
+  }, [user, navigate]);
 
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
 
@@ -615,6 +626,26 @@ const Index = () => {
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                             <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
+                            {/* Smart Editor Suggestions */}
+                            <SmartEditor
+                              currentText={blockEditor.blocks.map(b => b.content).join('\n')}
+                              onAccept={(suggestion: EditorSuggestion) => {
+                                if (suggestion.insertText) {
+                                  const lastBlock = blockEditor.blocks[blockEditor.blocks.length - 1];
+                                  if (lastBlock) {
+                                    blockEditor.setBlocks(
+                                      blockEditor.blocks.map(b =>
+                                        b.id === lastBlock.id
+                                          ? { ...b, content: b.content + suggestion.insertText }
+                                          : b
+                                      )
+                                    );
+                                  }
+                                }
+                                toast.success('💡 ' + suggestion.label);
+                              }}
+                              isFocused={editorFocused}
+                            />
                           </motion.div>
                         </AnimatePresence>
                       </div>

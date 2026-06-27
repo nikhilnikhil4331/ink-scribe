@@ -87,6 +87,7 @@ export default function OnboardingPage() {
         .update({ onboarding_completed: true } as any)
         .eq("user_id", user.id);
     }
+    localStorage.setItem('niknote_onboarding_done', 'true');
     navigate("/");
   };
 

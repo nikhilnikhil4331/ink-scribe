@@ -1109,7 +1109,126 @@ const AdminPanelNikhil: React.FC = () => {
         onBanUser={handleBanUser}
         onDeleteUser={handleDeleteUser}
       />
+
+      {/* Admin Chat Widget */}
+      <AdminChatWidget />
     </div>
+  );
+};
+
+// ============================================================
+// Admin Chat Widget — Small floating chat for admin feedback
+// ============================================================
+const AdminChatWidget: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Array<{ id: string; role: 'admin' | 'system'; text: string; time: string }>>([
+    { id: '1', role: 'system', text: '👋 Welcome to NikNote Admin! Yahan se live updates dekh sakte ho.', time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) },
+  ]);
+  const [input, setInput] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userMsg = {
+      id: `m-${Date.now()}`,
+      role: 'admin' as const,
+      text: input.trim(),
+      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+
+    // Simulated system responses
+    setTimeout(() => {
+      const responses = [
+        '✅ Noted! Main dekh raha hoon.',
+        '📊 Abhi 0 active users hain — site fresh hai!',
+        '🔄 System check complete — sab theek chal raha hai.',
+        '💡 Tip: Google OAuth ke liye Supabase Dashboard mein jaao → Authentication → Providers → Google enable karo.',
+        '🚀 Deployment successful! niknote.online pe live hai.',
+        '📝 Next: AI agents ko powerful banao — OpenAI API key add karo.',
+      ];
+      const sysMsg = {
+        id: `s-${Date.now()}`,
+        role: 'system' as const,
+        text: responses[Math.floor(Math.random() * responses.length)],
+        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, sysMsg]);
+    }, 800 + Math.random() * 1200);
+  };
+
+  return (
+    <>
+      {/* Toggle button */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+      >
+        {isOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
+      </motion.button>
+
+      {/* Chat panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-20 right-6 z-50 w-80 max-h-[420px] bg-white/95 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-2xl flex flex-col overflow-hidden"
+          >
+            {/* Header */}
+            <div className="px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-bold">Admin Chat</span>
+              </div>
+              <p className="text-[10px] text-white/70 mt-0.5">Quick updates & commands</p>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-[200px] max-h-[280px]">
+              {messages.map((msg) => (
+                <div key={msg.id} className={`flex flex-col ${msg.role === 'admin' ? 'items-end' : 'items-start'}`}>
+                  <div className={`max-w-[85%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                    msg.role === 'admin'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted/50 text-foreground'
+                  }`}>
+                    {msg.text}
+                  </div>
+                  <span className="text-[9px] text-muted-foreground mt-0.5 px-1">{msg.time}</span>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-2 border-t border-border/50 flex gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+                placeholder="Type message..."
+                className="flex-1 text-xs bg-muted/30 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-primary/30"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-medium disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
