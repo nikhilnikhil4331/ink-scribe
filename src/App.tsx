@@ -12,6 +12,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PremiumProvider } from "@/contexts/PremiumContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
+import { HandwritingDNAProvider } from "@/contexts/HandwritingDNAContext";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
@@ -72,13 +73,14 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <PremiumProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
+            <HandwritingDNAProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
                     <Route path="/app" element={<Navigate to="/" replace />} />
                     <Route path="/welcome" element={<Welcome />} />
                     <Route path="/onboarding" element={<Onboarding />} />
@@ -105,10 +107,11 @@ const App = () => {
               </BrowserRouter>
               <InstallBanner />
             </TooltipProvider>
-          </PremiumProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+          </HandwritingDNAProvider>
+        </PremiumProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 

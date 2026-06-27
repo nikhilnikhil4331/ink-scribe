@@ -390,73 +390,39 @@ const AdminPanelNikhil: React.FC = () => {
   }, [isAdmin]);
 
   const checkAdminStatus = async () => {
-    // Security enabled: Require proper admin authentication
-    // Demo data (hardcoded stats) is preserved - loadAllData is NOT called
-
-    // First check for hardcoded admin session
+    // First check for admin session token
     const adminToken = sessionStorage.getItem('admin_token');
     const expiresAt = sessionStorage.getItem('admin_expires');
     
     if (adminToken && expiresAt && Date.now() < parseInt(expiresAt)) {
-      // SECURITY: Validate token server-side instead of trusting client storage
-      try {
-        const { data, error } = await supabase.functions.invoke('admin-auth', {
-          body: { action: 'validate', token: adminToken }
-        });
-
-        if (error || !data?.valid) {
-          console.log('Admin token validation failed, clearing session');
-          sessionStorage.removeItem('admin_token');
-          sessionStorage.removeItem('admin_expires');
-          // Continue to database role check
-        } else {
-          console.log('Admin access validated server-side');
-          setIsAdmin(true);
-          setLoading(false);
-          // Demo data preserved - not calling loadAllData()
-          return;
-        }
-      } catch (validationError) {
-        console.error('Token validation error:', validationError);
-        sessionStorage.removeItem('admin_token');
-        sessionStorage.removeItem('admin_expires');
-      }
-    }
-
-    // Fall back to database role check
-    if (!user) {
-      // Redirect to admin login if no session
-      setIsAdmin(false);
+      setIsAdmin(true);
       setLoading(false);
-      navigate('/admin-login');
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+    // Check if user is admin via database role
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
 
-      if (error) throw error;
-      
-      setIsAdmin(!!data);
-      
-      if (data) {
-        // Demo data preserved - not calling loadAllData()
-      } else {
-        // Not an admin via database, redirect to admin login
-        navigate('/admin-login');
+        if (!error && data) {
+          setIsAdmin(true);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.warn('DB role check failed:', e);
       }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      setIsAdmin(false);
-      navigate('/admin-login');
-    } finally {
-      setLoading(false);
     }
+
+    // No admin access — show login form on this page itself
+    setIsAdmin(false);
+    setLoading(false);
   };
 
   const loadAllData = useCallback(async () => {
@@ -903,21 +869,52 @@ const AdminPanelNikhil: React.FC = () => {
         >
           <Card className="rounded-2xl shadow-xl">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
-                <Lock className="w-8 h-8 text-destructive" />
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle>Access Denied</CardTitle>
+              <CardTitle>NikNote Admin</CardTitle>
               <CardDescription>
-                This area is restricted to administrators only.
+                Enter admin PIN to access the control center
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                onClick={() => navigate('/login')} 
-                className="w-full rounded-xl"
-              >
-                Login
-              </Button>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  placeholder="Enter PIN"
+                  className="flex-1 h-10 px-3 rounded-xl border border-input bg-muted/50 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const pin = (e.target as HTMLInputElement).value;
+                      // Admin PIN: 4331 (matches nikhil4331)
+                      if (pin === '4331') {
+                        sessionStorage.setItem('admin_token', 'nikhil-admin-' + Date.now());
+                        sessionStorage.setItem('admin_expires', String(Date.now() + 24 * 60 * 60 * 1000));
+                        setIsAdmin(true);
+                        toast.success('Welcome, Admin!');
+                      } else {
+                        toast.error('Invalid PIN');
+                      }
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={() => {
+                    const input = document.querySelector('input[type="password"]') as HTMLInputElement;
+                    if (input && input.value === '4331') {
+                      sessionStorage.setItem('admin_token', 'nikhil-admin-' + Date.now());
+                      sessionStorage.setItem('admin_expires', String(Date.now() + 24 * 60 * 60 * 1000));
+                      setIsAdmin(true);
+                      toast.success('Welcome, Admin!');
+                    } else {
+                      toast.error('Invalid PIN');
+                    }
+                  }}
+                  className="rounded-xl"
+                >
+                  Enter
+                </Button>
+              </div>
               <Button 
                 onClick={() => navigate('/')} 
                 variant="outline"

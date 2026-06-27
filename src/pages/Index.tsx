@@ -25,7 +25,8 @@ import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
-  Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles
+  Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
+  LayoutGrid
 } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
@@ -43,6 +44,8 @@ import { PaywallModal } from '@/components/premium/PaywallModal';
 import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useHandwritingDNA } from '@/contexts/HandwritingDNAContext';
+import { useUITheme, UI_THEMES, UITheme, getThemeClasses } from '@/utils/uiThemes';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
 import { DiagramToolbar } from '@/components/DiagramToolbar';
@@ -53,6 +56,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const dnaContext = useHandwritingDNA();
+  const { theme: uiTheme, setTheme: setUITheme, classes: themeClasses } = useUITheme();
   const isMobile = useIsMobile();
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
@@ -61,6 +66,7 @@ const Index = () => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [glassMode, setGlassMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
 
   useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
 
@@ -410,7 +416,7 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500", moodStyles.background, glassMode && "glass-mode")}>
+    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper)}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
       <header className="sticky top-0 z-50 mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14 flex-shrink-0">
@@ -491,6 +497,8 @@ const Index = () => {
                       {isDark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                       {isDark ? 'Light' : 'Dark'} Mode
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setShowThemePicker(true)}><LayoutGrid className="w-4 h-4 mr-2" /> UI Themes</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleReset}><RotateCcw className="w-4 h-4 mr-2" /> Reset</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/notebooks')}><FileText className="w-4 h-4 mr-2" /> My Notebooks</DropdownMenuItem>
@@ -617,7 +625,7 @@ const Index = () => {
                       <div className="rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl shadow-sm overflow-hidden min-h-[70vh] relative">
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} />
+                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} dna={dnaContext.dna} />
                           </motion.div>
                         </AnimatePresence>
                         <div className="absolute bottom-3 right-3 z-10">
@@ -706,7 +714,7 @@ const Index = () => {
                             inlineContent={inlineContent}
                             onUpdateContent={updateContent}
                             onDeleteContent={removeContent}
-                           
+                            dna={dnaContext.dna}
                           />
                         </motion.div>
                       </AnimatePresence>
@@ -818,6 +826,57 @@ const Index = () => {
           </div>
         </div>
       )}
+
+      {/* UI Theme Picker Modal */}
+      <AnimatePresence>
+        {showThemePicker && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70]"
+              onClick={() => setShowThemePicker(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-x-4 top-[10%] sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[560px] z-[71] bg-white/95 backdrop-blur-2xl rounded-2xl border border-white/30 shadow-2xl p-6 max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <LayoutGrid className="w-5 h-5 text-primary" />
+                  UI Design System
+                </h3>
+                <button onClick={() => setShowThemePicker(false)} className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted">
+                  ×
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">Choose a design language for your workspace</p>
+              <div className="grid grid-cols-2 gap-3">
+                {UI_THEMES.map((t) => (
+                  <motion.button
+                    key={t.value}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => { setUITheme(t.value); setShowThemePicker(false); toast.success(`${t.emoji} ${t.label} applied!`); }}
+                    className={cn(
+                      "flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left",
+                      uiTheme === t.value
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border/50 hover:border-primary/40"
+                    )}
+                  >
+                    <span className="text-2xl mb-1">{t.emoji}</span>
+                    <span className="text-sm font-semibold text-foreground">{t.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{t.desc}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>

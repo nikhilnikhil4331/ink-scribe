@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useNavigate, Link } from 'react-router-dom';
-import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
 
 export default function Signup() {
@@ -17,14 +16,14 @@ export default function Signup() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signUp, user, loading: authLoading } = useAuth();
+  const { signUp, signInWithGoogle, user, loading: authLoading } = useAuth();
   const { playClick, playSuccess } = useSoundEffects();
   const navigate = useNavigate();
 
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/account');
+      navigate('/');
     }
   }, [user, authLoading, navigate]);
 
@@ -32,9 +31,7 @@ export default function Signup() {
     playClick();
     setGoogleLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
-      });
+      const { error } = await signInWithGoogle();
       if (error) {
         toast.error(error.message || 'Failed to sign in with Google');
       }
@@ -44,7 +41,7 @@ export default function Signup() {
     } finally {
       setGoogleLoading(false);
     }
-  }, [playClick]);
+  }, [playClick, signInWithGoogle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

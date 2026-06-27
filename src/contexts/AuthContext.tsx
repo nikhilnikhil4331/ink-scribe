@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+// ============================================================
+// NikNote 4.0 — Auth Context (CRASH-FIXED)
+// Handles Supabase auth + Google OAuth gracefully
+// No more refresh crashes or redirect loops
+// ============================================================
+
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -27,27 +34,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Handle token refresh errors gracefully
-        if (event === 'TOKEN_REFRESHED' && !session) {
-          console.warn('Token refresh failed, clearing session');
-          setSession(null);
-          setUser(null);
-        } else {
-          setSession(session);
-          setUser(session?.user ?? null);
+        if (!mounted) return;
+
+        // Handle all auth events gracefully
+        switch (event) {
+          case 'TOKEN_REFRESHED':
+            if (!session) {
+              // Token refresh failed — clear stale session silently
+              console.warn('Token refresh failed, clearing session');
+              setSession(null);
+              setUser(null);
+            } else {
+              setSession(session);
+              setUser(session.user);
+            }
+            break;
+
+          case 'SIGNED_OUT':
+            setSession(null);
+            setUser(null);
+            break;
+
+          case 'SIGNED_IN':
+          case 'USER_UPDATED':
+            setSession(session);
+            setUser(session?.user ?? null);
+            break;
+
+          default:
+            setSession(session);
+            setUser(session?.user ?? null);
         }
+
         setLoading(false);
       }
     );
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
       if (error) {
         console.warn('Session fetch error:', error.message);
-        // Clear stale session data on error
         setSession(null);
         setUser(null);
       } else {
@@ -55,39 +88,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
       }
       setLoading(false);
+    }).catch(() => {
+      if (!mounted) return;
+      setSession(null);
+      setUser(null);
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          full_name: fullName,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: fullName,
+          },
         },
-      },
-    });
-    return { error: error as Error | null };
+      });
+      return { error: error as Error | null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Sign up failed') };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error: error as Error | null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error: error as Error | null };
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Sign in failed') };
+    }
   };
 
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      return { error: error as Error | null };
+    } catch (err) {
+      console.error('Google sign in error:', err);
+      return { error: err instanceof Error ? err : new Error('Google sign in failed') };
+    }
+  }, []);
+
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out error:', err);
+    }
+    setSession(null);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

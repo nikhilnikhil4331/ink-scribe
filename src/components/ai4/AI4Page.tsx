@@ -20,8 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useHandwritingDNAOptional } from '@/contexts/HandwritingDNAContext';
-import { DNAProfileSelector } from '@/components/handwriting-dna/DNAProfileSelector';
 
 // Agent metadata
 const AGENTS: { type: AgentType; label: string; icon: React.ReactNode; color: string; desc: string }[] = [
@@ -57,7 +55,6 @@ export const AI4Page: React.FC = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const dnaContext = useHandwritingDNAOptional();
   const [showDNAPanel, setShowDNAPanel] = useState(false);
 
   // Auto-scroll to bottom
