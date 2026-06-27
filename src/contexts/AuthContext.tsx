@@ -134,26 +134,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = useCallback(async () => {
     try {
+      // APPROACH 1: Try Google Identity Services (GIS) — direct ID token flow
+      // This bypasses Supabase's OAuth and doesn't need Client Secret!
+      const googleClientId = localStorage.getItem('niknote_google_client_id');
+      
+      if (googleClientId && typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
+        return new Promise<{ error: Error | null }>((resolve) => {
+          (window as any).google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: async (response: any) => {
+              try {
+                if (response.credential) {
+                  // Use the ID token to sign in to Supabase
+                  const { error } = await supabase.auth.signInWithIdToken({
+                    provider: 'google',
+                    token: response.credential,
+                  });
+                  if (error) {
+                    resolve({ error: new Error('Google sign-in failed: ' + error.message) });
+                  } else {
+                    resolve({ error: null });
+                  }
+                } else {
+                  resolve({ error: new Error('Google sign-in cancelled') });
+                }
+              } catch (err) {
+                resolve({ error: new Error('Google sign-in error') });
+              }
+            },
+          });
+          (window as any).google.accounts.id.prompt((notification: any) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              // GIS popup blocked — fall back to OAuth flow
+              resolve({ error: new Error('GIS_FALLBACK') });
+            }
+          });
+        }).then(async (result) => {
+          if (result.error?.message === 'GIS_FALLBACK') {
+            // Fall back to Supabase OAuth flow
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: `${window.location.origin}/` },
+            });
+            if (error) {
+              return { error: new Error('Google sign-in abhi configured nahi hai. Email/Password use karo! 👇') };
+            }
+            return { error: null };
+          }
+          return result;
+        });
+      }
+
+      // APPROACH 2: Fall back to Supabase's built-in OAuth
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
+          queryParams: { access_type: 'offline', prompt: 'consent' },
         },
       });
       if (error) {
         if (error.message?.includes('provider') || error.message?.includes('not enabled') || error.message?.includes('Unsupported') || error.message?.includes('missing OAuth secret')) {
-          return { error: new Error('Google sign-in abhi configured nahi hai. Email/Password ya GitHub use karo! 👇') };
+          return { error: new Error('Google sign-in abhi configured nahi hai. Email/Password use karo! 👇') };
         }
         return { error: error as Error };
       }
       return { error: null };
     } catch (err) {
       console.error('Google sign in error:', err);
-      return { error: new Error('Google sign-in fail ho gaya. Email/Password ya GitHub try karo!') };
+      return { error: new Error('Google sign-in fail ho gaya. Email/Password try karo!') };
     }
   }, []);
 
