@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { PenTool, Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react';
+import { PenTool, Mail, Lock, User, ArrowRight, Sparkles, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,11 +16,11 @@ export default function Signup() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { signUp, signInWithGoogle, user, loading: authLoading } = useAuth();
+  const [githubLoading, setGithubLoading] = useState(false);
+  const { signUp, signInWithGoogle, signInWithGitHub, user, loading: authLoading } = useAuth();
   const { playClick, playSuccess } = useSoundEffects();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/');
@@ -33,15 +33,31 @@ export default function Signup() {
     try {
       const { error } = await signInWithGoogle();
       if (error) {
-        toast.error(error.message || 'Failed to sign in with Google');
+        toast.error(error.message);
       }
     } catch (err) {
       console.error('Google sign in error:', err);
-      toast.error('Something went wrong with Google sign in');
+      toast.error('Google sign-in fail. Email ya GitHub try karo!');
     } finally {
       setGoogleLoading(false);
     }
   }, [playClick, signInWithGoogle]);
+
+  const handleGitHubSignIn = useCallback(async () => {
+    playClick();
+    setGithubLoading(true);
+    try {
+      const { error } = await signInWithGitHub();
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (err) {
+      console.error('GitHub sign in error:', err);
+      toast.error('GitHub sign-in fail. Email try karo!');
+    } finally {
+      setGithubLoading(false);
+    }
+  }, [playClick, signInWithGitHub]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +153,25 @@ export default function Signup() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   Continue with Google
+                </>
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGitHubSignIn}
+              disabled={githubLoading || loading}
+              className="w-full h-12 rounded-xl bg-gray-900 hover:bg-gray-800 text-white border-gray-700 font-medium transition-all duration-300 flex items-center justify-center gap-3"
+            >
+              {githubLoading ? (
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                  <Sparkles className="w-5 h-5" />
+                </motion.div>
+              ) : (
+                <>
+                  <Github className="w-5 h-5" />
+                  Continue with GitHub
                 </>
               )}
             </Button>

@@ -15,6 +15,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGitHub: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -144,16 +145,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
       if (error) {
-        // Check if Google provider is not configured
-        if (error.message?.includes('provider') || error.message?.includes('not enabled') || error.message?.includes('Unsupported')) {
-          return { error: new Error('Google sign-in is not configured yet. Please use email sign-in instead, or ask admin to enable Google OAuth in Supabase dashboard.') };
+        if (error.message?.includes('provider') || error.message?.includes('not enabled') || error.message?.includes('Unsupported') || error.message?.includes('missing OAuth secret')) {
+          return { error: new Error('Google sign-in abhi configured nahi hai. Email/Password ya GitHub use karo! 👇') };
         }
         return { error: error as Error };
       }
       return { error: null };
     } catch (err) {
       console.error('Google sign in error:', err);
-      return { error: new Error('Google sign-in failed. Please try email sign-in instead.') };
+      return { error: new Error('Google sign-in fail ho gaya. Email/Password ya GitHub try karo!') };
+    }
+  }, []);
+
+  const signInWithGitHub = useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) {
+        if (error.message?.includes('provider') || error.message?.includes('not enabled') || error.message?.includes('Unsupported') || error.message?.includes('missing OAuth secret')) {
+          return { error: new Error('GitHub sign-in abhi configured nahi hai. Email/Password use karo!') };
+        }
+        return { error: error as Error };
+      }
+      return { error: null };
+    } catch (err) {
+      console.error('GitHub sign in error:', err);
+      return { error: new Error('GitHub sign-in fail ho gaya. Email/Password try karo!') };
     }
   }, []);
 
@@ -168,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signInWithGitHub, signOut }}>
       {children}
     </AuthContext.Provider>
   );
