@@ -72,6 +72,7 @@ export default function AccountPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('niknote_openai_key') || '');
   const [stats, setStats] = useState({
     totalAiRequests: 0,
     totalExports: 0,
@@ -167,6 +168,16 @@ export default function AccountPage() {
     await signOut();
     toast.success('Signed out successfully');
     navigate('/');
+  };
+
+  const handleSaveApiKey = () => {
+    if (openaiKey.trim()) {
+      localStorage.setItem('niknote_openai_key', openaiKey.trim());
+      toast.success('🔑 API Key saved! AI agents now powered by OpenAI.');
+    } else {
+      localStorage.removeItem('niknote_openai_key');
+      toast.success('📴 API Key removed. Using built-in knowledge base.');
+    }
   };
 
   const displayName = user?.user_metadata?.full_name || 
@@ -417,6 +428,79 @@ export default function AccountPage() {
                   })}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* AI Settings Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <Card className="border-2 overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="w-5 h-5 text-purple-500" />
+                AI Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                Add your OpenAI API key to unlock full AI power. Without a key, NikNote uses a built-in knowledge base with 20+ topics for Indian students.
+              </p>
+              
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">OpenAI API Key</label>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={openaiKey}
+                    onChange={(e) => setOpenaiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="flex-1 h-10 px-3 rounded-xl bg-muted/30 border border-border/50 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveApiKey}
+                    className="rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4"
+                  >
+                    Save
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  🔒 Key is stored locally in your browser only. Never sent to our servers.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-purple-50 border border-purple-100">
+                <h4 className="text-xs font-semibold text-purple-900 mb-1">🧠 Current AI Status</h4>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${openaiKey ? 'bg-green-500' : 'bg-amber-500'}`} />
+                    <span className="text-[11px] text-purple-800">
+                      {openaiKey ? 'Full AI Mode — Unlimited responses' : 'Local Mode — 20+ built-in topics + smart templates'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-[11px] text-purple-800">9 AI Agents active (Teacher, Notes, Quiz, etc.)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-[11px] text-purple-800">Hinglish support enabled</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                <h4 className="text-xs font-semibold mb-1">📚 Built-in Topics (No API needed)</h4>
+                <div className="flex flex-wrap gap-1">
+                  {['Newton\'s Laws', 'Photosynthesis', 'Pythagoras', 'Thermodynamics', 'Gravity', 'Electricity', 'Cell Biology', 'Periodic Table', 'Trigonometry', 'Quadratic', 'Probability', 'Chemical Reactions', 'Algebra', 'Digestion', 'Magnetism', 'Light & Optics', 'Indian History', 'English Grammar', 'Ecology', 'Statistics', 'Work & Energy', 'Acids & Bases', 'Sound', 'Coordinate Geometry', 'Reproduction', 'Force & Pressure', 'Programming', 'Constitution'].map(t => (
+                    <span key={t} className="px-2 py-0.5 rounded-full text-[10px] bg-primary/5 text-primary border border-primary/10">{t}</span>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
