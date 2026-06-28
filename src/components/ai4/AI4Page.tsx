@@ -196,8 +196,8 @@ export const AI4Page: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center">
+              <img src="/niknote-logo.png" alt="NikNote" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-base font-bold">NikNote AI 4.0</h1>

@@ -63,8 +63,8 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({ isOpen, onTo
       {/* Header */}
       <div className="p-3 flex items-center justify-between border-b border-white/15">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-            <BookOpen className="w-3.5 h-3.5 text-white" />
+          <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center">
+            <img src="/niknote-logo.png" alt="NikNote" className="w-full h-full object-contain" />
           </div>
           <span className="text-sm font-bold text-foreground">Workspace</span>
         </div>
