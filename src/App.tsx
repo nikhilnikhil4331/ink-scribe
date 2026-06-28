@@ -12,6 +12,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PremiumProvider } from "@/contexts/PremiumContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
+import { ShareButtons } from "@/components/promotion/ShareButtons";
 import { HandwritingDNAProvider } from "@/contexts/HandwritingDNAContext";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
@@ -106,6 +107,7 @@ const App = () => {
                 </Suspense>
               </BrowserRouter>
               <InstallBanner />
+              <ShareButtons variant="floating" />
             </TooltipProvider>
           </HandwritingDNAProvider>
         </PremiumProvider>

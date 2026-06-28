@@ -1,16 +1,6 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
-
 Sitemap: https://niknote.online/sitemap.xml
+
+# NikNote - AI Study App for Indian Students
+# https://niknote.online
