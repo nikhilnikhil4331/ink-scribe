@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
+import { ReferralWidget } from '@/components/promotion/ReferralWidget';
 
 interface ActivityItem {
   id: string;
@@ -227,6 +228,13 @@ export default function AccountPage() {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Referral Widget */}
+        {user && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <ReferralWidget variant="card" />
+          </motion.div>
+        )}
+
         {/* User Profile Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

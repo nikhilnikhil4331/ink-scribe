@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useNotebooks, Notebook } from '@/hooks/useNotebooks';
 import { useAuth } from '@/contexts/AuthContext';
+import { ReferralWidget } from '@/components/promotion/ReferralWidget';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -198,7 +199,8 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({ isOpen, onTo
       </ScrollArea>
 
       {/* Bottom section */}
-      <div className="p-3 border-t border-white/15 space-y-1">
+      <div className="p-3 border-t border-white/15 space-y-2">
+        <ReferralWidget variant="compact" />
         <button onClick={() => navigate('/notebooks')} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/40 transition-colors text-left">
           <Clock className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">Recent</span>

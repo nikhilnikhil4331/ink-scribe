@@ -10,6 +10,7 @@ import { FAQSection } from './FAQSection';
 import { CTASection } from './CTASection';
 import { DisclaimerBanner } from './DisclaimerBanner';
 import { LandingFooter } from './LandingFooter';
+import { ReferralWidget } from '@/components/promotion/ReferralWidget';
 
 interface LandingPageProps {
   isDark: boolean;
@@ -51,6 +52,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         
         <div id="preview-section">
           <PreviewSection />
+        </div>
+        
+        {/* Referral Widget — between features and pricing for maximum visibility */}
+        <div className="container mx-auto px-4 lg:px-6 max-w-2xl py-8">
+          <ReferralWidget variant="card" />
         </div>
         
         <PricingTeaser />

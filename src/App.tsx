@@ -57,6 +57,7 @@ const PageLoader = () => (
 );
 
 import { registerServiceWorker } from "@/hooks/useServiceWorkerRegistration";
+import { checkReferral } from "@/utils/referral";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,8 @@ const App = () => {
     if (import.meta.env.PROD) {
       registerServiceWorker();
     }
+    // Track referral on first visit
+    checkReferral();
   }, []);
 
   return (
