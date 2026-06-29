@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
-  LayoutGrid
+  LayoutGrid, Scan
 } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
@@ -46,6 +46,7 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useHandwritingDNA } from '@/contexts/HandwritingDNAContext';
+import { HandwritingScanner } from '@/components/handwriting-dna/HandwritingScanner';
 import { useUITheme, UI_THEMES, UITheme, getThemeClasses } from '@/utils/uiThemes';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
@@ -74,6 +75,7 @@ const Index = () => {
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
+  const [showScanPanel, setShowScanPanel] = useState(false);
 
   // Mobile state
   const [mobileTab, setMobileTab] = useState<MobileTab>('write');
@@ -480,6 +482,15 @@ const Index = () => {
                   <span>AI 4.0</span>
                 </motion.button>
 
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowScanPanel(true)}
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                >
+                  <Scan className="w-3.5 h-3.5" />
+                  <span>DNA</span>
+                </motion.button>
+
                 <button
                   className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-white/15 backdrop-blur-sm text-foreground disabled:opacity-50"
                   disabled={isExporting}
@@ -531,6 +542,17 @@ const Index = () => {
                     <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 blur-md transition-opacity -z-10" />
                     <Sparkles className="w-4 h-4 animate-pulse" />
                     AI 4.0
+                  </button>
+                </motion.div>
+
+                {/* DNA Scanner button */}
+                <motion.div whileTap={{ scale: 0.93 }} whileHover={{ scale: 1.04 }}>
+                  <button
+                    onClick={() => setShowScanPanel(true)}
+                    className="flex items-center gap-2 h-9 px-4 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_16px_rgba(16,185,129,0.3)] hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all"
+                  >
+                    <Scan className="w-4 h-4" />
+                    DNA Scan
                   </button>
                 </motion.div>
 
@@ -812,6 +834,18 @@ const Index = () => {
 
       <SlidePanel isOpen={showStylePanel} onClose={() => setShowStylePanel(false)} title="Page Style" icon={<Settings2 className="w-4 h-4 text-primary" />} side="right">
         <ControlPanel {...controlPanelProps} />
+      </SlidePanel>
+
+      {/* Handwriting DNA Scanner Panel */}
+      <SlidePanel isOpen={showScanPanel} onClose={() => setShowScanPanel(false)} title="Handwriting DNA Scanner" icon={<Scan className="w-4 h-4 text-emerald-500" />} side="right">
+        <HandwritingScanner
+          onDNAExtracted={(dna) => {
+            dnaContext.updateDNA(dna);
+            setShowScanPanel(false);
+            toast.success(`✅ ${dna.styleName} DNA applied!`);
+          }}
+          onClose={() => setShowScanPanel(false)}
+        />
       </SlidePanel>
 
       <MobileStyleSheet
