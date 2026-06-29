@@ -1,6 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin-panel-nikhil
+Disallow: /admin-login
+Disallow: /admin
+
 Sitemap: https://niknote.online/sitemap.xml
 
 # NikNote - AI Study App for Indian Students
+# Founded by Nikhil Jatav
 # https://niknote.online
