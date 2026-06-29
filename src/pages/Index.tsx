@@ -383,9 +383,10 @@ const Index = () => {
   }, []);
 
   const handleColorChange = useCallback((color: typeof currentColor) => {
-    if (selectedLines.size > 0) updateSelectedLinesColor(color);
-    // Always update the block editor color so preview reflects the change
-    blockEditor.updateAllBlockColors(color);
+    if (selectedLines.size > 0) {
+      updateSelectedLinesColor(color);
+    }
+    // Only set the current color for NEW blocks — do NOT change existing blocks
     blockEditor.setCurrentColor(color);
     setCurrentColor(color); triggerHaptic('selection'); playClick();
   }, [selectedLines, updateSelectedLinesColor, blockEditor, triggerHaptic, playClick]);
