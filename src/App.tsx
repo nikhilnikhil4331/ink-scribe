@@ -45,6 +45,9 @@ const DocumentIntelligence = lazy(() =>
 const QAPage = lazy(() =>
   import("@/pages/QA").then(m => ({ default: m.default }))
 );
+const BlogPage = lazy(() =>
+  import("@/pages/Blog").then(m => ({ default: m.default }))
+);
 
 // Simple page loader
 const PageLoader = () => (
@@ -100,6 +103,8 @@ const App = () => {
                     <Route path="/ai" element={<AI4Page />} />
                     <Route path="/documents" element={<DocumentIntelligence />} />
                     <Route path="/qa" element={<QAPage />} />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:slug" element={<BlogPage />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />
