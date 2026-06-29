@@ -61,6 +61,7 @@ const PageLoader = () => (
 
 import { registerServiceWorker } from "@/hooks/useServiceWorkerRegistration";
 import { checkReferral } from "@/utils/referral";
+import { trackPageView } from "@/utils/analytics";
 
 const queryClient = new QueryClient();
 
