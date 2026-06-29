@@ -9,42 +9,50 @@ import {
 
 const faqs = [
   {
-    question: 'How does NikNote turn text into handwriting?',
-    answer: 'NikNote uses specially designed handwriting fonts with natural imperfections — slight spacing variations, baseline jitter, and stroke randomness — to produce output that looks authentically handwritten. You type or paste your text, choose a style, and the engine renders it onto realistic paper backgrounds.',
+    question: 'NikNote kya hai? Kaise kaam karta hai?',
+    answer: 'NikNote ek AI-powered study app hai Indian students ke liye. Type karo text → 16+ handwriting styles mein convert → PDF export. Plus: AI Teacher (Hindi+English), Quiz Generator, Flashcards, Mind Maps — sab ek jagah! Internet bina bhi 28+ subjects ka instant explanation milta hai.',
   },
   {
-    question: 'What file formats can I export?',
-    answer: 'You can export your handwritten notes as PDF (single or multi-page) and as PNG/JPG images per page. PDFs are formatted to A4 size at 300 DPI for print-quality results.',
+    question: 'Kya NikNote free hai?',
+    answer: 'Haan! NikNote free mein start kar sakte ho. Free plan mein handwriting notes, AI Teacher, 28+ subjects, quiz generator — sab kuch milta hai. Premium mein extra pages, no watermark, aur advanced AI features milte hain. No credit card needed!',
   },
   {
-    question: 'Is NikNote free to use?',
-    answer: 'Yes! The free plan lets you export up to 2 pages per document with a small watermark. Paid plans remove the watermark, increase page limits, and unlock all handwriting styles and paper types.',
+    question: 'Phone pe kaam karta hai?',
+    answer: 'Bilkul! NikNote mobile-friendly hai — Chrome, Safari, kisi bhi browser pe chalta hai. PWA install karke app jaisa use kar sakte ho. Offline bhi 28+ subjects ka AI explanation kaam karta hai!',
   },
   {
-    question: 'Can I use NikNote on my phone?',
-    answer: 'Absolutely. NikNote is fully responsive and works on any modern browser — desktop, tablet, or mobile. The mobile UI uses a step-by-step flow optimized for smaller screens.',
+    question: 'Kya handwriting real lagti hai?',
+    answer: 'Haan! 16+ handwriting styles hain — neat cursive se lekar casual print tak. Har style mein natural imperfections hain (baseline jitter, stroke variation, spacing randomness) toh output genuinely handwritten lagta hai. Professor bhi nahi bata sakte! 😄',
   },
   {
-    question: 'What handwriting styles are available?',
-    answer: 'NikNote offers 16+ handwriting fonts ranging from neat cursive to casual print, each with adjustable randomness to control how "human" the output looks. You can also customize ink color, font size, line spacing, and word spacing.',
+    question: 'AI Teacher kaise kaam karta hai?',
+    answer: 'Koi bhi topic puchiye — "Newton ke laws samjhao", "Photosynthesis explain karo" — AI Teacher turant Hindi + English mein samjhata hai. Beginner se lekar exam-level tak. 28+ subjects built-in hain, internet bina bhi kaam karta hai!',
   },
   {
-    question: 'What paper types can I choose?',
-    answer: 'Choose from ruled, college-ruled, graph, dotted, plain, and legal paper styles. Each comes with adjustable margins and optional header/footer areas for names, dates, and titles.',
+    question: 'CBSE/ICSE/JEE/NEET ke liye useful hai?',
+    answer: 'Bilkul! NikNote specifically Indian exams ke liye design kiya gaya hai. NCERT pattern ke notes, JEE/NEET ke liye quiz practice, CBSE board exam format — sab available hai. Hindi medium students ke liye bhi Hindi mein explanations milte hain!',
   },
   {
-    question: 'Is it ethical to use NikNote for assignments?',
-    answer: 'NikNote is designed for legitimate use cases: personal notes, creative projects, teaching materials, and professional documents. We strongly discourage using it to violate academic integrity policies. Please use responsibly.',
+    question: 'PDF export kaise karein?',
+    answer: 'Notes bana ke simply "Export PDF" button dabao. 300 DPI print-ready PDF milta hai — A4 size, perfect for printing. Individual pages PNG mein bhi download kar sakte ho. WhatsApp pe directly share bhi kar sakte ho!',
   },
   {
-    question: 'How do I cancel my subscription?',
-    answer: 'You can cancel anytime from your Account settings. Your paid features remain active until the end of your billing period. No questions asked.',
+    question: 'Assignment ke liye use karna ethical hai?',
+    answer: 'NikNote legitimate study tool hai — personal notes, revision, teaching materials, creative projects ke liye. Academic integrity ka respect karein. AI Teacher se samjho, notes banao, quiz practice karo — smart study ke liye use karo!',
+  },
+  {
+    question: 'Kya offline kaam karta hai?',
+    answer: 'Haan! 28+ subjects ka AI explanation offline bhi kaam karta hai. PWA install karke app jaisa use karo — internet ke bina bhi basic features available hain. Full AI features ke liye internet chahiye.',
+  },
+  {
+    question: 'Payment kaise hai? UPI accept hota hai?',
+    answer: 'Haan! UPI, credit card, debit card — sab accept hota hai. Razorpay integration hai, fully secure. Premium plan bahut affordable hai — ek chai se sasta! ☕',
   },
 ];
 
 export const FAQSection: React.FC = () => {
   return (
-    <section className="py-24 bg-background">
+    <section id="faq" className="py-24 bg-background">
       <div className="container mx-auto px-4 lg:px-6 max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,8 +63,9 @@ export const FAQSection: React.FC = () => {
         >
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">FAQ</span>
           <h2 className="text-3xl sm:text-4xl font-bold mt-3 mb-4 text-foreground">
-            Frequently Asked Questions
+            Sawaal Jawab 💡
           </h2>
+          <p className="text-muted-foreground">Common questions — Hinglish mein jawab!</p>
         </motion.div>
 
         <motion.div
@@ -72,10 +81,10 @@ export const FAQSection: React.FC = () => {
                 value={`item-${index}`}
                 className="bg-card border border-border/50 rounded-2xl px-6 data-[state=open]:shadow-md transition-shadow"
               >
-                <AccordionTrigger className="text-left text-foreground font-medium py-5 hover:no-underline">
+                <AccordionTrigger className="text-left text-foreground font-medium py-5 hover:no-underline text-sm sm:text-base">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-5 text-sm">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

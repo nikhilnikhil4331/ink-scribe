@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,27 +9,51 @@ const plans = [
     name: 'Free',
     price: '₹0',
     period: 'forever',
-    description: 'Try it out with basic features.',
-    features: ['2 pages per export', '3 handwriting styles', 'Watermarked PDF', 'Basic paper types'],
-    cta: 'Start Free',
+    description: 'Shuru karo — risk nahi!',
+    features: [
+      '✍️ 16+ handwriting styles',
+      '🧠 AI Teacher (28+ subjects)',
+      '📝 Quiz Generator',
+      '📄 Basic PDF export',
+      '🎨 12 ink colors',
+      '📱 Mobile + Desktop',
+    ],
+    cta: 'Start Free ✨',
     highlighted: false,
   },
   {
-    name: 'Student',
+    name: 'Student Pro',
     price: '₹99',
     period: '/month',
-    description: 'Perfect for students and daily use.',
-    features: ['20 pages per day', 'All handwriting styles', 'No watermark', 'All paper types', 'Project history'],
-    cta: 'Get Student Plan',
+    description: 'Ek chai se sasta! ☕',
+    features: [
+      '✨ Sab kuch Free mein +',
+      '📄 Unlimited pages',
+      '📥 No watermark PDF',
+      '🎨 Custom colors + presets',
+      '🧠 Advanced AI features',
+      '💾 Project history & sync',
+      '📊 Mind Maps & Diagrams',
+      '⚡ Priority rendering',
+    ],
+    cta: 'Get Student Pro 🔥',
     highlighted: true,
   },
   {
-    name: 'Pro',
-    price: '₹249',
-    period: '/month',
-    description: 'Unlimited power for professionals.',
-    features: ['Unlimited pages', 'All styles + presets', 'High-res export', 'Priority rendering', 'Save custom presets', 'API access'],
-    cta: 'Go Pro',
+    name: 'Lifetime',
+    price: '₹999',
+    period: 'once',
+    description: 'Ek baar pay, forever use!',
+    features: [
+      '✨ Sab kuch Student Pro +',
+      '🔓 Lifetime access',
+      '🚀 Early access to new features',
+      '💬 Priority support',
+      '👨‍🏫 Teacher mode',
+      '📊 Batch export',
+      '🔌 API access',
+    ],
+    cta: 'Get Lifetime Access 🏆',
     highlighted: false,
   },
 ];
@@ -38,7 +62,7 @@ export const PricingTeaser: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-24 bg-gradient-to-b from-secondary/20 to-background">
+    <section id="pricing" className="py-24 bg-gradient-to-b from-secondary/20 to-background">
       <div className="container mx-auto px-4 lg:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,10 +73,10 @@ export const PricingTeaser: React.FC = () => {
         >
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">Pricing</span>
           <h2 className="text-3xl sm:text-4xl font-bold mt-3 mb-4 text-foreground">
-            Simple, Transparent Pricing
+            Simple Pricing — Ek Chai Se Sasta! ☕
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Start free, upgrade when you need more. No hidden fees.
+            Free mein shuru karo, jab zaroorat ho tab upgrade karo. Hidden charges nahi!
           </p>
         </motion.div>
 
@@ -71,7 +95,8 @@ export const PricingTeaser: React.FC = () => {
               }`}
             >
               {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-primary to-blue-600 text-white text-xs font-bold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
                   Most Popular
                 </div>
               )}
@@ -84,10 +109,10 @@ export const PricingTeaser: React.FC = () => {
                 <span className="text-muted-foreground text-sm">{plan.period}</span>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2.5 mb-8">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                  <li key={feature} className="flex items-start gap-2 text-sm text-foreground">
+                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     {feature}
                   </li>
                 ))}
@@ -97,7 +122,7 @@ export const PricingTeaser: React.FC = () => {
                 onClick={() => navigate(plan.highlighted ? '/payment' : '/signup')}
                 className={`w-full rounded-full h-12 font-semibold ${
                   plan.highlighted
-                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20'
+                    ? 'bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 text-white shadow-lg shadow-primary/20'
                     : ''
                 }`}
                 variant={plan.highlighted ? 'default' : 'outline'}
@@ -105,6 +130,12 @@ export const PricingTeaser: React.FC = () => {
                 {plan.cta}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
+
+              {plan.name === 'Student Pro' && (
+                <p className="text-center text-[11px] text-muted-foreground mt-3">
+                  UPI • Credit Card • Debit Card accepted
+                </p>
+              )}
             </motion.div>
           ))}
         </div>

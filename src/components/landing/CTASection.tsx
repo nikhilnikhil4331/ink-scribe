@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight, Zap, MessageCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CTASectionProps {
@@ -8,11 +8,18 @@ interface CTASectionProps {
 }
 
 export const CTASection: React.FC<CTASectionProps> = ({ onStartWriting }) => {
+  const handleWhatsAppShare = () => {
+    const msg = encodeURIComponent(
+      '🎓 NikNote — Free AI Study App for Indian Students!\n\n✍️ 16+ handwriting styles\n🧠 AI Teacher (Hindi + English)\n📝 Quiz & Flashcard Generator\n📱 Works offline too!\n\nTry free: https://niknote.online'
+    );
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  };
+
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
-      
+
       {/* Animated Background Orbs */}
       <motion.div
         className="absolute top-0 left-1/4 w-64 h-64 bg-primary/20 rounded-full blur-3xl"
@@ -33,42 +40,70 @@ export const CTASection: React.FC<CTASectionProps> = ({ onStartWriting }) => {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto text-center"
         >
-          {/* Icon */}
+          {/* Logo */}
           <motion.div
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
             transition={{ type: "spring", delay: 0.2 }}
-            className="w-16 h-16 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30"
+            className="mb-8"
           >
-            <Zap className="w-8 h-8 text-primary-foreground" />
+            <img
+              src="/niknote-logo.png"
+              alt="NikNote"
+              className="h-16 w-auto mx-auto object-contain"
+            />
           </motion.div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Ready to Create Your
+            Ab Padhai Ko Banayo
             <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Handwritten Notes?
+            <span className="bg-gradient-to-r from-primary via-blue-500 to-accent bg-clip-text text-transparent">
+              Smart & Fun! 🚀
             </span>
           </h2>
 
-          <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-            Join thousands of students and creators who use NikNote 
-            to turn text into beautiful, authentic handwritten documents.
+          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            AI Teacher, Handwriting Notes, Quiz, Flashcards — sab free mein.
+            <br />
+            <span className="text-foreground font-medium">Indian students ke liye, bina signup ke! 🇮🇳</span>
           </p>
 
-          <Button
-            size="lg"
-            onClick={onStartWriting}
-            className="group h-14 px-10 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
-          >
-            Start Creating — It&apos;s Free
-            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button
+              size="lg"
+              onClick={onStartWriting}
+              className="group h-14 px-8 text-base font-semibold rounded-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 text-white shadow-lg shadow-primary/25 hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              <Zap className="w-5 h-5 mr-2" />
+              Start Free — Abhi Try Karo!
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+            </Button>
 
-          <p className="mt-6 text-sm text-muted-foreground">
-            No signup required • Free to start • Export instantly
-          </p>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleWhatsAppShare}
+              className="group h-14 px-8 text-base font-semibold rounded-full border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all duration-300 hover:scale-105"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Share on WhatsApp 📱
+            </Button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {[
+              '✅ No Signup Required',
+              '✅ Free Forever Plan',
+              '✅ Works Offline',
+              '✅ Hindi Support',
+              '✅ UPI Payment',
+            ].map((tag) => (
+              <span key={tag} className="text-xs text-muted-foreground font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>

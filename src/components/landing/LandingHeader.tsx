@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PenLine, Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Menu, X, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface LandingHeaderProps {
   isDark: boolean;
@@ -14,6 +15,22 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
   onToggleDark,
   onStartWriting,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { label: 'Features', href: '#features' },
+    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'FAQ', href: '#faq' },
+  ];
+
+  const handleShareWhatsApp = () => {
+    const msg = encodeURIComponent(
+      '🎓 NikNote — Free AI Study App for Indian Students!\n\n✍️ Convert text to 16+ handwriting styles\n🧠 AI Teacher, Quiz Generator, Flashcards\n📱 Works on phone & laptop\n\nTry free: https://niknote.online'
+    );
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  };
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -23,25 +40,50 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     >
       <div className="container mx-auto px-4 lg:px-6">
         <div className="h-16 flex items-center justify-between">
-          {/* Logo */}
-          <motion.div
-            className="flex items-center gap-3"
+          {/* Logo — Official NikNote Logo */}
+          <motion.a
+            href="/"
+            className="flex items-center gap-2.5"
             whileHover={{ scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 400 }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
-              <PenLine className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg text-foreground tracking-tight">Nik Note</h1>
-              <p className="text-[10px] text-muted-foreground font-medium hidden sm:block">
-                Realistic Handwritten Notes
-              </p>
-            </div>
-          </motion.div>
+            <img
+              src="/niknote-logo.png"
+              alt="NikNote"
+              className="h-9 w-auto object-contain"
+              loading="eager"
+            />
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/10 text-[10px] font-bold text-orange-600 border border-orange-200">
+              🇮🇳 Made in India
+            </span>
+          </motion.a>
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* WhatsApp Share */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleShareWhatsApp}
+              className="rounded-xl hover:bg-green-50 text-green-600 hidden sm:flex"
+              title="Share on WhatsApp"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </Button>
+
             {/* Theme Toggle */}
             <Button
               variant="ghost"
@@ -59,13 +101,61 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
             {/* CTA */}
             <Button
               onClick={onStartWriting}
-              className="hidden sm:flex h-10 px-6 rounded-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-medium"
+              className="hidden sm:flex h-10 px-5 rounded-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 font-medium text-sm"
             >
-              Start Writing
+              Start Free ✨
+            </Button>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden rounded-xl"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden glass border-t border-border/30"
+        >
+          <div className="container mx-auto px-4 py-4 space-y-3">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium py-2"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="pt-2 flex gap-2">
+              <Button
+                onClick={() => { onStartWriting(); setMobileMenuOpen(false); }}
+                className="flex-1 h-11 rounded-full bg-gradient-to-r from-primary to-primary/90 font-medium"
+              >
+                Start Free ✨
+              </Button>
+              <Button
+                onClick={() => { handleShareWhatsApp(); setMobileMenuOpen(false); }}
+                variant="outline"
+                className="h-11 rounded-full border-green-500 text-green-600 hover:bg-green-50"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.header>
   );
 };
