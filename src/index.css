@@ -458,8 +458,8 @@
 }
 
 @layer utilities {
-  /* ====== Lovable Pastel Gradient Backgrounds ====== */
-  .lovable-bg-calm {
+  /* ====== NikNote Gradient Backgrounds ====== */
+  .niknote-bg-calm {
     background: linear-gradient(135deg, 
       hsl(330 60% 88%) 0%, 
       hsl(280 50% 85%) 25%, 
@@ -468,28 +468,28 @@
       hsl(260 50% 86%) 100%
     );
   }
-  .lovable-bg-focus {
+  .niknote-bg-focus {
     background: linear-gradient(135deg, 
       hsl(260 55% 85%) 0%, 
       hsl(280 50% 82%) 40%, 
       hsl(230 55% 88%) 100%
     );
   }
-  .lovable-bg-dark {
+  .niknote-bg-dark {
     background: linear-gradient(135deg, 
       hsl(240 30% 12%) 0%, 
       hsl(260 25% 14%) 50%, 
       hsl(220 30% 10%) 100%
     );
   }
-  .lovable-bg-vintage {
+  .niknote-bg-vintage {
     background: linear-gradient(135deg, 
       hsl(35 60% 88%) 0%, 
       hsl(25 55% 85%) 50%, 
       hsl(40 50% 88%) 100%
     );
   }
-  .lovable-bg-study {
+  .niknote-bg-study {
     background: linear-gradient(135deg, 
       hsl(160 45% 88%) 0%, 
       hsl(180 40% 85%) 50%, 

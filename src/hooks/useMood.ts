@@ -10,31 +10,31 @@ interface MoodStyles {
 
 const moodStylesMap: Record<MoodType, MoodStyles> = {
   calm: {
-    background: 'lovable-bg-calm',
+    background: 'niknote-bg-calm',
     paper: 'bg-white/60 dark:bg-zinc-800/60',
     paperTexture: '',
     textClass: 'text-slate-800 dark:text-slate-200',
   },
   focus: {
-    background: 'lovable-bg-focus',
+    background: 'niknote-bg-focus',
     paper: 'bg-slate-50/60 dark:bg-slate-800/60',
     paperTexture: '',
     textClass: 'text-slate-900 dark:text-slate-100',
   },
   dark: {
-    background: 'lovable-bg-dark',
+    background: 'niknote-bg-dark',
     paper: 'bg-zinc-800/60',
     paperTexture: '',
     textClass: 'text-zinc-100',
   },
   vintage: {
-    background: 'lovable-bg-vintage',
+    background: 'niknote-bg-vintage',
     paper: 'bg-amber-50/60 dark:bg-amber-900/30',
     paperTexture: '',
     textClass: 'text-amber-900 dark:text-amber-100',
   },
   study: {
-    background: 'lovable-bg-study',
+    background: 'niknote-bg-study',
     paper: 'bg-emerald-50/60 dark:bg-emerald-900/20',
     paperTexture: '',
     textClass: 'text-emerald-900 dark:text-emerald-100',

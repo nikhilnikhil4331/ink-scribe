@@ -1,11 +1,11 @@
 {
-  "name": "NikNote — Handwritten Notes Generator",
+  "name": "NikNote — AI Study App for Indian Students",
   "short_name": "NikNote",
-  "description": "Convert typed text into realistic handwritten notes. 16+ styles, multiple paper types, ink colors. Made for Indian students.",
+  "description": "India's #1 AI Study App! Convert text to handwriting, AI Teacher in Hindi & English, Quiz Generator, Flashcards. CBSE/ICSE/JEE/NEET focused. Founded by Nikhil Jatav.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "theme_color": "#6366f1",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
@@ -59,15 +59,14 @@
       "name": "New Note",
       "short_name": "New",
       "url": "/?action=new",
-      "icons": [{ "src": "/icons/new-note.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "AI Solver",
+      "name": "AI Teacher",
       "short_name": "AI",
-      "url": "/ai-solver",
-      "icons": [{ "src": "/icons/ai.png", "sizes": "96x96" }]
+      "url": "/ai",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
-  "screenshots": [],
   "prefer_related_applications": false
 }
