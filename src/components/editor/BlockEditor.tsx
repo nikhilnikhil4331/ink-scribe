@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { GripVertical, Trash2, Plus, Palette } from 'lucide-react';
+import { GripVertical, Trash2, Plus, Palette, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Block, BlockType, createBlock, detectBlockPrefix, generateBlockId } from '@/types/block';
 import { SlashCommandMenu } from './SlashCommandMenu';
@@ -280,6 +280,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
             onKeyDown={(e) => handleKeyDown(block.id, e)}
             onPaste={(e) => handlePaste(block.id, e)}
             onToggleTodo={() => updateBlock(block.id, { checked: !block.checked })}
+            onToggleCollapse={() => updateBlock(block.id, { collapsed: !block.collapsed })}
             onDelete={() => removeBlock(block.id)}
             onToggleColor={() => setShowInlineColor(showInlineColor === block.id ? null : block.id)}
             onColorPick={(color) => { updateBlock(block.id, { color }); onColorChange?.(color); setShowInlineColor(null); }}
@@ -328,6 +329,7 @@ interface BlockContainerProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onPaste: (e: React.ClipboardEvent) => void;
   onToggleTodo: () => void;
+  onToggleCollapse: () => void;
   onDelete: () => void;
   onToggleColor: () => void;
   onColorPick: (color: LineInkColor) => void;
@@ -336,7 +338,7 @@ interface BlockContainerProps {
 
 const BlockContainer: React.FC<BlockContainerProps> = ({
   block, index, isFocused, isTyping, currentColor, showInlineColor,
-  onFocus, onTextChange, onKeyDown, onPaste, onToggleTodo, onDelete,
+  onFocus, onTextChange, onKeyDown, onPaste, onToggleTodo, onToggleCollapse, onDelete,
   onToggleColor, onColorPick, inputRef,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -382,7 +384,7 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
         <DragHandle />
 
         {/* Block type prefix */}
-        <BlockPrefix block={block} onToggleTodo={onToggleTodo} />
+        <BlockPrefix block={block} onToggleTodo={onToggleTodo} onToggleCollapse={onToggleCollapse} />
 
         {/* Content area with typing animation */}
         <div className="flex-1 relative">
@@ -421,6 +423,27 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
               getBlockTextClass(block.type)
             )}
           />
+
+          {/* Special block previews */}
+          {block.type === 'image' && block.url && (
+            <div className="mt-1 rounded-lg overflow-hidden border border-border/30 max-w-md">
+              <img src={block.url} alt={block.caption || ''} className="w-full object-cover max-h-48" />
+              {block.caption && (
+                <div className="px-2 py-1 text-[10px] text-muted-foreground bg-muted/20">{block.caption}</div>
+              )}
+            </div>
+          )}
+          {block.type === 'equation' && block.content && (
+            <div className="mt-1 p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 font-mono text-sm text-indigo-800">
+              {block.content}
+            </div>
+          )}
+          {block.type === 'bookmark' && block.url && (
+            <div className="mt-1 p-2 rounded-lg border border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer max-w-md">
+              <div className="text-xs font-medium text-primary truncate">{block.content || block.url}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{block.url}</div>
+            </div>
+          )}
 
           {/* Inline color picker */}
           <AnimatePresence>
@@ -483,7 +506,7 @@ const DeleteButton: React.FC<{ onDelete: () => void }> = ({ onDelete }) => (
 );
 
 // Block type prefix
-const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void }> = ({ block, onToggleTodo }) => {
+const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void; onToggleCollapse?: () => void }> = ({ block, onToggleTodo, onToggleCollapse }) => {
   switch (block.type) {
     case 'bullet':
       return (
@@ -518,7 +541,34 @@ const BlockPrefix: React.FC<{ block: Block; onToggleTodo: () => void }> = ({ blo
       );
     case 'callout':
       return (
-        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">💡</div>
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">{block.emoji || '💡'}</div>
+      );
+    case 'toggle':
+      return (
+        <button
+          onClick={onToggleCollapse}
+          className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 hover:bg-muted/30 rounded transition-colors"
+          tabIndex={-1}
+        >
+          <motion.div
+            animate={{ rotate: block.collapsed ? 0 : 90 }}
+            transition={{ duration: 0.15 }}
+          >
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+          </motion.div>
+        </button>
+      );
+    case 'equation':
+      return (
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">∑</div>
+      );
+    case 'image':
+      return (
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">🖼️</div>
+      );
+    case 'bookmark':
+      return (
+        <div className="flex items-center justify-center w-6 h-8 flex-shrink-0 mt-0.5 text-base">🔗</div>
       );
     default:
       return null;
@@ -534,6 +584,8 @@ const getBlockTextClass = (type: BlockType): string => {
     case 'quote': return 'text-base italic text-muted-foreground';
     case 'callout': return 'text-sm bg-accent/30 rounded-lg px-2 py-1';
     case 'code': return 'text-sm font-mono bg-muted/50 rounded px-2 py-1';
+    case 'equation': return 'text-sm font-mono bg-indigo-50 rounded px-2 py-1';
+    case 'toggle': return 'text-sm font-medium';
     case 'todo': return 'text-sm';
     default: return 'text-sm';
   }
@@ -552,6 +604,10 @@ const getPlaceholder = (type: BlockType): string => {
     case 'quote': return 'Quote';
     case 'callout': return 'Callout';
     case 'code': return 'Code';
+    case 'toggle': return 'Toggle heading...';
+    case 'equation': return 'Type LaTeX equation...';
+    case 'image': return 'Image URL or paste...';
+    case 'bookmark': return 'Paste URL...';
     default: return '';
   }
 };

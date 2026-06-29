@@ -47,6 +47,7 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHandwritingDNA } from '@/contexts/HandwritingDNAContext';
 import { HandwritingScanner } from '@/components/handwriting-dna/HandwritingScanner';
+import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { useUITheme, UI_THEMES, UITheme, getThemeClasses } from '@/utils/uiThemes';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
@@ -72,10 +73,23 @@ const Index = () => {
 
   useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
 
+  // Command Palette keyboard shortcut (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [pageDirection, setPageDirection] = useState<'left' | 'right' | 'none'>('none');
   const [showPenPanel, setShowPenPanel] = useState(false);
   const [showStylePanel, setShowStylePanel] = useState(false);
   const [showScanPanel, setShowScanPanel] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   // Mobile state
   const [mobileTab, setMobileTab] = useState<MobileTab>('write');
@@ -584,7 +598,7 @@ const Index = () => {
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
               className="fixed left-0 top-0 bottom-0 w-[280px] z-[61]"
             >
-              <WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} />
+              <WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} />
             </motion.div>
           </>
         )}
@@ -598,7 +612,7 @@ const Index = () => {
           <AnimatePresence>
             {sidebarOpen && (
               <div className="rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
-                <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+                <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} />
               </div>
             )}
           </AnimatePresence>
@@ -847,6 +861,15 @@ const Index = () => {
           onClose={() => setShowScanPanel(false)}
         />
       </SlidePanel>
+
+      {/* Command Palette (Cmd+K) */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onNewNote={() => { setShowCommandPalette(false); }}
+        onToggleTheme={toggleDark}
+        onToggleSidebar={() => setSidebarOpen(p => !p)}
+      />
 
       <MobileStyleSheet
         isOpen={showMobileStyleSheet}
