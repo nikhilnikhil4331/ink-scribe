@@ -1176,6 +1176,8 @@ async function callAIBrain(
       ...messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
     ];
 
+    const pollinationsController = new AbortController();
+    const pollinationsTimeout = setTimeout(() => pollinationsController.abort(), 15000); // 15s timeout
     const response = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1185,7 +1187,9 @@ async function callAIBrain(
         temperature: 0.7,
         max_tokens: 2000,
       }),
+      signal: pollinationsController.signal,
     });
+    clearTimeout(pollinationsTimeout);
 
     if (response.ok) {
       const text = await response.text();
@@ -1193,8 +1197,12 @@ async function callAIBrain(
         return text;
       }
     }
-  } catch (err) {
-    console.warn('Pollinations AI error (will try next):', err);
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      console.warn('Pollinations AI timeout (15s), trying next tier...');
+    } else {
+      console.warn('Pollinations AI error (will try next):', err?.message || err);
+    }
   }
 
   // 3. Try Supabase edge function (OpenAI-powered, needs API key)

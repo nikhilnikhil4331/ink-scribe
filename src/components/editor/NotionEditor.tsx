@@ -122,6 +122,38 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
   const inputRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
   const typingTimerRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const editorRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Detect mobile and handle virtual keyboard
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Handle virtual keyboard on mobile — adjust scroll when input focused
+  useEffect(() => {
+    if (!isMobile) return;
+    const handleResize = () => {
+      const newHeight = window.visualViewport?.height || window.innerHeight;
+      if (newHeight < viewportHeight - 100) {
+        // Keyboard opened — scroll focused element into view
+        const focused = document.activeElement;
+        if (focused && editorRef.current?.contains(focused)) {
+          setTimeout(() => {
+            (focused as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        }
+      }
+      setViewportHeight(newHeight);
+    };
+    window.visualViewport?.addEventListener('resize', handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, [isMobile, viewportHeight]);
 
   // Focus block
   const focusBlock = useCallback((id: string, cursorPos?: number) => {
@@ -522,6 +554,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     rows={1}
                     className={cn(
                       "flex-1 bg-transparent border-0 outline-none resize-none py-1 px-0.5 placeholder:text-muted-foreground/30 leading-relaxed w-full overflow-hidden text-foreground",
+                      isMobile && "min-h-[44px] text-base", // Touch-friendly on mobile (prevents iOS zoom)
                       config.textClass
                     )}
                     style={{ color: inkData?.hex }}

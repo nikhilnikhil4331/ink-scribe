@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { WorkflowCanvas } from '@/components/workflow/WorkflowCanvas';
 import {
   Brain, Workflow, BookOpen, Sparkles, Send, Loader2,
   ChevronRight, ChevronDown, Search, FileText, Target,
@@ -112,6 +113,7 @@ export const AIWorkspacePanel: React.FC<AIWorkspacePanelProps> = ({
   onInsertContent,
 }) => {
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('agents');
+  const [showCanvas, setShowCanvas] = useState(false);
   const [activeAgent, setActiveAgent] = useState<AgentType>('teacher');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -477,7 +479,12 @@ export const AIWorkspacePanel: React.FC<AIWorkspacePanelProps> = ({
               {/* ===== WORKFLOWS TAB ===== */}
               {activeTab === 'workflows' && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                  <p className="text-[10px] text-muted-foreground">AI-powered workflows that automate complex tasks. Select a template to start.</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] text-muted-foreground">AI-powered workflows. Select template or build your own.</p>
+                    <Button variant="outline" size="sm" onClick={() => setShowCanvas(true)} className="gap-1 text-[9px] h-6 rounded-lg">
+                      <Workflow className="w-3 h-3" /> Visual Builder
+                    </Button>
+                  </div>
 
                   {WORKFLOW_TEMPLATES.map(wf => (
                     <div key={wf.id} className="bg-card border border-border/50 rounded-xl overflow-hidden hover:border-primary/30 transition-colors cursor-pointer group">

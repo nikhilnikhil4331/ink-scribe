@@ -1,9 +1,13 @@
 // ============================================================
-// ErrorBoundary — Shows the ACTUAL error so we can debug!
+// NikNote 4.0 — ErrorBoundary (Production-Ready)
+// Shows friendly message to users, full details only in dev
+// Logs errors to Supabase for monitoring
 // ============================================================
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
+
+const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
 
 interface Props {
   children: ReactNode;
@@ -14,6 +18,7 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  reported: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -21,15 +26,38 @@ export class ErrorBoundary extends Component<Props, State> {
     hasError: false,
     error: null,
     errorInfo: null,
+    reported: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+    return { hasError: true, error, errorInfo: null, reported: false };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('🔴 NikNote Error:', error, errorInfo);
     this.setState({ errorInfo });
+
+    // Report to Supabase error_logs in production
+    if (!isDev && !this.state.reported) {
+      this.reportError(error, errorInfo);
+    }
+  }
+
+  private async reportError(error: Error, errorInfo: ErrorInfo) {
+    try {
+      this.setState({ reported: true });
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.from('error_logs').insert({
+        error_message: error.message,
+        error_stack: error.stack?.substring(0, 2000) || null,
+        component_stack: errorInfo.componentStack?.substring(0, 2000) || null,
+        url: window.location.href,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Silently fail — don't crash the error boundary itself
+    }
   }
 
   private handleReload = () => {
@@ -46,42 +74,52 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      // ALWAYS show error — even in production — so we can debug
       const errorMsg = this.state.error?.message || 'Unknown error';
       const errorStack = this.state.error?.stack || '';
       const componentStack = this.state.errorInfo?.componentStack || '';
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-white">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 max-w-lg w-full text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Something went wrong
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Kuch gadbad ho gayi! 😅
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Don't worry — your notes are safe! This is just a temporary glitch.
+              Don't worry — tumhare notes safe hain! Ye temporary issue hai.
             </p>
 
-            {/* ALWAYS show the error message */}
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-left">
-              <p className="text-xs font-mono text-red-600 break-words font-bold mb-2">
-                {errorMsg}
-              </p>
-              {componentStack && (
-                <details className="mt-2">
-                  <summary className="text-[10px] text-red-400 cursor-pointer">Component Stack (click to expand)</summary>
-                  <pre className="text-[10px] text-red-400 mt-1 whitespace-pre-wrap break-words">{componentStack}</pre>
-                </details>
-              )}
-              {errorStack && (
-                <details className="mt-2">
-                  <summary className="text-[10px] text-red-400 cursor-pointer">Error Stack (click to expand)</summary>
-                  <pre className="text-[10px] text-red-400 mt-1 whitespace-pre-wrap break-words">{errorStack}</pre>
-                </details>
-              )}
-            </div>
+            {/* Error details — only in dev mode */}
+            {isDev && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-left">
+                <p className="text-xs font-mono text-red-600 break-words font-bold mb-2">
+                  {errorMsg}
+                </p>
+                {componentStack && (
+                  <details className="mt-2">
+                    <summary className="text-[10px] text-red-400 cursor-pointer">Component Stack</summary>
+                    <pre className="text-[10px] text-red-400 mt-1 whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{componentStack}</pre>
+                  </details>
+                )}
+                {errorStack && (
+                  <details className="mt-2">
+                    <summary className="text-[10px] text-red-400 cursor-pointer">Error Stack</summary>
+                    <pre className="text-[10px] text-red-400 mt-1 whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{errorStack}</pre>
+                  </details>
+                )}
+              </div>
+            )}
+
+            {/* Production: show simple error ID for support */}
+            {!isDev && errorMsg && (
+              <div className="mb-4 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                <p className="text-xs text-gray-500">
+                  Error ID: <span className="font-mono font-bold">{btoa(errorMsg).substring(0, 12)}</span>
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-3 justify-center">
               <button
@@ -89,11 +127,11 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Home className="w-4 h-4" />
-                Go Home
+                Home
               </button>
               <button
                 onClick={this.handleReload}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md"
               >
                 <RefreshCw className="w-4 h-4" />
                 Reload

@@ -397,4 +397,98 @@ export class KnowledgeEngine {
       });
     }
   }
+  // ============================================================
+  // Supabase Persistence — Save/load knowledge to cloud
+  // ============================================================
+
+  /**
+   * Save current documents to Supabase
+   */
+  async saveToSupabase(userId: string): Promise<void> {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const docs = Array.from(this.documents.values());
+      
+      for (const doc of docs) {
+        const { error } = await supabase
+          .from('notebook_pages')
+          .upsert({
+            id: doc.id,
+            notebook_id: `knowledge-${userId}`,
+            page_number: 0,
+            content: JSON.stringify(doc),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+        
+        if (error) console.warn('Knowledge save error:', error.message);
+      }
+    } catch (err) {
+      console.warn('Knowledge Supabase save failed:', err);
+    }
+  }
+
+  /**
+   * Load documents from Supabase
+   */
+  async loadFromSupabase(userId: string): Promise<void> {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase
+        .from('notebook_pages')
+        .select('content')
+        .eq('notebook_id', `knowledge-${userId}`);
+      
+      if (error || !data) return;
+      
+      for (const row of data) {
+        try {
+          const doc = JSON.parse(row.content) as KnowledgeDocument;
+          if (doc.id && doc.content) {
+            this.documents.set(doc.id, doc);
+          }
+        } catch { /* skip invalid */ }
+      }
+      
+      // Rebuild graph from loaded documents
+      for (const doc of this.documents.values()) {
+        this.updateKnowledgeGraph(doc);
+      }
+    } catch (err) {
+      console.warn('Knowledge Supabase load failed:', err);
+    }
+  }
+
+  /**
+   * Export knowledge base as JSON
+   */
+  exportAsJSON(): string {
+    return JSON.stringify({
+      documents: Array.from(this.documents.values()),
+      graph: this.graph,
+      exportedAt: new Date().toISOString(),
+      version: '4.0',
+    }, null, 2);
+  }
+
+  /**
+   * Import knowledge base from JSON
+   */
+  importFromJSON(json: string): boolean {
+    try {
+      const data = JSON.parse(json);
+      if (data.documents) {
+        for (const doc of data.documents) {
+          this.documents.set(doc.id, doc);
+        }
+      }
+      if (data.graph) {
+        this.graph = data.graph;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+
 }

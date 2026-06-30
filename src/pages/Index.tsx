@@ -10,12 +10,12 @@ const AIWorkspacePanel = lazy(() => import('@/components/ai-workspace/AIWorkspac
 import type { EditorSuggestion } from '@/components/smart-editor/SmartEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { PenPalette } from '@/components/PenPalette';
-import { ControlPanel } from '@/components/ControlPanel';
+const ControlPanel = lazy(() => import('@/components/ControlPanel').then(m => ({ default: m.ControlPanel })));
 import { PageBar } from '@/components/PageBar';
 import { MoodSelector } from '@/components/MoodSelector';
 import { SlidePanel } from '@/components/SlidePanel';
 import { MobileBottomNav, MobileTab } from '@/components/MobileBottomNav';
-import { MobileStyleSheet } from '@/components/MobileStyleSheet';
+const MobileStyleSheet = lazy(() => import('@/components/MobileStyleSheet').then(m => ({ default: m.MobileStyleSheet })));
 import { QuickStylesBar } from '@/components/QuickStylesBar';
 import { useNoteSettings } from '@/hooks/useNoteSettings';
 import { useDarkMode } from '@/hooks/useDarkMode';
@@ -28,14 +28,13 @@ import { useMood } from '@/hooks/useMood';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { exportToPDF, ExportProgress } from '@/utils/export';
 import { toast } from 'sonner';
+import { shareAsImage, shareAsPDF } from '@/utils/share';
+const WorkspaceSidebar = lazy(() => import('@/components/workspace/WorkspaceSidebar').then(m => ({ default: m.WorkspaceSidebar })));
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
-  LayoutGrid, Scan, Brain
+  LayoutGrid, Scan, Brain, PanelLeft
 } from 'lucide-react';
-import { shareAsImage, shareAsPDF } from '@/utils/share';
-import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
-import { PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -51,12 +50,12 @@ import { usePremium, PremiumFeature } from '@/hooks/usePremium';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useHandwritingDNA } from '@/contexts/HandwritingDNAContext';
-import { HandwritingScanner } from '@/components/handwriting-dna/HandwritingScanner';
-import { CommandPalette } from '@/components/command-palette/CommandPalette';
+const HandwritingScanner = lazy(() => import('@/components/handwriting-dna/HandwritingScanner').then(m => ({ default: m.HandwritingScanner })));
+const CommandPalette = lazy(() => import('@/components/command-palette/CommandPalette').then(m => ({ default: m.CommandPalette })));
 import { useUITheme, UI_THEMES, UITheme, getThemeClasses } from '@/utils/uiThemes';
 import { cn } from '@/lib/utils';
 import { HeaderProfileButton } from '@/components/HeaderProfileButton';
-import { DiagramToolbar } from '@/components/DiagramToolbar';
+const DiagramToolbar = lazy(() => import('@/components/DiagramToolbar').then(m => ({ default: m.DiagramToolbar })));
 import { useInlineContent } from '@/hooks/useInlineContent';
 import { Toolbar } from '@/components/Toolbar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -481,7 +480,7 @@ const Index = () => {
             <div className="flex items-center gap-1.5">
               <span className="text-lg">✨</span>
               <h1 className="text-lg font-bold tracking-tight select-none" style={{ fontFamily: "'Satisfy', cursive" }}>
-                <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">Niknote</span>
+                <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">Niknote</span><span className="sr-only">NikNote - AI Study App</span>
               </h1>
             </div>
           </div>
@@ -633,7 +632,7 @@ const Index = () => {
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
               className="fixed left-0 top-0 bottom-0 w-[280px] z-[61]"
             >
-              <WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} />
+              <React.Suspense fallback={<div className="w-[240px] h-full bg-white/30 animate-pulse rounded-2xl" />}><WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
             </motion.div>
           </>
         )}
@@ -647,7 +646,7 @@ const Index = () => {
           <AnimatePresence>
             {sidebarOpen && (
               <div className="rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
-                <WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} />
+                <React.Suspense fallback={<div className="w-[240px] h-full bg-white/30 animate-pulse rounded-2xl" />}><WorkspaceSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
               </div>
             )}
           </AnimatePresence>
@@ -693,7 +692,7 @@ const Index = () => {
                               </p>
                             </div>
                           </div>
-                          <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
+                          <React.Suspense fallback={null}><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></React.Suspense>
                         </div>
                         <AnimatePresence mode="wait" custom={pageDirection}>
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
@@ -735,7 +734,7 @@ const Index = () => {
                         </AnimatePresence>
                         <div className="absolute bottom-3 right-3 z-10">
                           <div className="relative">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-white/30 backdrop-blur-sm text-foreground border border-white/25 shadow-md disabled:opacity-50">
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} aria-label="Share options" className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-white/30 backdrop-blur-sm text-foreground border border-white/25 shadow-md disabled:opacity-50">
                               <Share2 className="w-3.5 h-3.5" /> Share
                             </motion.button>
                             {showShareMenu && (
@@ -911,7 +910,7 @@ const Index = () => {
                       <AnimatePresence>
                         {showControls && (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-2 overflow-hidden">
-                            <ControlPanel {...controlPanelProps} />
+                            <React.Suspense fallback={<div className="h-20 bg-muted/10 rounded-xl animate-pulse" />}><ControlPanel {...controlPanelProps} /></React.Suspense>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -939,46 +938,52 @@ const Index = () => {
       </SlidePanel>
 
       <SlidePanel isOpen={showStylePanel} onClose={() => setShowStylePanel(false)} title="Page Style" icon={<Settings2 className="w-4 h-4 text-primary" />} side="right">
-        <ControlPanel {...controlPanelProps} />
+        <React.Suspense fallback={<div className="h-20 bg-muted/10 rounded-xl animate-pulse" />}><ControlPanel {...controlPanelProps} /></React.Suspense>
       </SlidePanel>
 
       {/* Handwriting DNA Scanner Panel */}
       <SlidePanel isOpen={showScanPanel} onClose={() => setShowScanPanel(false)} title="Handwriting DNA Scanner" icon={<Scan className="w-4 h-4 text-emerald-500" />} side="right">
-        <HandwritingScanner
-          onDNAExtracted={(dna) => {
-            dnaContext.updateDNA(dna);
-            setShowScanPanel(false);
-            toast.success(`✅ ${dna.styleName} DNA applied!`);
-          }}
-          onClose={() => setShowScanPanel(false)}
-        />
+        <React.Suspense fallback={<div className="p-6 text-center text-sm text-muted-foreground">Loading Scanner...</div>}>
+          <HandwritingScanner
+            onDNAExtracted={(dna) => {
+              dnaContext.updateDNA(dna);
+              setShowScanPanel(false);
+              toast.success(`✅ ${dna.styleName} DNA applied!`);
+            }}
+            onClose={() => setShowScanPanel(false)}
+          />
+        </React.Suspense>
       </SlidePanel>
 
       {/* Command Palette (Cmd+K) */}
-      <CommandPalette
-        isOpen={showCommandPalette}
-        onClose={() => setShowCommandPalette(false)}
-        onNewNote={() => { setShowCommandPalette(false); }}
-        onToggleTheme={toggleDark}
-        onToggleSidebar={() => setSidebarOpen(p => !p)}
-      />
+      <React.Suspense fallback={null}>
+        <CommandPalette
+          isOpen={showCommandPalette}
+          onClose={() => setShowCommandPalette(false)}
+          onNewNote={() => { setShowCommandPalette(false); }}
+          onToggleTheme={toggleDark}
+          onToggleSidebar={() => setSidebarOpen(p => !p)}
+        />
+      </React.Suspense>
 
-      <MobileStyleSheet
-        isOpen={showMobileStyleSheet}
-        onClose={() => setShowMobileStyleSheet(false)}
-        settings={settings}
-        updateSettings={updateSettings}
-        currentColor={currentColor}
-        onColorChange={handleColorChange}
-        realPenMode={realPenMode}
-        onRealPenModeChange={setRealPenMode}
-        isListening={quickDictation.isListening}
-        onToggleVoice={() => {
-          if (!premium.isPremium) { requirePremium('voice_to_notes'); return; }
-          if (!quickDictation.isSupported) return;
-          if (quickDictation.isListening) quickDictation.stop(); else quickDictation.start();
-        }}
-      />
+      <React.Suspense fallback={null}>
+        <MobileStyleSheet
+          isOpen={showMobileStyleSheet}
+          onClose={() => setShowMobileStyleSheet(false)}
+          settings={settings}
+          updateSettings={updateSettings}
+          currentColor={currentColor}
+          onColorChange={handleColorChange}
+          realPenMode={realPenMode}
+          onRealPenModeChange={setRealPenMode}
+          isListening={quickDictation.isListening}
+          onToggleVoice={() => {
+            if (!premium.isPremium) { requirePremium('voice_to_notes'); return; }
+            if (!quickDictation.isSupported) return;
+            if (quickDictation.isListening) quickDictation.stop(); else quickDictation.start();
+          }}
+        />
+      </React.Suspense>
 
       {/* Quick Styles Bar (mobile) */}
       {isMobile && mobileTab === 'write' && (
@@ -1030,7 +1035,7 @@ const Index = () => {
                   <LayoutGrid className="w-5 h-5 text-primary" />
                   UI Design System
                 </h3>
-                <button onClick={() => setShowThemePicker(false)} className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted">
+                <button onClick={() => setShowThemePicker(false)} aria-label="Close theme picker" className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted">
                   ×
                 </button>
               </div>

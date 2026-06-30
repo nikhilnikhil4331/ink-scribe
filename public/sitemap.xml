@@ -8,13 +8,13 @@
     <loc>https://niknote.online/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-07-01</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/welcome</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-07-01</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/auth</loc>
@@ -25,7 +25,7 @@
     <loc>https://niknote.online/ai</loc>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-07-01</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/ai-solver</loc>
@@ -36,13 +36,13 @@
     <loc>https://niknote.online/documents</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-07-01</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <lastmod>2026-06-30</lastmod>
+    <lastmod>2026-07-01</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/blog/how-to-convert-text-to-handwriting</loc>
@@ -66,6 +66,26 @@
   </url>
   <url>
     <loc>https://niknote.online/blog/jee-neet-preparation-ai-tool</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/free-handwriting-app-indian-students</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/notion-alternative-indian-students</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/ai-flashcards-study-app-hindi</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/offline-study-app-no-internet</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

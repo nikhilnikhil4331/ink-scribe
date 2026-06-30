@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// https://vitejs.com/config/
+// https://vitejs.org/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -22,11 +22,16 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tabs'],
+          'vendor-ui-extra': ['@radix-ui/react-tooltip', '@radix-ui/react-scroll-area', '@radix-ui/react-select', '@radix-ui/react-separator', '@radix-ui/react-switch'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-motion': ['framer-motion'],
           'vendor-pdf': ['jspdf', 'html2canvas'],
           'vendor-charts': ['recharts'],
           'vendor-markdown': ['react-markdown'],
+          'vendor-form': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'vendor-date': ['date-fns', 'react-day-picker'],
+          'vendor-canvas': ['fabric'],
+          'vendor-cmdk': ['cmdk'],
         },
       },
     },
