@@ -42,6 +42,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
+import { createBlock } from '@/types/block';
 import { InlineDiagram } from '@/types/noteLine';
 import { useAutoPagination } from '@/hooks/useAutoPagination';
 import { useSpeechDictation } from '@/hooks/useSpeechDictation';
@@ -151,6 +152,23 @@ const Index = () => {
   }, [user, navigate]);
 
   useEffect(() => { setSelectedLines(new Set()); }, [currentPageIndex]);
+
+  // Reset block editor when page changes — so new page starts fresh
+  useEffect(() => {
+    const currentPageContent = currentPage.lines;
+    if (currentPageContent.length > 0 && currentPageContent.some(l => l.text.trim())) {
+      // Page has content — convert lines to blocks
+      const newBlocks = currentPageContent.filter(l => l.text.trim()).map(l => {
+        const block = createBlock('text', l.text);
+        block.color = l.color;
+        return block;
+      });
+      blockEditor.setBlocks(newBlocks.length > 0 ? newBlocks : [createBlock('text', '')]);
+    } else {
+      // Empty page — reset to single empty block
+      blockEditor.setBlocks([createBlock('text', '')]);
+    }
+  }, [currentPageIndex]);
 
   // Mobile tab handler
   const handleMobileTabChange = useCallback((tab: MobileTab) => {
