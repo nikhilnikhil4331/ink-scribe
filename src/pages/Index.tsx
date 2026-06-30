@@ -538,7 +538,7 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper)}>
+    <div className={cn("min-h-screen flex flex-col transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper, isMobile && "h-[100dvh] overflow-y-auto overflow-x-hidden", !isMobile && "h-[100dvh] overflow-hidden")}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
       <header className={cn(
@@ -724,7 +724,10 @@ const Index = () => {
         )}
 
         {/* ======== CENTER CONTENT ======== */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden gap-3">
+        <div className={cn(
+          "flex-1 flex flex-col min-w-0 gap-3",
+          isMobile ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"
+        )}>
 
           {/* Page Bar */}
           <div className={cn(
@@ -748,7 +751,7 @@ const Index = () => {
 
           {/* ---- MOBILE NOTION-STYLE INTEGRATED LAYOUT ---- */}
           {isMobile && (
-            <div className="flex-1 overflow-y-auto overscroll-contain touch-manipulation" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: '80px' }}>
+            <div className="pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
               {/* Mobile Floating Toolbar — above keyboard area */}
               <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-3 py-1.5">
                 <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
