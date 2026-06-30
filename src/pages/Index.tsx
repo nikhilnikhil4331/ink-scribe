@@ -327,9 +327,13 @@ const Index = () => {
   const handleGoToPage = useCallback((index: number) => { setPageDirection(index > currentPageIndex ? 'right' : 'left'); triggerHaptic('light'); playClick(); goToPage(index); }, [currentPageIndex, goToPage, triggerHaptic, playClick]);
 
   const handleExportPDF = useCallback(async () => {
-    const text = getPlainText();
-    if (!text.trim() && !settings.table.enabled && diagrams.length === 0) {
-      toast.error('Please add some content first');
+    // Get content from block editor
+    const blockText = blockEditor.blocks.map(b => b.content).join('\n').trim();
+    const lineText = lines.map(l => l.text).join('\n').trim();
+    const contentText = blockText || lineText;
+    
+    if (!contentText && !settings.table.enabled && diagrams.length === 0) {
+      toast.error('Pehle kuch content likho! ✍️');
       return;
     }
     
@@ -337,56 +341,124 @@ const Index = () => {
     setExportProgress(null);
     triggerHaptic('medium');
     
-    const toastId = toast.loading('Preparing PDF...');
+    const toastId = toast.loading('PDF bana raha hai...');
     
     try {
-      // FIX: Mount offscreen export container with proper dimensions
-      setExportMount(true);
+      // METHOD 1: Try using jsPDF directly with text content — works everywhere
+      const { jsPDF } = await import('jspdf');
       
-      // Wait for React to render the offscreen pages
-      await new Promise<void>(r => setTimeout(r, 500));
-      await document.fonts.ready;
-      
-      // Try to find export pages in offscreen container first
-      let elements: HTMLElement[] = [];
-      
-      if (exportContainerRef.current) {
-        const offscreenPages = exportContainerRef.current.querySelectorAll('[data-export-page="true"]');
-        elements = Array.from(offscreenPages) as HTMLElement[];
-      }
-      
-      // Fallback: Use visible preview pages
-      if (elements.length === 0) {
-        elements = previewRef.current?.getPageElements() ?? [];
-      }
-      
-      // Last fallback: Search entire document for visible export pages
-      if (elements.length === 0) {
-        const allExportPages = document.querySelectorAll('[data-export-page="true"]');
-        elements = Array.from(allExportPages).filter(el => {
-          const rect = (el as HTMLElement).getBoundingClientRect();
-          return rect.width > 50 && rect.height > 50;
-        }) as HTMLElement[];
-      }
-      
-      if (elements.length === 0) {
-        throw new Error('No pages found. Make sure the preview is visible with content.');
-      }
-      
-      toast.loading(`Creating PDF: ${elements.length} page(s)...`, { id: toastId });
-      
-      await exportToPDF(elements, 'handwritten-notes', settings.pageSize, (progress) => {
-        setExportProgress(progress);
-        toast.loading(`Creating PDF: Page ${progress.current} of ${progress.total} (${progress.percentage}%)`, { id: toastId });
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
       });
       
-      toast.success(elements.length > 1 ? `PDF with ${elements.length} pages exported! 📄` : 'PDF exported! 📄', { id: toastId });
+      // Get font setting
+      const fontFamily = settings.font || 'roman-regular';
+      const fontSize = settings.fontSize || 24;
+      const lineHeight = settings.lineSpacing || 32;
+      
+      // Set font
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(14);
+      
+      // Page dimensions
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      
+      // Get ink color
+      const inkData = LINE_INK_COLORS.find(c => c.value === currentColor);
+      const textColor = inkData?.hex || '#000000';
+      
+      // Convert hex to RGB for jsPDF
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+      };
+      
+      const rgb = hexToRgb(textColor);
+      pdf.setTextColor(rgb.r, rgb.g, rgb.b);
+      
+      // Split content into lines and paginate
+      const contentLines = contentText.split('\n');
+      let y = margin + 10;
+      let pageNum = 1;
+      
+      for (const line of contentLines) {
+        // Check if we need a new page
+        if (y > pageHeight - margin - 10) {
+          pdf.addPage();
+          y = margin + 10;
+          pageNum++;
+        }
+        
+        // Handle headings (from block content)
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('## ')) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(18);
+          const text = trimmedLine.replace(/^#+\s/, '');
+          const wrapped = pdf.splitTextToSize(text, maxWidth);
+          pdf.text(wrapped, margin, y);
+          y += wrapped.length * 8 + 4;
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(14);
+        } else if (trimmedLine.startsWith('# ')) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(22);
+          const text = trimmedLine.replace(/^#+\s/, '');
+          const wrapped = pdf.splitTextToSize(text, maxWidth);
+          pdf.text(wrapped, margin, y);
+          y += wrapped.length * 10 + 4;
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(14);
+        } else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
+          // Bullet points
+          pdf.setFontSize(13);
+          const text = trimmedLine.replace(/^[-•]\s/, '');
+          const wrapped = pdf.splitTextToSize(text, maxWidth - 8);
+          pdf.text('•', margin + 2, y);
+          pdf.text(wrapped, margin + 8, y);
+          y += wrapped.length * 6 + 2;
+        } else if (trimmedLine === '') {
+          // Empty line = spacing
+          y += 4;
+        } else {
+          // Regular text
+          pdf.setFontSize(14);
+          const wrapped = pdf.splitTextToSize(trimmedLine, maxWidth);
+          pdf.text(wrapped, margin, y);
+          y += wrapped.length * 6 + 1;
+        }
+      }
+      
+      // Add page number footer
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(9);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(`NikNote — Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      }
+      
+      // Save the PDF
+      const filename = 'niknote-notes';
+      pdf.save(`${filename}.pdf`);
+      
+      toast.success(`PDF download ho gaya! 📄 (${totalPages} page)`, { id: toastId });
       playSuccess();
       triggerHaptic('success');
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('PDF export error:', msg);
-      toast.error(`Export failed: ${msg}`, {
+      toast.error(`PDF fail: ${msg}`, {
         id: toastId,
         action: { label: 'Retry', onClick: () => handleExportPDF() }
       });
@@ -396,7 +468,7 @@ const Index = () => {
       setExportProgress(null);
       setExportMount(false);
     }
-  }, [getPlainText, settings.table.enabled, settings.pageSize, diagrams.length, triggerHaptic, playSuccess]);
+  }, [blockEditor.blocks, lines, settings, currentColor, diagrams, triggerHaptic, playSuccess]);
 
   const handleReset = useCallback(() => { resetSettings(); triggerHaptic('medium'); toast.success('Settings reset'); }, [resetSettings, triggerHaptic]);
 
@@ -477,16 +549,23 @@ const Index = () => {
       )}>
         <div className={cn("h-full flex items-center justify-between gap-2", isMobile ? "px-3" : "px-4 lg:px-5")}>
           {/* Left: toggle + logo */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20" onClick={() => setSidebarOpen(p => !p)}>
-              <PanelLeft className="w-4 h-4" />
-            </Button>
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg">✨</span>
-              <h1 className="text-lg font-bold tracking-tight select-none" style={{ fontFamily: "'Satisfy', cursive" }}>
-                <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent">Niknote</span><span className="sr-only">NikNote - AI Study App</span>
-              </h1>
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setSidebarOpen(p => !p)}
+              className={cn(
+                "flex items-center justify-center rounded-lg transition-colors",
+                isMobile ? "w-8 h-8 active:bg-gray-100" : "h-8 w-8 hover:bg-white/20"
+              )}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <PanelLeft className="w-4 h-4 text-gray-600" />
+            </button>
+            <img 
+              src="/niknote-logo.png" 
+              alt="NikNote" 
+              className={cn("select-none", isMobile ? "h-7" : "h-8")}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            />
           </div>
 
           {/* Center: Mood pills (desktop) */}
@@ -514,14 +593,6 @@ const Index = () => {
           <div className="flex items-center gap-2 flex-shrink-0">
             {isMobile ? (
               <>
-                <button
-                  onClick={() => setSidebarOpen(p => !p)}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg active:bg-gray-100 transition-colors"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <PanelLeft className="w-4 h-4 text-gray-600" />
-                </button>
-
                 <button
                   onClick={() => navigate('/ai')}
                   className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 shadow-sm active:scale-95 transition-transform"
