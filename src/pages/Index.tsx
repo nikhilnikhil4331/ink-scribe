@@ -39,7 +39,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { NoteLine, LineInkColor, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
+import { NoteLine, LineInkColor, LINE_INK_COLORS, generateLineId, getDefaultColorForLine, LineHistory } from '@/types/noteLine';
 import { createBlock } from '@/types/block';
 import { InlineDiagram } from '@/types/noteLine';
 import { useAutoPagination } from '@/hooks/useAutoPagination';

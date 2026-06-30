@@ -154,6 +154,32 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     return () => window.visualViewport?.removeEventListener('resize', handleResize);
   }, [isMobile, viewportHeight]);
 
+  // Close menus on Escape key or when clicking outside (without overlay)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSlashMenu(null);
+        setMentionMenu(null);
+        setShowInlineColor(null);
+      }
+    };
+    const handleDocClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement;
+      // Close menus only if click is outside the editor
+      if (editorRef.current && !editorRef.current.contains(target)) {
+        setSlashMenu(null);
+        setMentionMenu(null);
+        setShowInlineColor(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleDocClick);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleDocClick);
+    };
+  }, []);
+
   // Focus block
   const focusBlock = useCallback((id: string, cursorPos?: number) => {
     requestAnimationFrame(() => {
@@ -820,14 +846,6 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Click outside to close menus */}
-      {(slashMenu || mentionMenu || showInlineColor) && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => { setSlashMenu(null); setMentionMenu(null); setShowInlineColor(null); }}
-          style={{ touchAction: 'auto' }}
-        />
-      )}
     </div>
   );
 };
