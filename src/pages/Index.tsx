@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BlockEditor } from '@/components/editor/BlockEditor';
+import { NotionEditor } from '@/components/editor/NotionEditor';
 import { useBlockEditor } from '@/hooks/useBlockEditor';
 import { lazy } from 'react';
 const SmartEditor = lazy(() => import('@/components/smart-editor/SmartEditor').then(m => ({ default: m.SmartEditor })));
@@ -137,6 +138,7 @@ const Index = () => {
 
   const blockEditor = useBlockEditor();
   const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
+  const hasContent = blockEditor.blocks.some(b => b.content.trim()) || lines.some(l => l.text.trim());
 
   // Auto-trigger onboarding for new users
   useEffect(() => {
@@ -734,84 +736,139 @@ const Index = () => {
             </div>
           )}
 
-          {/* ---- DESKTOP 3-PANE CONTENT ---- */}
+          {/* ---- DESKTOP NOTION-STYLE LAYOUT ---- */}
           {!isMobile && (
-            <div className="flex-1 flex overflow-hidden min-h-0 gap-3">
-              {/* Editor pane — glass card */}
-              <div className="w-[380px] xl:w-[420px] flex-shrink-0 rounded-2xl bg-white/25 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
+            <div className="flex-1 flex overflow-hidden min-h-0 gap-0">
+              {/* MAIN CONTENT — Notion-style integrated editor + preview */}
+              <div className="flex-1 overflow-hidden flex flex-col min-w-0">
                 <ScrollArea className="flex-1">
-                  <div className="p-4">
-                    <div className={cn("rounded-xl bg-white/40 backdrop-blur-sm p-4", moodStyles.paper)}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <Edit3 className="w-4 h-4 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-sm text-foreground">Niknote</h3>
-                            <p className="text-[11px] text-muted-foreground">{lines.length} line(s) • Page {currentPageIndex + 1}/{totalPages}</p>
-                          </div>
+                  <div className="max-w-[900px] mx-auto px-6 py-4">
+                    {/* Notion-style integrated editor */}
+                    <motion.div
+                      key={currentPage.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className={cn(
+                        "rounded-2xl bg-white/60 backdrop-blur-xl border border-white/30 shadow-sm min-h-[calc(100vh-12rem)]",
+                        moodStyles.paper
+                      )}
+                    >
+                      {/* Page title area */}
+                      <div className="px-8 pt-6 pb-2">
+                        <textarea
+                          defaultValue="Untitled"
+                          className="w-full text-3xl font-bold bg-transparent border-0 outline-none resize-none text-foreground placeholder:text-muted-foreground/30"
+                          rows={1}
+                          onChange={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
+                        />
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
+                          <span>{blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words</span>
+                          <span>•</span>
+                          <span>Page {currentPageIndex + 1}/{totalPages}</span>
+                          <span>•</span>
+                          <span>{blockEditor.blocks.length} blocks</span>
                         </div>
                       </div>
-                      <AnimatePresence mode="wait" custom={pageDirection}>
-                        <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                          <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
-                        </motion.div>
-                      </AnimatePresence>
-                      <div className="mt-4">
-                        <DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} />
+
+                      {/* Integrated Notion Editor */}
+                      <div className="px-8 pb-8">
+                        <NotionEditor
+                          blocks={blockEditor.blocks}
+                          onBlocksChange={blockEditor.setBlocks}
+                          currentColor={currentColor}
+                          onColorChange={handleColorChange}
+                          onAIAction={(action) => {
+                            setShowAIWorkspace(true);
+                          }}
+                          onOCRAction={() => setShowScanPanel(true)}
+                          onExport={handleExportPDF}
+                          dna={dnaContext.dna}
+                          settings={settings}
+                          pageNumber={currentPageIndex + 1}
+                          totalPages={totalPages}
+                        />
                       </div>
 
-                    </div>
-                  </div>
-                </ScrollArea>
-              </div>
+                      {/* Handwriting preview — compact inline below editor */}
+                      {hasContent && (
+                        <div className="mx-8 mb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                              ✍️ Handwriting Preview
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="sm" onClick={handleExportPDF} disabled={isExporting} className="h-6 px-2 text-[10px] rounded-lg gap-1">
+                                <FileDown className="w-3 h-3" /> PDF
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setShowShareMenu(v => !v)} className="h-6 px-2 text-[10px] rounded-lg gap-1">
+                                <Share2 className="w-3 h-3" /> Share
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="rounded-xl bg-white/50 border border-border/20 overflow-hidden max-h-[500px] overflow-y-auto">
+                            <NotebookPreview
+                              ref={previewRef}
+                              lines={previewLines}
+                              settings={settings}
+                              realPenMode={realPenMode}
+                              pageNumber={currentPageIndex + 1}
+                              totalPages={totalPages}
+                              inlineContent={inlineContent}
+                              onUpdateContent={updateContent}
+                              onDeleteContent={removeContent}
+                              dna={dnaContext.dna}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
 
-              {/* Preview pane (center) — glass card */}
-              <div className="flex-1 overflow-hidden flex flex-col min-w-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
-                <ScrollArea className="flex-1">
-                  <div className="p-4">
-                    <div className="rounded-xl bg-white/40 backdrop-blur-sm overflow-hidden min-h-[calc(100vh-14rem)]">
-                      <AnimatePresence mode="wait" custom={pageDirection}>
-                        <motion.div
-                          key={currentPage.id}
-                          custom={pageDirection}
-                          variants={pageVariants}
-                          initial="enter"
-                          animate="center"
-                          exit="exit"
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                          drag="x"
-                          dragConstraints={{ left: 0, right: 0 }}
-                          dragElastic={0.2}
-                          onDragEnd={(_, info) => {
-                            if (info.offset.x > 80 || info.velocity.x > 400) handlePrevPage();
-                            else if (info.offset.x < -80 || info.velocity.x < -400) handleNextPage();
+                    {/* Smart suggestions below */}
+                    <div className="mt-3">
+                      <React.Suspense fallback={null}>
+                        <SmartEditor
+                          currentText={blockEditor.blocks.map(b => b.content).join('\n')}
+                          onAccept={(suggestion: EditorSuggestion) => {
+                            if (suggestion.insertText) {
+                              const lastBlock = blockEditor.blocks[blockEditor.blocks.length - 1];
+                              if (lastBlock) {
+                                blockEditor.setBlocks(
+                                  blockEditor.blocks.map(b =>
+                                    b.id === lastBlock.id
+                                      ? { ...b, content: b.content + suggestion.insertText }
+                                      : b
+                                  )
+                                );
+                              }
+                            }
+                            toast.success('💡 ' + suggestion.label);
                           }}
-                        >
-                          <NotebookPreview
-                            ref={previewRef}
-                            lines={previewLines}
-                            settings={settings}
-                            realPenMode={realPenMode}
-                            pageNumber={currentPageIndex + 1}
-                            totalPages={totalPages}
-                            inlineContent={inlineContent}
-                            onUpdateContent={updateContent}
-                            onDeleteContent={removeContent}
-                            dna={dnaContext.dna}
-                          />
-                        </motion.div>
-                      </AnimatePresence>
+                          isFocused={editorFocused}
+                        />
+                      </React.Suspense>
                     </div>
                   </div>
                 </ScrollArea>
               </div>
 
-              {/* Right: Pen Palette pane — glass card */}
-              <div className="w-[280px] xl:w-[300px] flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col">
+              {/* RIGHT SIDEBAR — Compact tools panel */}
+              <div className="w-[260px] xl:w-[280px] flex-shrink-0 border-l border-border/30 bg-white/30 backdrop-blur-xl overflow-hidden flex flex-col">
                 <ScrollArea className="flex-1">
-                  <div className="p-3">
+                  <div className="p-3 space-y-3">
+                    {/* Quick tools */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Button variant="ghost" size="sm" onClick={() => setShowAIWorkspace(true)} className="h-8 px-2.5 rounded-xl text-[10px] gap-1 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100">
+                        <Brain className="w-3 h-3 text-purple-500" /> AI Workspace
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setShowScanPanel(true)} className="h-8 px-2.5 rounded-xl text-[10px] gap-1 bg-emerald-50 border border-emerald-100">
+                        <Scan className="w-3 h-3 text-emerald-500" /> DNA Scan
+                      </Button>
+                    </div>
+
+                    {/* Pen Palette - compact */}
                     <PenPalette
                       currentColor={currentColor}
                       onColorChange={handleColorChange}
@@ -825,29 +882,29 @@ const Index = () => {
                       currentText={getPlainText()}
                       onInsertText={(text) => handlePaste(text)}
                       premiumLocked={!premium.isPremium}
-                      onPremiumTap={() => requirePremium('ai_text_tools')}
+                      onPremiumTap={() => requirePremium('handwriting_styles')}
                     />
 
-                    {/* Quick Export */}
-                    <div className="mt-3 p-3 rounded-xl bg-white/30 backdrop-blur-sm border border-white/20">
-                      <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quick Export</h4>
-                      <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs w-full bg-white/30 border-white/25 hover:bg-white/40">
-                        <FileDown className="w-3.5 h-3.5" /> Export PDF
-                      </Button>
-                    </div>
-
-                    {/* Page Controls toggle */}
-                    <div className="mt-3">
+                    {/* Page Controls */}
+                    <div>
                       <Button variant="ghost" size="sm" onClick={() => setShowControls(!showControls)} className="w-full gap-2 rounded-xl text-xs hover:bg-white/20">
-                        <Settings2 className="w-4 h-4" /> {showControls ? 'Hide' : 'Show'} Controls
+                        <Settings2 className="w-4 h-4" /> {showControls ? 'Hide' : 'Show'} Page Settings
                       </Button>
                       <AnimatePresence>
                         {showControls && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-3 overflow-hidden">
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-2 overflow-hidden">
                             <ControlPanel {...controlPanelProps} />
                           </motion.div>
                         )}
                       </AnimatePresence>
+                    </div>
+
+                    {/* Quick Export */}
+                    <div className="p-3 rounded-xl bg-white/30 border border-white/20">
+                      <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Export</h4>
+                      <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} className="gap-1.5 rounded-xl text-xs w-full bg-white/30">
+                        <FileDown className="w-3.5 h-3.5" /> {isExporting ? 'Exporting...' : 'Export PDF'}
+                      </Button>
                     </div>
                   </div>
                 </ScrollArea>
