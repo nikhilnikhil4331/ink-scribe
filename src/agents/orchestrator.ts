@@ -1150,10 +1150,9 @@ async function callAIBrain(
   // 1. Check local knowledge base first (INSTANT)
   const localMatch = findLocalKnowledge(lastMessage);
   if (localMatch) {
-    await new Promise(r => setTimeout(r, 200)); // Tiny delay for natural feel
+    await new Promise(r => setTimeout(r, 200));
     let response = localMatch.answer;
     
-    // Append extra data based on agent type
     if (localMatch.formulas && localMatch.formulas.length > 0 && agentType !== 'diagram') {
       response += `\n\n### 📐 All Related Formulas:\n`;
       localMatch.formulas.forEach(f => { response += `- \`${f}\`\n`; });
@@ -1169,8 +1168,36 @@ async function callAIBrain(
     return response;
   }
 
-  // 2. Try Supabase edge function (API-powered)
+  // 2. Try Pollinations AI — FREE, no API key needed, works instantly
   const systemPrompt = AGENT_PROMPTS[agentType];
+  try {
+    const pollinationsMessages = [
+      { role: 'system' as const, content: systemPrompt },
+      ...messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
+    ];
+
+    const response = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: pollinationsMessages,
+        model: 'openai',
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (response.ok) {
+      const text = await response.text();
+      if (text && text.length > 50 && !text.includes('error') && !text.includes('rate limit')) {
+        return text;
+      }
+    }
+  } catch (err) {
+    console.warn('Pollinations AI error (will try next):', err);
+  }
+
+  // 3. Try Supabase edge function (OpenAI-powered, needs API key)
   const formattedMessages = [
     { role: 'system' as const, content: systemPrompt },
     ...messages.map(m => ({ role: m.role, content: m.content })),
@@ -1190,10 +1217,10 @@ async function callAIBrain(
     const content = data?.content || data?.text || (typeof data === 'string' ? data : JSON.stringify(data));
     if (content && content.length > 50 && !content.includes('error')) return content;
   } catch (err) {
-    console.error(`Agent ${agentType} API error:`, err);
+    console.warn(`Supabase AI error (will use local):`, err);
   }
 
-  // 3. Dynamic response engine (works offline)
+  // 4. Dynamic response engine (always works, offline)
   return composeDynamicResponse(lastMessage, agentType);
 }
 

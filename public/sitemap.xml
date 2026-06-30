@@ -8,27 +8,24 @@
     <loc>https://niknote.online/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <lastmod>2026-06-29</lastmod>
+    <lastmod>2026-06-30</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/welcome</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2026-06-30</lastmod>
   </url>
   <url>
-    <loc>https://niknote.online/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://niknote.online/signup</loc>
+    <loc>https://niknote.online/auth</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://niknote.online/ai</loc>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
+    <lastmod>2026-06-30</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/ai-solver</loc>
@@ -38,11 +35,38 @@
   <url>
     <loc>https://niknote.online/documents</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <lastmod>2026-06-30</lastmod>
   </url>
   <url>
     <loc>https://niknote.online/blog</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2026-06-30</lastmod>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/how-to-convert-text-to-handwriting</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/ai-teacher-hindi-best-study-app</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/cbse-notes-generator-free</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/handwriting-styles-for-assignments</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/blog/jee-neet-preparation-ai-tool</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
@@ -51,12 +75,22 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://niknote.online/payment</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://niknote.online/notebooks</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://niknote.online/landing</loc>
+    <loc>https://niknote.online/qa</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://niknote.online/account</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

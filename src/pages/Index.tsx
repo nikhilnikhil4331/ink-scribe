@@ -5,6 +5,7 @@ import { BlockEditor } from '@/components/editor/BlockEditor';
 import { useBlockEditor } from '@/hooks/useBlockEditor';
 import { lazy } from 'react';
 const SmartEditor = lazy(() => import('@/components/smart-editor/SmartEditor').then(m => ({ default: m.SmartEditor })));
+const AIWorkspacePanel = lazy(() => import('@/components/ai-workspace/AIWorkspacePanel').then(m => ({ default: m.AIWorkspacePanel })));
 import type { EditorSuggestion } from '@/components/smart-editor/SmartEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { PenPalette } from '@/components/PenPalette';
@@ -29,7 +30,7 @@ import { toast } from 'sonner';
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
-  LayoutGrid, Scan
+  LayoutGrid, Scan, Brain
 } from 'lucide-react';
 import { shareAsImage, shareAsPDF } from '@/utils/share';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
@@ -92,6 +93,7 @@ const Index = () => {
   const [showStylePanel, setShowStylePanel] = useState(false);
   const [showScanPanel, setShowScanPanel] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showAIWorkspace, setShowAIWorkspace] = useState(false);
 
   // Mobile state
   const [mobileTab, setMobileTab] = useState<MobileTab>('write');
@@ -572,6 +574,17 @@ const Index = () => {
                   </button>
                 </motion.div>
 
+                {/* AI Workspace button */}
+                <motion.div whileTap={{ scale: 0.93 }} whileHover={{ scale: 1.04 }}>
+                  <button
+                    onClick={() => setShowAIWorkspace(true)}
+                    className="flex items-center gap-2 h-9 px-4 rounded-full font-semibold text-xs text-white bg-gradient-to-r from-orange-500 to-red-500 shadow-[0_0_16px_rgba(249,115,22,0.3)] hover:shadow-[0_0_24px_rgba(249,115,22,0.5)] transition-all"
+                  >
+                    <Brain className="w-4 h-4" />
+                    Workspace
+                  </button>
+                </motion.div>
+
                 {user ? <HeaderProfileButton /> : (
                   <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="gap-1.5 rounded-full h-9 px-3 hover:bg-white/20">
                     <LogIn className="w-4 h-4" />
@@ -972,6 +985,28 @@ const Index = () => {
       </AnimatePresence>
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+
+      {/* AI Workspace Panel — Agents, Knowledge, Workflows */}
+      <React.Suspense fallback={null}>
+        <AIWorkspacePanel
+          isOpen={showAIWorkspace}
+          onClose={() => setShowAIWorkspace(false)}
+          onInsertContent={(content) => {
+            // Insert AI content as new blocks
+            const lines = content.split('\n').filter(l => l.trim());
+            const newBlocks = lines.map(line => ({
+              id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              type: line.startsWith('#') ? 'heading2' : line.startsWith('-') ? 'bullet' : 'text' as any,
+              content: line.replace(/^#+\s/, '').replace(/^[-*]\s/, ''),
+              color: currentColor,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            }));
+            blockEditor.setBlocks([...blockEditor.blocks, ...newBlocks]);
+            toast.success('AI content inserted! ✍️');
+          }}
+        />
+      </React.Suspense>
     </div>
   );
 };
