@@ -1150,4 +1150,33 @@
   .notion-editor .group:hover .opacity-0 {
     opacity: 0.6 !important;
   }
+  
+  /* Ensure touch-friendly spacing in editor */
+  .notion-editor .group {
+    min-height: 48px;
+  }
+  
+  /* Larger touch targets for interactive elements in editor */
+  .notion-editor button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  
+  /* Prevent text selection issues on mobile */
+  .notion-editor {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  /* Smooth scroll for entire page on mobile */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix for mobile viewport height with keyboard */
+  .h-\[100dvh\] {
+    height: 100dvh;
+    height: -webkit-fill-available;
+  }
 }

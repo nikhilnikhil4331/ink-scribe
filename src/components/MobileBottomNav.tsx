@@ -1,14 +1,12 @@
 // ============================================================
-// NikNote 4.0 — Mobile Bottom Navigation (Notion-style)
-// Integrated editor means no separate write/preview tabs
-// Bottom nav now has: Home, Style, AI, Share, More
+// NikNote 4.0 — Mobile Bottom Navigation (Notion-style Pro)
+// Clean, minimal, touch-friendly — like Notion mobile app
 // ============================================================
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit3, Palette, Sparkles, Share2, MoreHorizontal, Scan, FileDown, Brain, Settings2 } from 'lucide-react';
+import { PenLine, Palette, Sparkles, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useHaptics } from '@/hooks/useHaptics';
 
 export type MobileTab = 'write' | 'style' | 'preview' | 'ai';
 
@@ -23,62 +21,51 @@ interface MobileBottomNavProps {
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ 
-  activeTab, onTabChange, onShare, onScan, onExport, onAIWorkspace, isExporting 
+  activeTab, onTabChange
 }) => {
-  const { triggerHaptic } = useHaptics();
-
-  const tabs: { id: MobileTab; label: string; icon: React.ReactNode; glow?: boolean; action?: () => void }[] = [
-    { id: 'write', label: 'Editor', icon: <Edit3 className="w-5 h-5" /> },
-    { id: 'style', label: 'Style', icon: <Palette className="w-5 h-5" /> },
-    { id: 'ai', label: 'AI', icon: <Sparkles className="w-5 h-5" />, glow: true, action: onAIWorkspace },
-    { id: 'preview', label: 'More', icon: <MoreHorizontal className="w-5 h-5" /> },
+  const tabs: { id: MobileTab; label: string; icon: React.ReactNode; }[] = [
+    { id: 'write', label: 'Write', icon: <PenLine className="w-[18px] h-[18px]" /> },
+    { id: 'style', label: 'Style', icon: <Palette className="w-[18px] h-[18px]" /> },
+    { id: 'ai', label: 'AI', icon: <Sparkles className="w-[18px] h-[18px]" /> },
+    { id: 'preview', label: 'More', icon: <MoreHorizontal className="w-[18px] h-[18px]" /> },
   ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-      <div className="bg-background/95 backdrop-blur-xl border-t border-border/50 px-1 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-14">
+      <div className="bg-white/90 backdrop-blur-xl border-t border-gray-200/60">
+        <div className="flex items-center justify-around h-[52px] px-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
-              <motion.button
+              <button
                 key={tab.id}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  triggerHaptic('light');
-                  if (tab.action) tab.action();
-                  onTabChange(tab.id);
-                }}
+                onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-colors duration-200 relative",
-                  isActive ? "text-primary" : "text-muted-foreground",
-                  tab.glow && !isActive && "text-amber-500"
+                  "flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-xl transition-all duration-150 relative active:scale-95",
+                  isActive ? "text-indigo-600" : "text-gray-400"
                 )}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {isActive && (
                   <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-primary/10 rounded-2xl"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                {tab.glow && (
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl"
-                    animate={{ 
-                      boxShadow: isActive 
-                        ? '0 0 12px 2px hsl(var(--primary) / 0.3)' 
-                        : '0 0 8px 1px rgba(245, 158, 11, 0.2)' 
-                    }}
-                    transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
+                    layoutId="mobileTabIndicator"
+                    className="absolute inset-0 bg-indigo-50 rounded-xl"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
                 <span className="relative z-10">{tab.icon}</span>
-                <span className="relative z-10 text-[9px] font-semibold">{tab.label}</span>
-              </motion.button>
+                <span className={cn(
+                  "relative z-10 text-[10px] font-semibold tracking-wide",
+                  isActive ? "text-indigo-600" : "text-gray-400"
+                )}>
+                  {tab.label}
+                </span>
+              </button>
             );
           })}
         </div>
+        {/* Safe area for iPhone notch */}
+        <div className="h-[env(safe-area-inset-bottom,0px)]" />
       </div>
     </div>
   );

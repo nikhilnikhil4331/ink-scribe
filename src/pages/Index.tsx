@@ -469,8 +469,13 @@ const Index = () => {
     <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper)}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
-      <header className="sticky top-0 z-50 mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14 flex-shrink-0">
-        <div className="h-full px-4 lg:px-5 flex items-center justify-between gap-2">
+      <header className={cn(
+        "sticky top-0 z-50 flex-shrink-0",
+        isMobile 
+          ? "bg-white/95 backdrop-blur-xl border-b border-gray-100 h-12" 
+          : "mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14"
+      )}>
+        <div className={cn("h-full flex items-center justify-between gap-2", isMobile ? "px-3" : "px-4 lg:px-5")}>
           {/* Left: toggle + logo */}
           <div className="flex items-center gap-2.5 flex-shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20" onClick={() => setSidebarOpen(p => !p)}>
@@ -509,40 +514,33 @@ const Index = () => {
           <div className="flex items-center gap-2 flex-shrink-0">
             {isMobile ? (
               <>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => navigate('/ai')}
-                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 shadow-[0_0_16px_rgba(127,90,240,0.4)]"
+                <button
+                  onClick={() => setSidebarOpen(p => !p)}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg active:bg-gray-100 transition-colors"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI 4.0</span>
-                </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowScanPanel(true)}
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-                >
-                  <Scan className="w-3.5 h-3.5" />
-                  <span>DNA</span>
-                </motion.button>
+                  <PanelLeft className="w-4 h-4 text-gray-600" />
+                </button>
 
                 <button
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl text-[11px] font-medium bg-white/15 backdrop-blur-sm text-foreground disabled:opacity-50"
-                  disabled={isExporting}
-                  onClick={handleExportPDF}
+                  onClick={() => navigate('/ai')}
+                  className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 shadow-sm active:scale-95 transition-transform"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <FileDown className="w-3.5 h-3.5" />
-                  <span>{isExporting ? '...' : 'PDF'}</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI</span>
                 </button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/20">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <button 
+                      className="flex items-center justify-center w-8 h-8 rounded-lg active:bg-gray-100 transition-colors"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                    </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-white/80 backdrop-blur-2xl border-white/30">
+                  <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-2xl border-gray-200 rounded-xl shadow-xl">
                     <DropdownMenuItem onClick={() => changeMood('calm')}>☀️ Calm</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('focus')}>✨ Focus</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => changeMood('dark')}>🌙 Dark</DropdownMenuItem>
@@ -638,7 +636,10 @@ const Index = () => {
       </AnimatePresence>
 
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
-      <div className="flex flex-1 overflow-hidden min-h-0 mt-2 mx-3 mb-3 gap-3">
+      <div className={cn(
+        "flex flex-1 overflow-hidden min-h-0 gap-3",
+        isMobile ? "mt-0 mx-0 mb-0" : "mt-2 mx-3 mb-3"
+      )}>
 
         {/* LEFT SIDEBAR — desktop only */}
         {!isMobile && (
@@ -655,7 +656,10 @@ const Index = () => {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden gap-3">
 
           {/* Page Bar */}
-          <div className="flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-sm px-3 py-1.5">
+          <div className={cn(
+            "flex-shrink-0 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 shadow-sm px-3 py-1.5",
+            isMobile && "rounded-none border-0 border-b border-gray-100 bg-white/95 py-1"
+          )}>
             <div className="max-w-4xl mx-auto">
               <PageBar
                 currentPage={currentPageIndex + 1}
@@ -673,107 +677,160 @@ const Index = () => {
 
           {/* ---- MOBILE NOTION-STYLE INTEGRATED LAYOUT ---- */}
           {isMobile && (
-            <div className="flex-1 overflow-y-auto pb-20 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="p-2">
-                {/* Notion-style paper card */}
-                <motion.div
-                  key={currentPage.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={cn(
-                    "rounded-2xl bg-white/70 backdrop-blur-xl border border-white/30 shadow-sm min-h-[70vh]",
-                    moodStyles.paper
-                  )}
-                >
-                  {/* Page title */}
-                  <div className="px-4 pt-4 pb-1">
-                    <textarea
-                      defaultValue="Untitled"
-                      className="w-full text-xl font-bold bg-transparent border-0 outline-none resize-none text-foreground placeholder:text-muted-foreground/30"
-                      rows={1}
-                      onChange={(e) => {
-                        e.target.style.height = 'auto';
-                        e.target.style.height = e.target.scrollHeight + 'px';
-                      }}
-                    />
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
-                      <span>{blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words</span>
-                      <span>•</span>
-                      <span>P{currentPageIndex + 1}/{totalPages}</span>
-                      <span>•</span>
-                      <span>{blockEditor.blocks.length} blocks</span>
-                      <span className="ml-auto flex items-center gap-1.5">
-                        {/* Quick action buttons */}
-                        <button onClick={() => navigate('/ai')} className="text-purple-500 hover:text-purple-700"><Sparkles className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setShowScanPanel(true)} className="text-emerald-500 hover:text-emerald-700"><Scan className="w-3.5 h-3.5" /></button>
-                        <button onClick={handleExportPDF} disabled={isExporting} className="text-blue-500 hover:text-blue-700 disabled:opacity-30"><FileDown className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setShowShareMenu(v => !v)} className="text-gray-500 hover:text-gray-700"><Share2 className="w-3.5 h-3.5" /></button>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Integrated Notion Editor — same as desktop! */}
-                  <div className="px-3 pb-4">
-                    <NotionEditor
-                      blocks={blockEditor.blocks}
-                      onBlocksChange={blockEditor.setBlocks}
-                      currentColor={currentColor}
-                      onColorChange={handleColorChange}
-                      onAIAction={() => setShowAIWorkspace(true)}
-                      onOCRAction={() => setShowScanPanel(true)}
-                      onExport={handleExportPDF}
-                      dna={dnaContext.dna}
-                      settings={settings}
-                      pageNumber={currentPageIndex + 1}
-                      totalPages={totalPages}
-                    />
-                  </div>
-
-                  {/* Handwriting preview — compact, below editor */}
-                  {hasContent && (
-                    <div className="mx-3 mb-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">✍️ Preview</span>
-                        <div className="flex items-center gap-1">
-                          <button onClick={handleExportPDF} disabled={isExporting} className="h-5 px-1.5 text-[8px] rounded-md bg-white/40 flex items-center gap-0.5">
-                            <FileDown className="w-2.5 h-2.5" /> PDF
-                          </button>
-                        </div>
-                      </div>
-                      <div className="rounded-xl bg-white/50 border border-border/20 overflow-hidden max-h-[300px] overflow-y-auto">
-                        <NotebookPreview
-                          ref={previewRef}
-                          lines={previewLines}
-                          settings={settings}
-                          realPenMode={realPenMode}
-                          pageNumber={currentPageIndex + 1}
-                          totalPages={totalPages}
-                          inlineContent={inlineContent}
-                          onUpdateContent={updateContent}
-                          onDeleteContent={removeContent}
-                          dna={dnaContext.dna}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Share menu for mobile */}
-                  {showShareMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mx-3 mb-3 bg-white/90 backdrop-blur-2xl border border-white/30 rounded-xl shadow-xl p-2 flex gap-2"
-                    >
-                      <button onClick={handleShareImage} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
-                        <Image className="w-3.5 h-3.5 text-green-600" /> Image
-                      </button>
-                      <button onClick={handleSharePDF} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
-                        <FileText className="w-3.5 h-3.5 text-blue-600" /> PDF
-                      </button>
-                    </motion.div>
-                  )}
-                </motion.div>
+            <div className="flex-1 overflow-y-auto overscroll-contain touch-manipulation" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: '80px' }}>
+              {/* Mobile Floating Toolbar — above keyboard area */}
+              <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-3 py-1.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                  <button 
+                    onClick={() => navigate('/ai')}
+                    className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 shadow-sm flex-shrink-0 active:scale-95 transition-transform"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Sparkles className="w-3 h-3" /> AI
+                  </button>
+                  <button 
+                    onClick={() => setShowScanPanel(true)}
+                    className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 flex-shrink-0 active:scale-95 transition-transform"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Scan className="w-3 h-3" /> DNA
+                  </button>
+                  <button 
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                    className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-gray-600 bg-gray-50 border border-gray-200 flex-shrink-0 active:scale-95 transition-transform disabled:opacity-40"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <FileDown className="w-3 h-3" /> PDF
+                  </button>
+                  <button 
+                    onClick={() => setShowShareMenu(v => !v)}
+                    className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-gray-600 bg-gray-50 border border-gray-200 flex-shrink-0 active:scale-95 transition-transform"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Share2 className="w-3 h-3" /> Share
+                  </button>
+                  <button 
+                    onClick={() => setShowAIWorkspace(true)}
+                    className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-orange-600 bg-orange-50 border border-orange-200 flex-shrink-0 active:scale-95 transition-transform"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Brain className="w-3 h-3" /> Workspace
+                  </button>
+                </div>
               </div>
+
+              {/* Mobile Page Title — Notion style */}
+              <div className="px-4 pt-4 pb-0">
+                <textarea
+                  defaultValue="Untitled"
+                  className="w-full text-[22px] font-bold bg-transparent border-0 outline-none resize-none text-gray-900 placeholder:text-gray-300 leading-tight"
+                  rows={1}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  onChange={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }}
+                />
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5 pb-2">
+                  <span>{blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words</span>
+                  <span className="text-gray-300">·</span>
+                  <span>Page {currentPageIndex + 1} of {totalPages}</span>
+                  <span className="text-gray-300">·</span>
+                  <span>{blockEditor.blocks.length} blocks</span>
+                </div>
+              </div>
+
+              {/* Mobile Notion Editor — Full width, clean */}
+              <div className="px-2 pb-4">
+                <NotionEditor
+                  blocks={blockEditor.blocks}
+                  onBlocksChange={blockEditor.setBlocks}
+                  currentColor={currentColor}
+                  onColorChange={handleColorChange}
+                  onAIAction={() => setShowAIWorkspace(true)}
+                  onOCRAction={() => setShowScanPanel(true)}
+                  onExport={handleExportPDF}
+                  dna={dnaContext.dna}
+                  settings={settings}
+                  pageNumber={currentPageIndex + 1}
+                  totalPages={totalPages}
+                />
+              </div>
+
+              {/* Mobile Handwriting Preview — Collapsible, clean card */}
+              {hasContent && (
+                <div className="px-3 pb-4">
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById('mobile-preview-section');
+                      if (el) el.classList.toggle('hidden');
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-t-xl bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 text-[12px] font-semibold text-violet-700 active:bg-violet-100 transition-colors"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <span className="flex items-center gap-1.5">✍️ Handwriting Preview</span>
+                    <FileDown className="w-3.5 h-3.5" />
+                  </button>
+                  <div id="mobile-preview-section" className="rounded-b-xl bg-white border border-t-0 border-gray-200 overflow-hidden shadow-sm">
+                    <div className="max-h-[350px] overflow-y-auto">
+                      <NotebookPreview
+                        ref={previewRef}
+                        lines={previewLines}
+                        settings={settings}
+                        realPenMode={realPenMode}
+                        pageNumber={currentPageIndex + 1}
+                        totalPages={totalPages}
+                        inlineContent={inlineContent}
+                        onUpdateContent={updateContent}
+                        onDeleteContent={removeContent}
+                        dna={dnaContext.dna}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Share Menu — Bottom sheet style */}
+              <AnimatePresence>
+                {showShareMenu && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[70] bg-black/30"
+                      onClick={() => setShowShareMenu(false)}
+                    />
+                    <motion.div
+                      initial={{ y: 300 }}
+                      animate={{ y: 0 }}
+                      exit={{ y: 300 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      className="fixed bottom-0 left-0 right-0 z-[71] bg-white rounded-t-2xl shadow-2xl p-5"
+                    >
+                      <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+                      <h3 className="text-sm font-bold text-gray-900 mb-3">Share Notes</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button 
+                          onClick={handleShareImage}
+                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium active:scale-95 transition-transform"
+                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                          <Image className="w-4 h-4" /> As Image
+                        </button>
+                        <button 
+                          onClick={handleSharePDF}
+                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 text-sm font-medium active:scale-95 transition-transform"
+                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                          <FileText className="w-4 h-4" /> As PDF
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
