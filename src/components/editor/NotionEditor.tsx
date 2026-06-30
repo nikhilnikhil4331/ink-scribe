@@ -6,7 +6,7 @@
 // ============================================================
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   GripVertical, Trash2, Plus, Palette, ChevronRight,
   Sparkles, Brain, FileDown, Scan, Image, FileText,
@@ -507,7 +507,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       </div>
 
       {/* Blocks */}
-      <Reorder.Group axis="y" values={blocks} onReorder={onBlocksChange} className="space-y-0">
+      <div className="space-y-0">
         {blocks.map((block, idx) => {
           const config = BLOCK_CONFIG[block.type] || BLOCK_CONFIG.text;
           const indentPx = (block.indent || 0) * 24;
@@ -519,7 +519,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
           // Divider block
           if (block.type === 'divider') {
             return (
-              <Reorder.Item key={block.id} value={block} dragListener={false}>
+              <div key={block.id}>
                 <div className="group relative flex items-center py-2 px-2">
                   <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-50 cursor-grab" />
                   <hr className="flex-1 border-t border-border/40" />
@@ -527,22 +527,27 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
-              </Reorder.Item>
+              </div>
             );
           }
 
           return (
-            <Reorder.Item key={block.id} value={block} dragListener={false}>
+            <div key={block.id}>
               <div
                 className={cn(
-                  "group relative flex items-start gap-0 rounded-lg transition-all min-h-[28px]",
-                  isFocused && "bg-muted/20"
+                  "group relative flex items-start gap-0 rounded-lg transition-all min-h-[28px] touch-manipulation",
+                  isFocused && "bg-muted/20",
+                  isMobile && "min-h-[48px] py-1"
                 )}
-                style={{ paddingLeft: indentPx }}
+                style={{ paddingLeft: indentPx, WebkitTapHighlightColor: 'transparent' }}
+                onClick={() => setFocusedBlockId(block.id)}
               >
                 {/* Drag handle + type icon */}
-                <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
-                  <div className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted/30 rounded">
+                <div className={cn(
+                  "flex items-center gap-0 transition-opacity flex-shrink-0 mt-0.5",
+                  isMobile ? "opacity-40" : "opacity-0 group-hover:opacity-100"
+                )}>
+                  <div className="p-1 rounded active:bg-muted/30">
                     <GripVertical className="w-3.5 h-3.5 text-muted-foreground/40" />
                   </div>
                 </div>
@@ -626,14 +631,20 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     onKeyDown={(e) => handleKeyDown(block.id, e)}
                     onPaste={(e) => handlePaste(block.id, e)}
                     onFocus={() => setFocusedBlockId(block.id)}
+                    onClick={() => setFocusedBlockId(block.id)}
+                    onTouchStart={() => setFocusedBlockId(block.id)}
                     placeholder={config.placeholder}
                     rows={1}
                     className={cn(
-                      "flex-1 bg-transparent border-0 outline-none resize-none py-1 px-0.5 placeholder:text-muted-foreground/30 leading-relaxed w-full overflow-hidden text-foreground",
-                      isMobile && "min-h-[44px] text-base", // Touch-friendly on mobile (prevents iOS zoom)
+                      "flex-1 bg-transparent border-0 outline-none resize-none py-2 px-1 placeholder:text-muted-foreground/30 leading-relaxed w-full overflow-hidden text-foreground touch-manipulation",
+                      isMobile && "min-h-[48px] text-[16px] py-3 px-2", // 16px prevents iOS zoom, 48px touch target
                       config.textClass
                     )}
-                    style={{ color: inkData?.hex }}
+                    style={{ color: inkData?.hex, WebkitTapHighlightColor: 'transparent' }}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
                   />
 
                   {/* Block previews */}
@@ -724,7 +735,10 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                 </div>
 
                 {/* Hover actions */}
-                <div className="flex items-center gap-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5 pr-1">
+                <div className={cn(
+                  "flex items-center gap-0 transition-opacity flex-shrink-0 mt-0.5 pr-1",
+                  isMobile ? "opacity-60" : "opacity-0 group-hover:opacity-100"
+                )}>
                   <button
                     onClick={() => setShowInlineColor(showInlineColor === block.id ? null : block.id)}
                     className="p-0.5 rounded hover:bg-muted/50"
@@ -766,10 +780,10 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                   )}
                 </AnimatePresence>
               </div>
-            </Reorder.Item>
+            </div>
           );
         })}
-      </Reorder.Group>
+      </div>
 
       {/* Add block button */}
       <button

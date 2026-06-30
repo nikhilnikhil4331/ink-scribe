@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { BlockEditor } from '@/components/editor/BlockEditor';
 import { NotionEditor } from '@/components/editor/NotionEditor';
 import { useBlockEditor } from '@/hooks/useBlockEditor';
 import { lazy } from 'react';
@@ -467,7 +466,7 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper)}>
+    <div className={cn("h-[100dvh] flex flex-col overflow-hidden transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper)}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
       <header className="sticky top-0 z-50 mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14 flex-shrink-0">
@@ -674,7 +673,7 @@ const Index = () => {
 
           {/* ---- MOBILE NOTION-STYLE INTEGRATED LAYOUT ---- */}
           {isMobile && (
-            <div className="flex-1 overflow-y-auto pb-20">
+            <div className="flex-1 overflow-y-auto pb-20 touch-manipulation" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="p-2">
                 {/* Notion-style paper card */}
                 <motion.div
