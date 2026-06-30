@@ -30,8 +30,8 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
   const [recentFonts, setRecentFonts] = useState<HandwritingFont[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_FONTS);
-      return stored ? JSON.parse(stored) : ['caveat', 'kalam', 'patrick-hand'];
-    } catch { return ['caveat', 'kalam', 'patrick-hand']; }
+      return stored ? JSON.parse(stored) : ['roman-regular', 'caveat', 'kalam'];
+    } catch { return ['roman-regular', 'caveat', 'kalam']; }
   });
 
   useEffect(() => {
@@ -57,57 +57,54 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="fixed bottom-16 left-0 right-0 z-40 lg:hidden px-3 pb-1"
+      className="fixed bottom-[56px] left-0 right-0 z-40 lg:hidden px-2 pb-1"
     >
-      <div className="h-11 bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg flex items-center px-3 gap-1.5">
-        {/* 4 Recent colors */}
+      <div className="h-10 bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-xl shadow-lg flex items-center px-2.5 gap-1.5">
         {recentColors.map((color) => {
           const ink = LINE_INK_COLORS.find(c => c.value === color);
           if (!ink) return null;
           return (
-            <motion.button
+            <button
               key={color}
-              whileTap={{ scale: 0.85 }}
               onClick={() => onColorChange(color)}
               className={cn(
-                "w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all",
-                currentColor === color ? "border-primary scale-110" : "border-transparent"
+                "w-7 h-7 rounded-full border-2 flex-shrink-0 transition-all active:scale-90",
+                currentColor === color ? "border-indigo-500 scale-110 ring-2 ring-indigo-100" : "border-transparent"
               )}
-              style={{ backgroundColor: ink.hex }}
+              style={{ backgroundColor: ink.hex, WebkitTapHighlightColor: 'transparent' }}
             />
           );
         })}
 
-        <div className="w-px h-6 bg-border/50 mx-1" />
+        <div className="w-px h-5 bg-gray-200 mx-0.5" />
 
-        {/* 3 Recent fonts */}
         {recentFonts.map((font) => {
           const fontOpt = FONT_OPTIONS.find(f => f.value === font);
           if (!fontOpt) return null;
           return (
-            <motion.button
+            <button
               key={font}
-              whileTap={{ scale: 0.95 }}
               onClick={() => onFontChange(font)}
               className={cn(
-                "px-2 py-1 rounded-lg text-[10px] font-medium truncate max-w-[60px] transition-all",
+                "px-2 py-1.5 rounded-lg text-[11px] font-medium truncate max-w-[60px] transition-all active:scale-95",
                 currentFont === font
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted/50"
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-gray-400"
               )}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <span className={fontOpt.className}>{fontOpt.label}</span>
-            </motion.button>
+            </button>
           );
         })}
 
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+        <button
           onClick={onOpenStyleSheet}
-          className="ml-auto w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0"
+          className="ml-auto w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          <Palette className="w-4 h-4 text-primary" />
-        </motion.button>
+          <Palette className="w-4 h-4 text-indigo-500" />
+        </button>
       </div>
     </motion.div>
   );

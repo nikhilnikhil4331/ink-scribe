@@ -621,15 +621,15 @@ const Index = () => {
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm"
               onClick={() => setSidebarOpen(false)}
             />
             <motion.div
-              initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
+              initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-              className="fixed left-0 top-0 bottom-0 w-[280px] z-[61]"
+              className="fixed left-0 top-0 bottom-0 w-[280px] z-[61] bg-white shadow-2xl"
             >
-              <React.Suspense fallback={<div className="w-[240px] h-full bg-white/30 animate-pulse rounded-2xl" />}><WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
+              <React.Suspense fallback={<div className="w-[240px] h-full bg-gray-50 animate-pulse" />}><WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
             </motion.div>
           </>
         )}
