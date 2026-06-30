@@ -275,17 +275,93 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     setSlashMenu(null);
   }, [slashMenu, updateBlock, addBlockAfter, focusBlock]);
 
-  // Mention select
-  const handleMentionSelect = useCallback((item: string) => {
+  // Mention select — triggers AI action and inserts formatted response
+  const [aiLoadingBlock, setAiLoadingBlock] = useState<string | null>(null);
+
+  const handleMentionSelect = useCallback(async (item: string) => {
     if (!mentionMenu) return;
     const { blockId } = mentionMenu;
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
-    const newContent = block.content.replace(/@$/, `@${item} `);
-    updateBlock(blockId, { content: newContent });
+
+    // Close menu immediately
     setMentionMenu(null);
-    focusBlock(blockId, newContent.length);
-  }, [mentionMenu, blocks, updateBlock, focusBlock]);
+
+    // AI-related mentions — trigger actual AI response
+    if (item.startsWith('ai-')) {
+      // Replace @ with loading text
+      updateBlock(blockId, { content: '⏳ AI thinking...', type: 'ai-generated' });
+      setAiLoadingBlock(blockId);
+
+      try {
+        const { aiOrchestrator } = await import('@/agents/orchestrator');
+        
+        // Map mention items to agent types
+        const agentMap: Record<string, string> = {
+          'ai-teacher': 'teacher',
+          'ai-notes': 'notes',
+          'ai-quiz': 'quiz',
+          'ai-flashcards': 'quiz',
+          'ai-revision': 'revision',
+        };
+        
+        const agentType = agentMap[item] || 'teacher';
+        
+        // Get the context from existing blocks
+        const context = blocks.filter(b => b.id !== blockId && b.content.trim())
+          .map(b => b.content).join('\n').slice(-500);
+        
+        const promptMap: Record<string, string> = {
+          'ai-teacher': context ? `Explain this topic in Hindi+English (Hinglish) with examples: ${context.slice(-200)}` : 'Koi bhi important topic samjhao Hindi+English mein, jaise Newton ke Laws ya Photosynthesis',
+          'ai-notes': context ? `Create detailed study notes in Hinglish for: ${context.slice(-200)}` : 'Create study notes for any CBSE/ICSE topic in Hinglish with headings, bullet points, formulas',
+          'ai-quiz': context ? `Generate 5 MCQ quiz questions in Hinglish about: ${context.slice(-200)}` : 'Generate 5 MCQ quiz questions in Hinglish about any science/math topic',
+          'ai-flashcards': context ? `Create 5 flashcards in Hinglish for revision: ${context.slice(-200)}` : 'Create 5 flashcards in Hinglish for any important topic',
+          'ai-revision': context ? `Quick revision notes in Hinglish with key formulas: ${context.slice(-200)}` : 'Quick revision notes in Hinglish — important formulas and key points',
+        };
+
+        const prompt = promptMap[item] || promptMap['ai-teacher'];
+        const response = await aiOrchestrator.chat(prompt, agentType as any);
+
+        if (response?.content) {
+          // Format the AI response with proper markdown rendering
+          const formattedContent = response.content
+            .replace(/^##\s/gm, '')  // Remove ## for cleaner display
+            .replace(/^###\s/gm, '') // Remove ### for cleaner display
+            .trim();
+
+          updateBlock(blockId, {
+            content: formattedContent,
+            type: 'ai-generated',
+            aiPrompt: prompt,
+            aiModel: agentType,
+          });
+          setAiLoadingBlock(null);
+
+          // Add a new empty block after AI response for continued typing
+          setTimeout(() => addBlockAfter(blockId), 100);
+        }
+      } catch (err) {
+        updateBlock(blockId, {
+          content: '⚠️ AI response failed. Try again!',
+          type: 'text',
+        });
+        setAiLoadingBlock(null);
+      }
+    } else if (item === 'date') {
+      const dateStr = new Date().toLocaleDateString('en-IN', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      });
+      updateBlock(blockId, { content: `📅 ${dateStr}` });
+      focusBlock(blockId);
+    } else if (item === 'page') {
+      updateBlock(blockId, { content: '📄 [Page link]', type: 'bookmark' });
+      focusBlock(blockId);
+    } else {
+      const newContent = block.content.replace(/@$/, item + ' ');
+      updateBlock(blockId, { content: newContent });
+      focusBlock(blockId, newContent.length);
+    }
+  }, [mentionMenu, blocks, updateBlock, focusBlock, addBlockAfter]);
 
   // Keyboard handling
   const handleKeyDown = useCallback((blockId: string, e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -390,15 +466,15 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     if (!mentionMenu) return [];
     const q = mentionMenu.query.toLowerCase();
     const items = [
-      { id: 'ai-teacher', label: '🧠 AI Teacher', desc: 'Ask AI to explain' },
-      { id: 'ai-notes', label: '📝 AI Notes', desc: 'Generate notes' },
-      { id: 'ai-quiz', label: '🎯 AI Quiz', desc: 'Create a quiz' },
-      { id: 'ai-flashcards', label: '🃏 Flashcards', desc: 'Make flashcards' },
-      { id: 'ai-revision', label: '📖 Quick Revision', desc: 'Revision sheet' },
-      { id: 'date', label: '📅 Today', desc: new Date().toLocaleDateString('en-IN') },
-      { id: 'page', label: '📄 Page Link', desc: 'Link to another page' },
+      { id: 'ai-teacher', label: '🧠 AI Guru', desc: 'Hinglish mein samjhao' },
+      { id: 'ai-notes', label: '📝 AI Notes', desc: 'Exam-ready notes banao' },
+      { id: 'ai-quiz', label: '🎯 AI Quiz', desc: 'MCQs generate karo' },
+      { id: 'ai-flashcards', label: '🃏 Flashcards', desc: 'Revision cards banao' },
+      { id: 'ai-revision', label: '📖 Quick Revision', desc: 'Revision sheet banao' },
+      { id: 'date', label: '📅 Aaj ki Date', desc: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
+      { id: 'page', label: '📄 Page Link', desc: 'Doosre page ka link' },
     ];
-    return q ? items.filter(i => i.label.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q)) : items;
+    return q ? items.filter(i => i.label.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q) || i.id.toLowerCase().includes(q)) : items;
   }, [mentionMenu]);
 
   // Has content check
@@ -591,9 +667,58 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     </div>
                   )}
                   {block.type === 'ai-generated' && block.content && (
-                    <div className="mt-1 p-2 rounded-lg bg-gradient-to-r from-purple-50/50 to-indigo-50/50 border border-purple-100">
-                      <div className="flex items-center gap-1 text-[10px] text-purple-600"><span>✨</span><span className="font-medium">AI Generated</span></div>
-                      <p className="text-[10px] text-purple-800 mt-0.5">{block.content}</p>
+                    <div className="mt-1 p-3 rounded-xl bg-gradient-to-r from-purple-50/80 to-indigo-50/80 border border-purple-200/50">
+                      <div className="flex items-center gap-1.5 text-[10px] text-purple-700 mb-2">
+                        <span className="w-4 h-4 rounded-md bg-purple-500 flex items-center justify-center text-white text-[8px]">
+                          {aiLoadingBlock === block.id ? '⏳' : '✨'}
+                        </span>
+                        <span className="font-semibold">AI Generated</span>
+                        {block.aiModel && <span className="text-purple-400">• {block.aiModel}</span>}
+                        <button 
+                          onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copied! 📋'); }}
+                          className="ml-auto text-purple-400 hover:text-purple-600"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap ai-formatted">
+                        {block.content.split('\n').map((line, i) => {
+                          // Bold: **text**
+                          if (line.startsWith('**') && line.endsWith('**')) {
+                            return <p key={i} className="font-bold text-sm mt-1">{line.replace(/\*\*/g, '')}</p>;
+                          }
+                          // Headers: lines starting with #
+                          if (line.startsWith('### ')) {
+                            return <h4 key={i} className="font-bold text-sm mt-2 text-gray-900">{line.replace(/^###\s/, '')}</h4>;
+                          }
+                          if (line.startsWith('## ')) {
+                            return <h3 key={i} className="font-bold text-sm mt-2 text-gray-900">{line.replace(/^##\s/, '')}</h3>;
+                          }
+                          // Bullet points: - text
+                          if (line.startsWith('- **') || line.startsWith('- ')) {
+                            const text = line.replace(/^[-•]\s/, '');
+                            const parts = text.split(/\*\*/);
+                            return (
+                              <div key={i} className="flex gap-1.5 ml-1 mt-0.5">
+                                <span className="text-purple-400 flex-shrink-0">•</span>
+                                <span>
+                                  {parts.map((part, pi) => 
+                                    pi % 2 === 1 ? <strong key={pi}>{part}</strong> : <span key={pi}>{part}</span>
+                                  )}
+                                </span>
+                              </div>
+                            );
+                          }
+                          // Numbered lists: 1. text
+                          if (/^\d+\.\s/.test(line)) {
+                            return <p key={i} className="ml-3 mt-0.5">{line}</p>;
+                          }
+                          // Empty lines
+                          if (!line.trim()) return <div key={i} className="h-1" />;
+                          // Regular text
+                          return <p key={i} className="mt-0.5">{line}</p>;
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

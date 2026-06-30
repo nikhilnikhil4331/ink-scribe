@@ -672,83 +672,108 @@ const Index = () => {
             </div>
           </div>
 
-          {/* ---- MOBILE CONTENT ---- */}
+          {/* ---- MOBILE NOTION-STYLE INTEGRATED LAYOUT ---- */}
           {isMobile && (
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-3 pb-20">
-                <AnimatePresence mode="wait">
-                  {mobileTab === 'write' && (
-                    <motion.div key="write" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-                      <div className={cn("rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl p-3 shadow-sm", moodStyles.paper)}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Edit3 className="w-3.5 h-3.5 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-sm">Niknote</h3>
-                              <p className="text-[10px] text-muted-foreground">
-                                {blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words • {blockEditor.blocks.length} blocks • Page {currentPageIndex + 1}/{totalPages}
-                              </p>
-                            </div>
-                          </div>
-                          <React.Suspense fallback={null}><DiagramToolbar onAddDiagram={handleAddInlineDiagram} onAddImage={handleImageUpload} /></React.Suspense>
-                        </div>
-                        <AnimatePresence mode="wait" custom={pageDirection}>
-                          <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                            <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
-                            {/* Smart Editor Suggestions */}
-                            <React.Suspense fallback={null}>
-                            <SmartEditor
-                              currentText={blockEditor.blocks.map(b => b.content).join('\n')}
-                              onAccept={(suggestion: EditorSuggestion) => {
-                                if (suggestion.insertText) {
-                                  const lastBlock = blockEditor.blocks[blockEditor.blocks.length - 1];
-                                  if (lastBlock) {
-                                    blockEditor.setBlocks(
-                                      blockEditor.blocks.map(b =>
-                                        b.id === lastBlock.id
-                                          ? { ...b, content: b.content + suggestion.insertText }
-                                          : b
-                                      )
-                                    );
-                                  }
-                                }
-                                toast.success('💡 ' + suggestion.label);
-                              }}
-                              isFocused={editorFocused}
-                            />
-                            </React.Suspense>
-                          </motion.div>
-                        </AnimatePresence>
-                      </div>
-                    </motion.div>
+            <div className="flex-1 overflow-y-auto pb-20">
+              <div className="p-2">
+                {/* Notion-style paper card */}
+                <motion.div
+                  key={currentPage.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={cn(
+                    "rounded-2xl bg-white/70 backdrop-blur-xl border border-white/30 shadow-sm min-h-[70vh]",
+                    moodStyles.paper
                   )}
-                  {mobileTab === 'preview' && (
-                    <motion.div key="preview" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-                      <div className="rounded-2xl border border-white/25 bg-white/30 backdrop-blur-xl shadow-sm overflow-hidden min-h-[70vh] relative">
-                        <AnimatePresence mode="wait" custom={pageDirection}>
-                          <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-                            <NotebookPreview ref={previewRef} lines={previewLines} settings={settings} realPenMode={realPenMode} pageNumber={currentPageIndex + 1} totalPages={totalPages} inlineContent={inlineContent} onUpdateContent={updateContent} onDeleteContent={removeContent} dna={dnaContext.dna} />
-                          </motion.div>
-                        </AnimatePresence>
-                        <div className="absolute bottom-3 right-3 z-10">
-                          <div className="relative">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowShareMenu(v => !v)} disabled={isSharing} aria-label="Share options" className="h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-white/30 backdrop-blur-sm text-foreground border border-white/25 shadow-md disabled:opacity-50">
-                              <Share2 className="w-3.5 h-3.5" /> Share
-                            </motion.button>
-                            {showShareMenu && (
-                              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="absolute bottom-12 right-0 bg-white/80 backdrop-blur-2xl border border-white/30 rounded-xl shadow-xl p-1 min-w-[140px] z-50">
-                                <button onClick={handleShareImage} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><Image className="w-3.5 h-3.5 text-muted-foreground" /> As Image</button>
-                                <button onClick={handleSharePDF} className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg hover:bg-white/40 transition-colors text-foreground"><FileText className="w-3.5 h-3.5 text-muted-foreground" /> As PDF</button>
-                              </motion.div>
-                            )}
-                          </div>
+                >
+                  {/* Page title */}
+                  <div className="px-4 pt-4 pb-1">
+                    <textarea
+                      defaultValue="Untitled"
+                      className="w-full text-xl font-bold bg-transparent border-0 outline-none resize-none text-foreground placeholder:text-muted-foreground/30"
+                      rows={1}
+                      onChange={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                    />
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+                      <span>{blockEditor.blocks.reduce((t, b) => t + b.content.trim().split(/\s+/).filter(Boolean).length, 0)} words</span>
+                      <span>•</span>
+                      <span>P{currentPageIndex + 1}/{totalPages}</span>
+                      <span>•</span>
+                      <span>{blockEditor.blocks.length} blocks</span>
+                      <span className="ml-auto flex items-center gap-1.5">
+                        {/* Quick action buttons */}
+                        <button onClick={() => navigate('/ai')} className="text-purple-500 hover:text-purple-700"><Sparkles className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setShowScanPanel(true)} className="text-emerald-500 hover:text-emerald-700"><Scan className="w-3.5 h-3.5" /></button>
+                        <button onClick={handleExportPDF} disabled={isExporting} className="text-blue-500 hover:text-blue-700 disabled:opacity-30"><FileDown className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setShowShareMenu(v => !v)} className="text-gray-500 hover:text-gray-700"><Share2 className="w-3.5 h-3.5" /></button>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Integrated Notion Editor — same as desktop! */}
+                  <div className="px-3 pb-4">
+                    <NotionEditor
+                      blocks={blockEditor.blocks}
+                      onBlocksChange={blockEditor.setBlocks}
+                      currentColor={currentColor}
+                      onColorChange={handleColorChange}
+                      onAIAction={() => setShowAIWorkspace(true)}
+                      onOCRAction={() => setShowScanPanel(true)}
+                      onExport={handleExportPDF}
+                      dna={dnaContext.dna}
+                      settings={settings}
+                      pageNumber={currentPageIndex + 1}
+                      totalPages={totalPages}
+                    />
+                  </div>
+
+                  {/* Handwriting preview — compact, below editor */}
+                  {hasContent && (
+                    <div className="mx-3 mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">✍️ Preview</span>
+                        <div className="flex items-center gap-1">
+                          <button onClick={handleExportPDF} disabled={isExporting} className="h-5 px-1.5 text-[8px] rounded-md bg-white/40 flex items-center gap-0.5">
+                            <FileDown className="w-2.5 h-2.5" /> PDF
+                          </button>
                         </div>
                       </div>
+                      <div className="rounded-xl bg-white/50 border border-border/20 overflow-hidden max-h-[300px] overflow-y-auto">
+                        <NotebookPreview
+                          ref={previewRef}
+                          lines={previewLines}
+                          settings={settings}
+                          realPenMode={realPenMode}
+                          pageNumber={currentPageIndex + 1}
+                          totalPages={totalPages}
+                          inlineContent={inlineContent}
+                          onUpdateContent={updateContent}
+                          onDeleteContent={removeContent}
+                          dna={dnaContext.dna}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Share menu for mobile */}
+                  {showShareMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mx-3 mb-3 bg-white/90 backdrop-blur-2xl border border-white/30 rounded-xl shadow-xl p-2 flex gap-2"
+                    >
+                      <button onClick={handleShareImage} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                        <Image className="w-3.5 h-3.5 text-green-600" /> Image
+                      </button>
+                      <button onClick={handleSharePDF} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <FileText className="w-3.5 h-3.5 text-blue-600" /> PDF
+                      </button>
                     </motion.div>
                   )}
-                </AnimatePresence>
+                </motion.div>
               </div>
             </div>
           )}

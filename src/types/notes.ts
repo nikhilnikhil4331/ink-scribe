@@ -15,6 +15,9 @@ export type HandwritingFont =
   | 'nothing-you-could-do'
   | 'cedarville-cursive'
   | 'la-belle-aurore'
+  | 'roman-regular'
+  | 'roman-serif'
+  | 'roman-mono'
   | 'custom';
 
 export type PageStyle = 
@@ -108,7 +111,7 @@ export interface NoteSettings {
 }
 
 export const DEFAULT_SETTINGS: NoteSettings = {
-  font: 'caveat',
+  font: 'roman-regular',
   fontSize: 24,
   lineSpacing: 32,
   wordSpacing: 4,
@@ -162,6 +165,10 @@ export const FONT_OPTIONS: { value: HandwritingFont; label: string; className: s
   { value: 'nothing-you-could-do', label: 'Nothing You Could Do', className: 'font-handwriting-14', category: 'Cursive' },
   { value: 'cedarville-cursive', label: 'Cedarville Cursive', className: 'font-handwriting-15', category: 'Cursive' },
   { value: 'la-belle-aurore', label: 'La Belle Aurore', className: 'font-handwriting-16', category: 'Cursive' },
+  // Roman (Latin) — Clean typed look
+  { value: 'roman-regular', label: 'Roman Regular', className: 'font-roman-regular', category: 'Roman' },
+  { value: 'roman-serif', label: 'Roman Serif', className: 'font-roman-serif', category: 'Roman' },
+  { value: 'roman-mono', label: 'Roman Mono', className: 'font-roman-mono', category: 'Roman' },
   // Custom
   { value: 'custom', label: 'Custom Style', className: 'font-custom-handwriting', category: 'AI Generated' },
 ];

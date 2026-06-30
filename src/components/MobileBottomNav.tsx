@@ -1,6 +1,12 @@
+// ============================================================
+// NikNote 4.0 — Mobile Bottom Navigation (Notion-style)
+// Integrated editor means no separate write/preview tabs
+// Bottom nav now has: Home, Style, AI, Share, More
+// ============================================================
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit3, Palette, Eye, Sparkles } from 'lucide-react';
+import { Edit3, Palette, Sparkles, Share2, MoreHorizontal, Scan, FileDown, Brain, Settings2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHaptics } from '@/hooks/useHaptics';
 
@@ -9,34 +15,42 @@ export type MobileTab = 'write' | 'style' | 'preview' | 'ai';
 interface MobileBottomNavProps {
   activeTab: MobileTab;
   onTabChange: (tab: MobileTab) => void;
+  onShare?: () => void;
+  onScan?: () => void;
+  onExport?: () => void;
+  onAIWorkspace?: () => void;
+  isExporting?: boolean;
 }
 
-const tabs: { id: MobileTab; label: string; icon: React.ReactNode; glow?: boolean }[] = [
-  { id: 'write', label: 'Write', icon: <Edit3 className="w-5 h-5" /> },
-  { id: 'style', label: 'Style', icon: <Palette className="w-5 h-5" /> },
-  { id: 'preview', label: 'Preview', icon: <Eye className="w-5 h-5" /> },
-  { id: 'ai', label: 'AI', icon: <Sparkles className="w-5 h-5" />, glow: true },
-];
-
-export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ activeTab, onTabChange }) => {
+export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ 
+  activeTab, onTabChange, onShare, onScan, onExport, onAIWorkspace, isExporting 
+}) => {
   const { triggerHaptic } = useHaptics();
+
+  const tabs: { id: MobileTab; label: string; icon: React.ReactNode; glow?: boolean; action?: () => void }[] = [
+    { id: 'write', label: 'Editor', icon: <Edit3 className="w-5 h-5" /> },
+    { id: 'style', label: 'Style', icon: <Palette className="w-5 h-5" /> },
+    { id: 'ai', label: 'AI', icon: <Sparkles className="w-5 h-5" />, glow: true, action: onAIWorkspace },
+    { id: 'preview', label: 'More', icon: <MoreHorizontal className="w-5 h-5" /> },
+  ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       <div className="bg-background/95 backdrop-blur-xl border-t border-border/50 px-1 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-16">
+        <div className="flex items-center justify-around h-14">
           {tabs.map((tab) => {
-            const isActive = activeTab === tab.id || (tab.id === 'style' && false);
+            const isActive = activeTab === tab.id;
             return (
               <motion.button
                 key={tab.id}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => {
                   triggerHaptic('light');
+                  if (tab.action) tab.action();
                   onTabChange(tab.id);
                 }}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-colors duration-200 relative",
+                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-colors duration-200 relative",
                   isActive ? "text-primary" : "text-muted-foreground",
                   tab.glow && !isActive && "text-amber-500"
                 )}
@@ -60,7 +74,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ activeTab, onT
                   />
                 )}
                 <span className="relative z-10">{tab.icon}</span>
-                <span className="relative z-10 text-[10px] font-semibold">{tab.label}</span>
+                <span className="relative z-10 text-[9px] font-semibold">{tab.label}</span>
               </motion.button>
             );
           })}
