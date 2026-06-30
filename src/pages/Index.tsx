@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BlockEditor } from '@/components/editor/BlockEditor';
 import { useBlockEditor } from '@/hooks/useBlockEditor';
-import { SmartEditor, EditorSuggestion } from '@/components/smart-editor/SmartEditor';
+import { lazy } from 'react';
+const SmartEditor = lazy(() => import('@/components/smart-editor/SmartEditor').then(m => ({ default: m.SmartEditor })));
+import type { EditorSuggestion } from '@/components/smart-editor/SmartEditor';
 import { NotebookPreview, NotebookPreviewHandle } from '@/components/NotebookPreview';
 import { PenPalette } from '@/components/PenPalette';
 import { ControlPanel } from '@/components/ControlPanel';
@@ -432,7 +434,7 @@ const Index = () => {
     settings, updateSettings, updateMargins, updateHeaderFooter, tableData,
     onTableDataChange: updateTableData, diagrams, onAddDiagram: addDiagram,
     onRemoveDiagram: removeDiagram, onUpdateDiagram: updateDiagram,
-    premiumLocked: !premium.isPremium, onPremiumTap: () => requirePremium('ai_style_matcher'),
+    premiumLocked: !premium.isPremium, onPremiumTap: () => requirePremium('handwriting_styles'),
     onImportText: handleImportText
   };
 
@@ -664,6 +666,7 @@ const Index = () => {
                           <motion.div key={currentPage.id} custom={pageDirection} variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
                             <BlockEditor blocks={blockEditor.blocks} onBlocksChange={blockEditor.setBlocks} currentColor={currentColor} onColorChange={handleColorChange} />
                             {/* Smart Editor Suggestions */}
+                            <React.Suspense fallback={null}>
                             <SmartEditor
                               currentText={blockEditor.blocks.map(b => b.content).join('\n')}
                               onAccept={(suggestion: EditorSuggestion) => {
@@ -683,6 +686,7 @@ const Index = () => {
                               }}
                               isFocused={editorFocused}
                             />
+                            </React.Suspense>
                           </motion.div>
                         </AnimatePresence>
                       </div>
@@ -808,7 +812,7 @@ const Index = () => {
                       currentText={getPlainText()}
                       onInsertText={(text) => handlePaste(text)}
                       premiumLocked={!premium.isPremium}
-                      onPremiumTap={() => requirePremium('ai_writing')}
+                      onPremiumTap={() => requirePremium('ai_text_tools')}
                     />
 
                     {/* Quick Export */}
@@ -843,7 +847,7 @@ const Index = () => {
 
       {/* ============ MOBILE PANELS ============ */}
       <SlidePanel isOpen={showPenPanel} onClose={() => setShowPenPanel(false)} title="Pen Palette" icon={<Palette className="w-4 h-4 text-primary" />} side="right">
-        <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={(text) => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_writing')} />
+        <PenPalette currentColor={currentColor} onColorChange={handleColorChange} selectedCount={selectedLines.size} onUndo={handleUndo} onRedo={handleRedo} canUndo={firstSelectedLineId ? canUndo(firstSelectedLineId) : false} canRedo={firstSelectedLineId ? canRedo(firstSelectedLineId) : false} realPenMode={realPenMode} onRealPenModeChange={setRealPenMode} currentText={getPlainText()} onInsertText={(text) => handlePaste(text)} premiumLocked={!premium.isPremium} onPremiumTap={() => requirePremium('ai_text_tools')} />
       </SlidePanel>
 
       <SlidePanel isOpen={showStylePanel} onClose={() => setShowStylePanel(false)} title="Page Style" icon={<Settings2 className="w-4 h-4 text-primary" />} side="right">
@@ -882,7 +886,7 @@ const Index = () => {
         onRealPenModeChange={setRealPenMode}
         isListening={quickDictation.isListening}
         onToggleVoice={() => {
-          if (!premium.isPremium) { requirePremium('voice_dictation'); return; }
+          if (!premium.isPremium) { requirePremium('voice_to_notes'); return; }
           if (!quickDictation.isSupported) return;
           if (quickDictation.isListening) quickDictation.stop(); else quickDictation.start();
         }}

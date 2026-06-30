@@ -576,7 +576,7 @@ export default function AccountPage() {
                   <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="underline">Google Cloud Console</a></li>
                   <li>Create Project → OAuth Consent Screen → External → Publish</li>
                   <li>Credentials → Create OAuth Client ID → Web Application</li>
-                  <li>Authorized redirect: <code className="bg-blue-100 px-1 rounded">https://ievggapvfidhygkhtkug.supabase.co/auth/v1/callback</code></li>
+                  <li>Authorized redirect: <code className="bg-blue-100 px-1 rounded">https://atuxocibsmflgwlwuvm.supabase.co/auth/v1/callback</code></li>
                   <li>Copy Client ID → Paste here → Save ✅</li>
                 </ol>
               </div>

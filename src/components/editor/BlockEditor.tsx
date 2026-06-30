@@ -110,11 +110,55 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
   const handleSlashSelect = useCallback((type: BlockType) => {
     if (!slashMenu) return;
     const { blockId } = slashMenu;
+
+    // Template content for each block type — instant working templates
+    const templates: Partial<Record<BlockType, { content: string; extra?: Partial<Block> }>> = {
+      text: { content: '' },
+      heading1: { content: 'Heading 1' },
+      heading2: { content: 'Heading 2' },
+      heading3: { content: 'Heading 3' },
+      bullet: { content: '' },
+      numbered: { content: '' },
+      todo: { content: '', extra: { checked: false } },
+      quote: { content: 'Enter your quote here...' },
+      callout: { content: 'Important note', extra: { emoji: '💡' } },
+      divider: { content: '' },
+      code: { content: '// Your code here\nconsole.log("Hello, NikNote!");', extra: { language: 'javascript' } },
+      toggle: { content: 'Click to expand', extra: { collapsed: true } },
+      equation: { content: 'E = mc^2' },
+      image: { content: '', extra: { url: '', caption: 'Add image description' } },
+      bookmark: { content: 'NikNote — AI Study App', extra: { url: 'https://niknote.online' } },
+      video: { content: '', extra: { url: '', caption: '' } },
+      audio: { content: '', extra: { url: '', caption: '' } },
+      embed: { content: '', extra: { url: '' } },
+      pdf: { content: '', extra: { url: '' } },
+      file: { content: '', extra: { url: '' } },
+      table: { content: '', extra: { tableData: { headers: ['Column 1', 'Column 2', 'Column 3'], rows: [['', '', ''], ['', '', '']], colCount: 3 } } },
+      column: { content: '' },
+      'ai-generated': { content: '✨ AI will generate content here...' },
+      mermaid: { content: 'graph TD\n  A[Start] --> B[Process]\n  B --> C[End]' },
+      synced: { content: '', extra: { syncId: `sync-${Date.now()}` } },
+      breadcrumb: { content: 'Home > Notes > Topic' },
+      'table_of_contents': { content: '📋 Table of Contents (Auto-generated)' },
+      mention: { content: '@user' },
+      comment: { content: '💬 Add a comment...' },
+    };
+
     if (type === 'divider') {
       updateBlock(blockId, { type: 'divider', content: '' });
       addBlockAfter(blockId);
     } else {
-      updateBlock(blockId, { type, content: '' });
+      const template = templates[type];
+      const updates: Partial<Block> = {
+        type,
+        content: template?.content || '',
+        ...template?.extra,
+      };
+      updateBlock(blockId, updates);
+      // For blocks that need a new block after (like image, bookmark)
+      if (['image', 'bookmark', 'video', 'audio', 'embed', 'pdf', 'divider', 'table', 'equation'].includes(type)) {
+        setTimeout(() => addBlockAfter(blockId, 'text', ''), 50);
+      }
       focusBlock(blockId, 0);
     }
     setSlashMenu(null);
@@ -410,24 +454,44 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
           </AnimatePresence>
 
           <textarea
-            ref={setRef}
+            ref={(el) => {
+              setRef(el);
+              if (el) {
+                // Auto-resize textarea to fit content
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+              }
+            }}
             value={block.content}
-            onChange={(e) => onTextChange(e.target.value)}
+            onChange={(e) => {
+              onTextChange(e.target.value);
+              // Auto-resize on change
+              const target = e.target;
+              target.style.height = 'auto';
+              target.style.height = target.scrollHeight + 'px';
+            }}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
             onFocus={onFocus}
             placeholder={getPlaceholder(block.type)}
             rows={1}
             className={cn(
-              "flex-1 bg-transparent border-0 outline-none resize-none py-1.5 px-1 placeholder:text-muted-foreground/40 leading-relaxed w-full",
+              "flex-1 bg-transparent border-0 outline-none resize-none py-1.5 px-1 placeholder:text-muted-foreground/40 leading-relaxed w-full overflow-hidden",
               getBlockTextClass(block.type)
             )}
           />
 
-          {/* Special block previews */}
-          {block.type === 'image' && block.url && (
+          {/* Special block previews — ALL types */}
+          {block.type === 'image' && (block.url || block.content) && (
             <div className="mt-1 rounded-lg overflow-hidden border border-border/30 max-w-md">
-              <img src={block.url} alt={block.caption || ''} className="w-full object-cover max-h-48" />
+              {block.url ? (
+                <img src={block.url} alt={block.caption || ''} className="w-full object-cover max-h-48" />
+              ) : (
+                <div className="p-4 text-center bg-muted/20">
+                  <span className="text-2xl">🖼️</span>
+                  <p className="text-xs text-muted-foreground mt-1">Paste image URL in the text field</p>
+                </div>
+              )}
               {block.caption && (
                 <div className="px-2 py-1 text-[10px] text-muted-foreground bg-muted/20">{block.caption}</div>
               )}
@@ -435,13 +499,90 @@ const BlockContainer: React.FC<BlockContainerProps> = ({
           )}
           {block.type === 'equation' && block.content && (
             <div className="mt-1 p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 font-mono text-sm text-indigo-800">
-              {block.content}
+              ∑ {block.content}
             </div>
           )}
-          {block.type === 'bookmark' && block.url && (
+          {block.type === 'bookmark' && (block.url || block.content) && (
             <div className="mt-1 p-2 rounded-lg border border-border/30 bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer max-w-md">
-              <div className="text-xs font-medium text-primary truncate">{block.content || block.url}</div>
-              <div className="text-[10px] text-muted-foreground truncate">{block.url}</div>
+              <div className="text-xs font-medium text-primary truncate">{block.content || 'Bookmark'}</div>
+              {block.url && <div className="text-[10px] text-muted-foreground truncate">🔗 {block.url}</div>}
+              {!block.url && <div className="text-[10px] text-muted-foreground">Paste URL in the text field</div>}
+            </div>
+          )}
+          {block.type === 'code' && block.content && (
+            <div className="mt-1 p-3 rounded-lg bg-slate-900 text-green-400 font-mono text-xs max-w-lg overflow-x-auto">
+              <div className="flex items-center gap-1 mb-1 text-slate-500">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="ml-2 text-[10px]">{block.language || 'code'}</span>
+              </div>
+              <pre className="whitespace-pre-wrap">{block.content}</pre>
+            </div>
+          )}
+          {block.type === 'table' && block.tableData && (
+            <div className="mt-1 rounded-lg border border-border/30 overflow-hidden max-w-lg">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-muted/30">
+                    {block.tableData.headers.map((h, i) => (
+                      <th key={i} className="px-2 py-1 text-left font-medium border-r border-border/20 last:border-r-0">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.tableData.rows.map((row, i) => (
+                    <tr key={i} className="border-t border-border/20">
+                      {row.map((cell, j) => (
+                        <td key={j} className="px-2 py-1 border-r border-border/20 last:border-r-0">{cell.content}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {block.type === 'mermaid' && block.content && (
+            <div className="mt-1 p-3 rounded-lg bg-teal-50/50 border border-teal-100 font-mono text-[11px] text-teal-800">
+              📊 {block.content.split('\n')[0]}
+              {block.content.split('\n').length > 1 && <span className="text-teal-500 ml-1">({block.content.split('\n').length} lines)</span>}
+            </div>
+          )}
+          {block.type === 'video' && (
+            <div className="mt-1 p-4 rounded-lg border border-border/30 bg-muted/10 text-center max-w-md">
+              <span className="text-2xl">🎥</span>
+              <p className="text-xs text-muted-foreground mt-1">Video embed — paste URL</p>
+            </div>
+          )}
+          {block.type === 'audio' && (
+            <div className="mt-1 p-3 rounded-lg border border-border/30 bg-muted/10 text-center max-w-md">
+              <span className="text-2xl">🎵</span>
+              <p className="text-xs text-muted-foreground mt-1">Audio embed — paste URL</p>
+            </div>
+          )}
+          {block.type === 'ai-generated' && (
+            <div className="mt-1 p-3 rounded-lg bg-gradient-to-r from-purple-50/50 to-indigo-50/50 border border-purple-100">
+              <div className="flex items-center gap-1.5 text-xs text-purple-600">
+                <span>✨</span>
+                <span className="font-medium">AI Generated</span>
+              </div>
+              {block.content && <p className="text-xs text-purple-800 mt-1">{block.content}</p>}
+            </div>
+          )}
+          {block.type === 'pdf' && (
+            <div className="mt-1 p-3 rounded-lg border border-border/30 bg-red-50/50 text-center max-w-md">
+              <span className="text-2xl">📄</span>
+              <p className="text-xs text-muted-foreground mt-1">PDF embed — paste URL</p>
+            </div>
+          )}
+          {block.type === 'table_of_contents' && (
+            <div className="mt-1 p-2 rounded-lg bg-muted/20 border border-border/30">
+              <span className="text-xs font-medium text-muted-foreground">📋 Table of Contents</span>
+            </div>
+          )}
+          {block.type === 'synced' && (
+            <div className="mt-1 p-2 rounded-lg bg-blue-50/50 border border-blue-100">
+              <span className="text-xs text-blue-600">🔄 Synced Block</span>
             </div>
           )}
 
