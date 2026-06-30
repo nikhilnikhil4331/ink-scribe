@@ -1098,3 +1098,56 @@
 .glass-mode .ink-red { color: hsl(0 84% 65%) !important; }
 .glass-mode .ink-green { color: hsl(142 65% 55%) !important; }
 .glass-mode .ink-purple { color: hsl(262 75% 65%) !important; }
+
+
+/* ============================================================
+   Mobile Touch & Input Fixes
+   ============================================================ */
+
+/* Prevent 300ms tap delay globally */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS safe area support */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch scrolling */
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Prevent pull-to-refresh */
+  html, body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Notion editor mobile optimizations */
+@media (max-width: 768px) {
+  .notion-editor textarea {
+    caret-color: #6366f1;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  .notion-editor .group:hover .opacity-0 {
+    opacity: 0.6 !important;
+  }
+}
