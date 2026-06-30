@@ -708,8 +708,8 @@ const Index = () => {
 
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
       <div className={cn(
-        "flex flex-1 overflow-hidden min-h-0 gap-3",
-        isMobile ? "mt-0 mx-0 mb-0" : "mt-2 mx-3 mb-3"
+        "flex flex-1 min-h-0 gap-3",
+        isMobile ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"
       )}>
 
         {/* LEFT SIDEBAR — desktop only */}
