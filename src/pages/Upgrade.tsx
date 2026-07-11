@@ -2,8 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Crown, CheckCircle2, Sparkles, Shield, Zap,
-  CreditCard, Star, TrendingUp, Brain, BookOpen, Target,
-  Gift, Flame, Users
+  CreditCard, Star, Brain, BookOpen, Flame, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +15,8 @@ const plans = [
     price: 49,
     period: '/week',
     icon: Zap,
-    features: ['All AI features', 'All handwriting styles', 'PDF export', 'Voice dictation'],
+    badge: 'Try First',
+    features: ['All AI features', '16+ handwriting styles', 'PDF export', 'Voice dictation'],
   },
   {
     code: 'monthly',
@@ -25,37 +25,20 @@ const plans = [
     period: '/month',
     icon: Star,
     popular: true,
-    features: ['Everything in Student Pro', 'Priority AI responses', 'Exam pack discounts', 'Early access to features'],
-  },
-  {
-    code: 'annual',
-    label: 'Annual Premium',
-    price: 499,
-    period: '/year',
-    icon: TrendingUp,
-    savings: 'Save 58%',
-    features: ['Everything in Premium', 'Just ₹41.6/month', 'All exam packs FREE', 'Priority support'],
-  },
-  {
-    code: 'lifetime',
-    label: 'Lifetime',
-    price: 1999,
-    period: 'one-time',
-    icon: Crown,
-    savings: '🔥 Limited',
-    features: ['Everything, forever', 'All future updates FREE', 'VIP support', 'Lifetime badge'],
+    badge: 'Most Popular',
+    features: ['Everything in Student Pro', 'Priority AI responses', 'AI flashcards & quizzes', 'Early access to new features'],
   },
 ];
 
 const allFeatures = [
   { icon: Sparkles, text: 'AI Note Generator', desc: 'Unlimited AI notes' },
   { icon: Brain, text: 'AI Solver', desc: 'Solve any problem' },
-  { icon: Target, text: 'AI Flashcards', desc: 'Auto study cards' },
+  { icon: Star, text: 'AI Flashcards', desc: 'Auto study cards' },
   { icon: BookOpen, text: 'Voice Dictation', desc: 'Speak to write' },
   { icon: Crown, text: '16+ Handwriting Styles', desc: 'Your handwriting, AI-powered' },
-  { icon: Gift, text: 'Exam Packs', desc: 'JEE, NEET, UPSC content' },
-  { icon: Shield, text: 'Unlimited Exports', desc: 'PDF, image, share' },
-  { icon: Zap, text: 'Priority AI', desc: 'Faster responses' },
+  { icon: Zap, text: 'Unlimited Exports', desc: 'PDF, image, share' },
+  { icon: Shield, text: 'Priority AI', desc: 'Faster responses' },
+  { icon: Sparkles, text: 'AI Text Tools', desc: 'Rewrite, summarize' },
 ];
 
 const Upgrade: React.FC = () => {
@@ -130,16 +113,11 @@ const Upgrade: React.FC = () => {
                   {plan.popular && (
                     <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-primary/60" />
                   )}
-                  {plan.savings && (
-                    <div className={`absolute top-3 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      plan.savings.includes('🔥') ? 'bg-orange-500/10 text-orange-600' : 'bg-green-500/10 text-green-600'
+                  {plan.badge && (
+                    <div className={`absolute top-3 right-3 text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
+                      plan.popular ? 'bg-primary text-primary-foreground' : 'bg-orange-500/10 text-orange-600'
                     }`}>
-                      {plan.savings}
-                    </div>
-                  )}
-                  {plan.popular && (
-                    <div className="absolute top-3 right-3 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
-                      Most Popular
+                      {plan.badge}
                     </div>
                   )}
                   <div className="p-5">
@@ -162,9 +140,7 @@ const Upgrade: React.FC = () => {
                     <Button
                       onClick={() => navigate(`/payment?plan=${plan.code}`)}
                       className={`w-full rounded-xl ${
-                        plan.popular
-                          ? 'bg-gradient-to-r from-primary to-primary/80'
-                          : ''
+                        plan.popular ? 'bg-gradient-to-r from-primary to-primary/80' : ''
                       }`}
                       variant={plan.popular ? 'default' : 'outline'}
                     >
@@ -186,16 +162,14 @@ const Upgrade: React.FC = () => {
               <Users className="h-8 w-8 text-primary mx-auto" />
               <h3 className="text-lg font-bold">For Schools & Coaching Centers</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Custom plans starting ₹25,000/year. White-label option available. Contact us for bulk pricing.
+                Custom plans starting ₹25,000/year. White-label option available.
               </p>
               <Button
                 variant="outline"
                 className="rounded-xl"
-                onClick={() => {
-                  window.open('mailto:nikhilnikhil4331@gmail.com?subject=NikNote%20B2B%20Inquiry&body=Hi%2C%20I%20am%20interested%20in%20NikNote%20for%20my%20institution.%20Please%20share%20details.', '_blank');
-                }}
+                onClick={() => navigate('/schools')}
               >
-                Contact for B2B Pricing
+                View B2B Plans
               </Button>
             </motion.div>
 
@@ -207,7 +181,6 @@ const Upgrade: React.FC = () => {
               </span>
               <span>UPI, Cards, Wallets</span>
               <span>Cancel Anytime</span>
-              <span>7-day Refund Policy</span>
             </div>
           </>
         )}

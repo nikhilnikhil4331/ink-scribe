@@ -32,7 +32,7 @@ const WorkspaceSidebar = lazy(() => import('@/components/workspace/WorkspaceSide
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
-  LayoutGrid, Scan, Brain, PanelLeft, ChevronDown
+  LayoutGrid, Scan, Brain, PanelLeft, ChevronDown, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -652,6 +652,7 @@ const Index = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleReset}><RotateCcw className="w-4 h-4 mr-2" /> Reset</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/notebooks')}><FileText className="w-4 h-4 mr-2" /> My Notebooks</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/feedback')}><MessageSquare className="w-4 h-4 mr-2" /> Feedback 💬</DropdownMenuItem>
                     {!premium.isPremium && <DropdownMenuItem onClick={() => navigate('/payment')}><Crown className="w-4 h-4 mr-2" /> Upgrade</DropdownMenuItem>}
                     {user ? <DropdownMenuItem onClick={() => navigate('/account')}>👤 Account</DropdownMenuItem>
                       : <DropdownMenuItem onClick={() => navigate('/login')}><LogIn className="w-4 h-4 mr-2" /> Sign In</DropdownMenuItem>}

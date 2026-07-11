@@ -7,23 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Plan pricing in INR
-const PLAN_PRICES: Record<string, { amount: number; label: string; period_days: number }> = {
-  weekly:   { amount: 49,   label: "Weekly",   period_days: 7 },
-  monthly:  { amount: 99,   label: "Monthly",  period_days: 30 },
-  annual:   { amount: 499,  label: "Annual",   period_days: 365 },
-  lifetime: { amount: 1999, label: "Lifetime", period_days: 36500 }, // 100 years
-};
-
-// Exam pack pricing
-const EXAM_PACK_PRICES: Record<string, number> = {
-  jee:   149,
-  neet:  149,
-  upsc:  199,
-  cbse10: 99,
-  cbse12: 99,
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -63,37 +46,17 @@ serve(async (req) => {
     const userEmail = userData.user.email || "";
 
     const body = await req.json();
-    const { planCode, amount: customAmount, examPacks } = body;
+    const { planCode } = body;
 
-    // Validate plan
-    if (!planCode || !PLAN_PRICES[planCode]) {
-      return new Response(JSON.stringify({ error: "Invalid plan code. Valid: weekly, monthly, annual, lifetime" }), {
+    if (!planCode || !["weekly", "monthly"].includes(planCode)) {
+      return new Response(JSON.stringify({ error: "Invalid plan code" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const planConfig = PLAN_PRICES[planCode];
+    const amountInPaise = planCode === "weekly" ? 4900 : 9900;
+    const planLabel = planCode === "weekly" ? "Weekly" : "Monthly";
 
-    // Calculate total
-    let totalAmount = planConfig.amount;
-    const validatedExamPacks: string[] = [];
-
-    // Add exam packs if provided
-    if (examPacks && Array.isArray(examPacks)) {
-      for (const pack of examPacks) {
-        if (EXAM_PACK_PRICES[pack]) {
-          totalAmount += EXAM_PACK_PRICES[pack];
-          validatedExamPacks.push(pack);
-        }
-      }
-    }
-
-    // Override with custom amount if provided (for exam pack combinations)
-    const amountInPaise = customAmount ? customAmount : totalAmount * 100;
-
-    const planLabel = planConfig.label;
-
-    // Create Razorpay order
     const credentials = base64Encode(`${razorpayKeyId}:${razorpayKeySecret}`);
     const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
@@ -108,7 +71,6 @@ serve(async (req) => {
         notes: {
           user_id: userId,
           plan_code: planCode,
-          exam_packs: validatedExamPacks.join(","),
         },
       }),
     });
@@ -122,7 +84,7 @@ serve(async (req) => {
     }
 
     const order = await orderRes.json();
-    console.log(`Order created: ${order.id} for user ${userId}, plan: ${planCode}, amount: ₹${totalAmount}, packs: ${validatedExamPacks.join(",")}`);
+    console.log(`Order created: ${order.id} for user ${userId}, plan: ${planCode}`);
 
     return new Response(JSON.stringify({
       orderId: order.id,
@@ -131,9 +93,6 @@ serve(async (req) => {
       keyId: razorpayKeyId,
       planCode,
       planLabel,
-      planPeriodDays: planConfig.period_days,
-      examPacks: validatedExamPacks,
-      totalAmount: totalAmount,
       userEmail,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Crown, Mic, Sparkles, Wand2, CreditCard, Brain, FileImage,
-  BookOpen, Volume2, Star, TrendingUp, Zap, Shield, Flame
+  BookOpen, Volume2, Star, Zap, Shield, Flame
 } from "lucide-react";
 import { type PremiumFeature } from "@/contexts/PremiumContext";
 
@@ -35,10 +35,8 @@ const allFeatures = [
 ];
 
 const plans = [
-  { code: "weekly", label: "Weekly", price: "₹49", period: "/week", icon: Zap },
-  { code: "monthly", label: "Monthly", price: "₹99", period: "/month", popular: true, icon: Star },
-  { code: "annual", label: "Annual", price: "₹499", period: "/year", savings: "Save 58%", icon: TrendingUp },
-  { code: "lifetime", label: "Lifetime", price: "₹1,999", period: "one-time", savings: "🔥 Limited", icon: Crown },
+  { code: "weekly", label: "Student Pro", price: "₹49", period: "/week", icon: Zap },
+  { code: "monthly", label: "Premium", price: "₹99", period: "/month", popular: true, icon: Star },
 ];
 
 export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, feature, usedCount, limitCount }) => {
@@ -93,18 +91,15 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, 
           {/* Premium Features - Compact */}
           <div className="grid grid-cols-2 gap-1.5">
             {allFeatures.map((f, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 p-2 rounded-lg bg-muted/30"
-              >
+              <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
                 <f.icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                 <span className="text-[11px] font-medium leading-tight">{f.label}</span>
               </div>
             ))}
           </div>
 
-          {/* Plans - Grid */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Plans */}
+          <div className="grid grid-cols-2 gap-3">
             {plans.map((p) => (
               <button
                 key={p.code}
@@ -116,13 +111,6 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, 
                 {p.popular && (
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
                     Popular
-                  </span>
-                )}
-                {p.savings && (
-                  <span className={`absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${
-                    p.savings.includes('🔥') ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
-                  }`}>
-                    {p.savings}
                   </span>
                 )}
                 <div className="flex items-center gap-1.5 mb-1">
