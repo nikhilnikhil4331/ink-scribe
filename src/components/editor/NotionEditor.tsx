@@ -618,27 +618,58 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                   {block.type === 'table' && block.tableData && <div className="mt-1 rounded-xl border border-gray-200 overflow-hidden max-w-sm"><table className="w-full text-[10px]"><thead><tr className="bg-gray-50">{block.tableData.headers.map((h,i) => <th key={i} className="px-2 py-1.5 text-left border-r border-gray-100 last:border-r-0 font-medium">{h}</th>)}</tr></thead><tbody>{block.tableData.rows.map((row,i) => <tr key={i} className="border-t border-gray-100">{row.map((cell,j) => <td key={j} className="px-2 py-1.5 border-r border-gray-100 last:border-r-0">{cell.content}</td>)}</tr>)}</tbody></table></div>}
                   {block.type === 'image' && block.url && <div className="mt-1 rounded-xl overflow-hidden border border-gray-200 max-w-sm"><img src={block.url} alt="" className="w-full object-cover max-h-36" /></div>}
                   
-                  {/* AI Generated block */}
-                  {block.type === 'ai-generated' && block.content && !block.content.startsWith('⏳') && (
-                    <div className="mt-1.5 rounded-xl bg-gradient-to-br from-violet-50 via-indigo-50 to-purple-50 border border-violet-200/60 overflow-hidden">
-                      <div className="flex items-center gap-2 px-3 py-2 bg-violet-100/40 border-b border-violet-200/40">
-                        <div className="w-5 h-5 rounded-md bg-violet-500 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">{aiLoadingBlock === block.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '✨'}</div>
-                        <span className="text-[11px] font-bold text-violet-700">AI Generated</span>
-                        {block.aiModel && <span className="text-[10px] text-violet-400">• {block.aiModel}</span>}
-                        <div className="ml-auto flex items-center gap-1">
-                          <button onMouseDown={preventFocusSteal} onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copied! 📋'); }} className="p-1 rounded-md hover:bg-violet-200/50 active:scale-95" style={{ touchAction: 'manipulation', cursor: 'pointer' }}><Copy className="w-3 h-3 text-violet-400" /></button>
-                          <button onMouseDown={preventFocusSteal} onClick={() => { updateBlock(block.id, { type: 'text' }); toast.success('Converted to text'); }} className="p-1 rounded-md hover:bg-violet-200/50 active:scale-95" style={{ touchAction: 'manipulation', cursor: 'pointer' }}><X className="w-3 h-3 text-violet-400" /></button>
+                  {/* AI Generated block — PREMIUM styled */}
+                  {block.type === 'ai-generated' && block.content && block.content.startsWith('⏳') && (
+                    <div className="ai-response-box mt-2 rounded-2xl overflow-hidden">
+                      <div className="ai-response-header flex items-center gap-2.5 px-4 py-3">
+                        <div className="ai-badge w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="ai-loading-pulse text-[13px] font-semibold text-violet-700">{block.content.replace('⏳ ', '')}</span>
                         </div>
                       </div>
-                      <div className="px-3 py-2.5 text-[13px] text-gray-800 leading-relaxed whitespace-pre-wrap">
+                      <div className="px-4 py-5 flex items-center gap-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <span className="text-[12px] text-gray-400">AI apna jaadu kar raha hai ✨</span>
+                      </div>
+                    </div>
+                  )}
+                  {block.type === 'ai-generated' && block.content && !block.content.startsWith('⏳') && (
+                    <div className="ai-response-box mt-2 rounded-2xl overflow-hidden">
+                      <div className="ai-response-header flex items-center gap-2.5 px-4 py-2.5">
+                        <div className="ai-badge w-6 h-6 rounded-lg flex items-center justify-center text-white text-[11px] font-bold shadow-sm">✨</div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[12px] font-bold text-violet-700">AI Response</span>
+                          {block.aiModel && <span className="text-[10px] text-violet-400 ml-1.5">• {block.aiModel}</span>}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button onMouseDown={preventFocusSteal} onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copied! 📋'); }} className="ai-action-btn p-1.5 rounded-lg" style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} title="Copy"><Copy className="w-3.5 h-3.5 text-violet-400" /></button>
+                          <button onMouseDown={preventFocusSteal} onClick={() => { updateBlock(block.id, { type: 'text' }); toast.success('Text block mein convert ho gaya'); }} className="ai-action-btn p-1.5 rounded-lg" style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} title="Convert to text"><X className="w-3.5 h-3.5 text-violet-400" /></button>
+                        </div>
+                      </div>
+                      <div className="ai-response-content px-4 py-3 text-[14px] text-gray-800 leading-relaxed whitespace-pre-wrap">
                         {block.content.split('\n').map((line, i) => {
-                          if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold text-sm mt-2 text-gray-900">{line.replace(/\*\*/g, '')}</p>;
-                          if (line.startsWith('### ')) return <h4 key={i} className="font-bold text-sm mt-2.5 text-gray-900">{line.replace(/^###\s/, '')}</h4>;
-                          if (line.startsWith('## ')) return <h3 key={i} className="font-bold text-sm mt-2.5 text-gray-900">{line.replace(/^##\s/, '')}</h3>;
-                          if (line.startsWith('- **') || line.startsWith('- ')) { const text = line.replace(/^[-•]\s/, ''); const parts = text.split(/\*\*/); return <div key={i} className="flex gap-2 ml-1 mt-1"><span className="text-violet-400 flex-shrink-0 mt-0.5">•</span><span>{parts.map((part, pi) => pi % 2 === 1 ? <strong key={pi} className="text-gray-900">{part}</strong> : <span key={pi}>{part}</span>)}</span></div>; }
-                          if (/^\d+\.\s/.test(line)) return <p key={i} className="ml-4 mt-0.5">{line}</p>;
-                          if (!line.trim()) return <div key={i} className="h-1.5" />;
-                          return <p key={i} className="mt-0.5">{line}</p>;
+                          if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold text-[15px] mt-3 mb-1 text-gray-900">{line.replace(/\*\*/g, '')}</p>;
+                          if (line.startsWith('### ')) return <h4 key={i} className="font-bold text-[14px] mt-3 mb-1 text-indigo-900">{line.replace(/^###\s/, '')}</h4>;
+                          if (line.startsWith('## ')) return <h3 key={i} className="font-bold text-[15px] mt-3 mb-1 text-violet-900">{line.replace(/^##\s/, '')}</h3>;
+                          if (line.startsWith('- **') || line.startsWith('- ')) {
+                            const text = line.replace(/^[-•]\s/, '');
+                            const parts = text.split(/\*\*/);
+                            return (
+                              <div key={i} className="flex gap-2.5 ml-0.5 mt-1.5 items-start">
+                                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0 mt-2" />
+                                <span className="flex-1">{parts.map((part, pi) => pi % 2 === 1 ? <strong key={pi} className="text-gray-900">{part}</strong> : <span key={pi}>{part}</span>)}</span>
+                              </div>
+                            );
+                          }
+                          if (/^\d+\.\s/.test(line)) return <p key={i} className="ml-5 mt-1 text-gray-700">{line}</p>;
+                          if (!line.trim()) return <div key={i} className="h-2" />;
+                          return <p key={i} className="mt-1 text-gray-700">{line}</p>;
                         })}
                       </div>
                     </div>
