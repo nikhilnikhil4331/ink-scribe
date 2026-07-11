@@ -538,7 +538,7 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("min-h-screen flex flex-col transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper, isMobile && "h-[100dvh] overflow-y-auto overflow-x-hidden", !isMobile && "h-[100dvh] overflow-hidden")}>
+    <div className={cn("flex flex-col transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper, isMobile ? "min-h-screen" : "h-[100dvh] overflow-hidden")}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
       <header className={cn(
@@ -709,7 +709,7 @@ const Index = () => {
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
       <div className={cn(
         "flex flex-1 min-h-0 gap-3",
-        isMobile ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"
+        isMobile ? "" : "mt-2 mx-3 mb-3 overflow-hidden"
       )}>
 
         {/* LEFT SIDEBAR — desktop only */}
@@ -726,7 +726,7 @@ const Index = () => {
         {/* ======== CENTER CONTENT ======== */}
         <div className={cn(
           "flex-1 flex flex-col min-w-0 gap-3",
-          isMobile ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"
+          isMobile ? "" : "overflow-hidden"
         )}>
 
           {/* Page Bar */}
@@ -751,9 +751,9 @@ const Index = () => {
 
           {/* ---- MOBILE NOTION-STYLE INTEGRATED LAYOUT ---- */}
           {isMobile && (
-            <div className="pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="pb-24">
               {/* Mobile Floating Toolbar — above keyboard area */}
-              <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-3 py-1.5">
+              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-3 py-1.5">
                 <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                   <button 
                     onClick={() => navigate('/ai')}

@@ -535,7 +535,6 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                 )}
                 style={{ paddingLeft: indentPx + (isMobile ? 8 : 4), WebkitTapHighlightColor: 'transparent' }}
                 onClick={() => { setFocusedBlockId(block.id); }}
-                onTouchStart={() => { setFocusedBlockId(block.id); }}
               >
                 {/* Block action button — mobile always visible, desktop hover */}
                 <div className={cn(
@@ -635,26 +634,27 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     onKeyDown={(e) => handleKeyDown(block.id, e)}
                     onPaste={(e) => handlePaste(block.id, e)}
                     onFocus={() => setFocusedBlockId(block.id)}
-                    onClick={() => setFocusedBlockId(block.id)}
-                    onTouchStart={() => setFocusedBlockId(block.id)}
+                    onClick={(e) => { e.stopPropagation(); setFocusedBlockId(block.id); }}
+                    onTouchStart={(e) => { e.stopPropagation(); setFocusedBlockId(block.id); }}
                     placeholder={config.placeholder}
                     rows={1}
                     className={cn(
-                      "flex-1 bg-transparent border-0 outline-none resize-none py-1 px-1 placeholder:text-gray-300 leading-relaxed w-full overflow-hidden text-gray-900",
-                      isMobile && "min-h-[44px] text-[16px] py-2 px-1.5 leading-7",
-                      !isMobile && "text-sm",
+                      "flex-1 bg-transparent border-0 outline-none resize-none py-1 px-1 leading-relaxed w-full overflow-hidden",
+                      isMobile ? "min-h-[48px] text-[16px] py-3 px-2 leading-7 text-gray-900" : "text-sm text-gray-900",
                       block.checked && "line-through text-gray-400",
                       config.textClass
                     )}
                     style={{ 
-                      color: inkData?.hex, 
+                      color: inkData?.hex || '#111827',
                       WebkitTapHighlightColor: 'transparent',
                       caretColor: '#6366f1',
+                      WebkitUserSelect: 'text',
+                      userSelect: 'text',
                     }}
                     autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
+                    autoCorrect="on"
+                    autoCapitalize="sentences"
+                    spellCheck={true}
                   />
 
                   {/* Block previews */}
