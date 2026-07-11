@@ -1,5 +1,10 @@
+// ============================================================
+// NikNote 4.0 — Quick Styles Bar (Mobile)
+// SIMPLIFIED: No Framer Motion (breaks touch on mobile)
+// Pure CSS transitions — reliable touch
+// ============================================================
+
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import { LineInkColor, LINE_INK_COLORS } from '@/types/noteLine';
 import { HandwritingFont, FONT_OPTIONS } from '@/types/notes';
@@ -53,13 +58,16 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
   if (!isVisible) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
+    <div
       className="fixed bottom-[56px] left-0 right-0 z-40 lg:hidden px-2 pb-1"
+      style={{ 
+        touchAction: 'manipulation',
+        transition: 'opacity 0.2s, transform 0.2s',
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+      }}
     >
-      <div className="h-10 bg-white/95 backdrop-blur-xl border border-gray-200/60 rounded-xl shadow-lg flex items-center px-2.5 gap-1.5">
+      <div className="h-10 bg-white border border-gray-200 rounded-xl shadow-lg flex items-center px-2.5 gap-1.5">
         {recentColors.map((color) => {
           const ink = LINE_INK_COLORS.find(c => c.value === color);
           if (!ink) return null;
@@ -68,10 +76,17 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
               key={color}
               onClick={() => onColorChange(color)}
               className={cn(
-                "w-7 h-7 rounded-full border-2 flex-shrink-0 transition-all active:scale-90",
+                "w-7 h-7 rounded-full border-2 flex-shrink-0 transition-transform active:scale-90",
                 currentColor === color ? "border-indigo-500 scale-110 ring-2 ring-indigo-100" : "border-transparent"
               )}
-              style={{ backgroundColor: ink.hex, WebkitTapHighlightColor: 'transparent' }}
+              style={{ 
+                backgroundColor: ink.hex, 
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                cursor: 'pointer',
+                minWidth: '28px',
+                minHeight: '28px',
+              }}
             />
           );
         })}
@@ -91,7 +106,11 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
                   ? "bg-indigo-50 text-indigo-600"
                   : "text-gray-400"
               )}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                cursor: 'pointer',
+              }}
             >
               <span className={fontOpt.className}>{fontOpt.label}</span>
             </button>
@@ -101,11 +120,15 @@ export const QuickStylesBar: React.FC<QuickStylesBarProps> = ({
         <button
           onClick={onOpenStyleSheet}
           className="ml-auto w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
-          style={{ WebkitTapHighlightColor: 'transparent' }}
+          style={{ 
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            cursor: 'pointer',
+          }}
         >
           <Palette className="w-4 h-4 text-indigo-500" />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };

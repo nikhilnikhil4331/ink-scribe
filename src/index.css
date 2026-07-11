@@ -1180,3 +1180,78 @@
     height: -webkit-fill-available;
   }
 }
+
+
+/* ============================================================
+   NIKNOTE 4.0 — CRITICAL MOBILE TOUCH FIXES
+   Fixes: touch not working, buttons not clickable, scroll blocked
+   ============================================================ */
+
+/* Global touch-action — eliminate 300ms delay, allow scrolling */
+@media (max-width: 768px) {
+  html, body {
+    touch-action: manipulation !important;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+  }
+
+  /* ALL interactive elements must respond to touch immediately */
+  button, a, input, textarea, select, [role="button"], [tabindex] {
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1) !important;
+  }
+
+  /* Remove backdrop-filter from header — causes invisible layer on Android */
+  header, .sticky {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+  }
+
+  /* Ensure content areas don't have hidden overflow blocking scroll */
+  .notion-editor {
+    overflow: visible !important;
+    touch-action: manipulation !important;
+  }
+
+  /* Ensure textarea is always touchable and visible */
+  .notion-editor textarea {
+    touch-action: manipulation !important;
+    pointer-events: auto !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    color: #111827 !important;
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+
+  /* Make sure no invisible element blocks touch */
+  [class*="fixed inset-0"]:not(.z-50):not(.z-\[50\]):not(.z-\[60\]):not(.z-\[61\]):not(.z-\[70\]):not(.z-\[71\]):not(.z-\[100\]):not(.z-\[101\]) {
+    pointer-events: none !important;
+  }
+
+  /* Bottom nav must be on top and touchable */
+  .mobile-bottom-nav,
+  [class*="fixed bottom-0"] {
+    touch-action: manipulation !important;
+    pointer-events: auto !important;
+  }
+
+  /* Quick styles bar must be touchable */
+  [class*="fixed bottom-"][class*="z-40"] {
+    touch-action: manipulation !important;
+    pointer-events: auto !important;
+  }
+
+  /* Framer Motion ghost elements fix — prevent them from blocking touch */
+  [data-framer-motion] {
+    pointer-events: auto !important;
+  }
+
+  /* Ensure main content scrollable */
+  main, [class*="min-h-screen"], [class*="pb-24"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}

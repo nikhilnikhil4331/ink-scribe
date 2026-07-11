@@ -538,13 +538,14 @@ const Index = () => {
 
   // ===================== RENDER =====================
   return (
-    <div className={cn("flex flex-col transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper, isMobile ? "min-h-screen" : "h-[100dvh] overflow-hidden")}>
+    <div className={cn("flex flex-col transition-all duration-500 touch-manipulation", moodStyles.background, glassMode && "glass-mode", themeClasses.wrapper, isMobile ? "min-h-screen" : "h-[100dvh] overflow-hidden")}
+         style={isMobile ? { touchAction: 'manipulation' } : undefined}>
 
       {/* ============ HEADER — Floating Glass Bar ============ */}
       <header className={cn(
         "sticky top-0 z-50 flex-shrink-0",
         isMobile 
-          ? "bg-white/95 backdrop-blur-xl border-b border-gray-100 h-12" 
+          ? "bg-white border-b border-gray-100 h-12" 
           : "mx-3 mt-2 rounded-2xl bg-white/20 backdrop-blur-2xl border border-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.08)] h-14"
       )}>
         <div className={cn("h-full flex items-center justify-between gap-2", isMobile ? "px-3" : "px-4 lg:px-5")}>
@@ -556,7 +557,7 @@ const Index = () => {
                 "flex items-center justify-center rounded-lg transition-colors",
                 isMobile ? "w-8 h-8 active:bg-gray-100" : "h-8 w-8 hover:bg-white/20"
               )}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
             >
               <PanelLeft className="w-4 h-4 text-gray-600" />
             </button>
@@ -596,7 +597,7 @@ const Index = () => {
                 <button
                   onClick={() => navigate('/ai')}
                   className="flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 shadow-sm active:scale-95 transition-transform"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>AI</span>
@@ -606,7 +607,7 @@ const Index = () => {
                   <DropdownMenuTrigger asChild>
                     <button 
                       className="flex items-center justify-center w-8 h-8 rounded-lg active:bg-gray-100 transition-colors"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                     >
                       <MoreVertical className="w-4 h-4 text-gray-600" />
                     </button>
@@ -686,25 +687,22 @@ const Index = () => {
         </div>
       </header>
 
-      {/* ============ MOBILE SIDEBAR DRAWER ============ */}
-      <AnimatePresence>
-        {isMobile && sidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm"
-              onClick={() => setSidebarOpen(false)}
-            />
-            <motion.div
-              initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-              className="fixed left-0 top-0 bottom-0 w-[280px] z-[61] bg-white shadow-2xl"
-            >
-              <React.Suspense fallback={<div className="w-[240px] h-full bg-gray-50 animate-pulse" />}><WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* ============ MOBILE SIDEBAR DRAWER — Simple, no AnimatePresence ============ */}
+      {isMobile && sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[60] bg-black/30"
+            onClick={() => setSidebarOpen(false)}
+            style={{ touchAction: 'manipulation' }}
+          />
+          <div
+            className="fixed left-0 top-0 bottom-0 w-[280px] z-[61] bg-white shadow-2xl"
+            style={{ transition: 'transform 0.3s ease' }}
+          >
+            <React.Suspense fallback={<div className="w-[240px] h-full bg-gray-50 animate-pulse" />}><WorkspaceSidebar isOpen={true} onToggle={() => setSidebarOpen(false)} onOpenCommandPalette={() => setShowCommandPalette(true)} /></React.Suspense>
+          </div>
+        </>
+      )}
 
       {/* ============ BODY: 3-PANE LAYOUT ============ */}
       <div className={cn(
@@ -753,19 +751,20 @@ const Index = () => {
           {isMobile && (
             <div className="pb-24">
               {/* Mobile Floating Toolbar — above keyboard area */}
-              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-gray-100 px-3 py-1.5">
+              <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-3 py-1.5"
+                   style={{ touchAction: 'manipulation' }}>
                 <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                   <button 
                     onClick={() => navigate('/ai')}
                     className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-violet-500 to-indigo-500 shadow-sm flex-shrink-0 active:scale-95 transition-transform"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <Sparkles className="w-3 h-3" /> AI
                   </button>
                   <button 
                     onClick={() => setShowScanPanel(true)}
                     className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 flex-shrink-0 active:scale-95 transition-transform"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <Scan className="w-3 h-3" /> DNA
                   </button>
@@ -773,21 +772,21 @@ const Index = () => {
                     onClick={handleExportPDF}
                     disabled={isExporting}
                     className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-gray-600 bg-gray-50 border border-gray-200 flex-shrink-0 active:scale-95 transition-transform disabled:opacity-40"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <FileDown className="w-3 h-3" /> PDF
                   </button>
                   <button 
                     onClick={() => setShowShareMenu(v => !v)}
                     className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-gray-600 bg-gray-50 border border-gray-200 flex-shrink-0 active:scale-95 transition-transform"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <Share2 className="w-3 h-3" /> Share
                   </button>
                   <button 
                     onClick={() => setShowAIWorkspace(true)}
                     className="flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-medium text-orange-600 bg-orange-50 border border-orange-200 flex-shrink-0 active:scale-95 transition-transform"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <Brain className="w-3 h-3" /> Workspace
                   </button>
@@ -800,7 +799,7 @@ const Index = () => {
                   defaultValue="Untitled"
                   className="w-full text-[22px] font-bold bg-transparent border-0 outline-none resize-none text-gray-900 placeholder:text-gray-300 leading-tight"
                   rows={1}
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                   onChange={(e) => {
                     e.target.style.height = 'auto';
                     e.target.style.height = e.target.scrollHeight + 'px';
@@ -841,7 +840,7 @@ const Index = () => {
                       if (el) el.classList.toggle('hidden');
                     }}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-t-xl bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 text-[12px] font-semibold text-violet-700 active:bg-violet-100 transition-colors"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                   >
                     <span className="flex items-center gap-1.5">✍️ Handwriting Preview</span>
                     <FileDown className="w-3.5 h-3.5" />
@@ -865,46 +864,38 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Mobile Share Menu — Bottom sheet style */}
-              <AnimatePresence>
-                {showShareMenu && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[70] bg-black/30"
-                      onClick={() => setShowShareMenu(false)}
-                    />
-                    <motion.div
-                      initial={{ y: 300 }}
-                      animate={{ y: 0 }}
-                      exit={{ y: 300 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      className="fixed bottom-0 left-0 right-0 z-[71] bg-white rounded-t-2xl shadow-2xl p-5"
-                    >
-                      <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-                      <h3 className="text-sm font-bold text-gray-900 mb-3">Share Notes</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button 
-                          onClick={handleShareImage}
-                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium active:scale-95 transition-transform"
-                          style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <Image className="w-4 h-4" /> As Image
-                        </button>
-                        <button 
-                          onClick={handleSharePDF}
-                          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 text-sm font-medium active:scale-95 transition-transform"
-                          style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <FileText className="w-4 h-4" /> As PDF
-                        </button>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+              {/* Mobile Share Menu — Simple, no AnimatePresence (touch fix) */}
+              {showShareMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[70] bg-black/30"
+                    onClick={() => setShowShareMenu(false)}
+                    style={{ touchAction: 'manipulation' }}
+                  />
+                  <div
+                    className="fixed bottom-0 left-0 right-0 z-[71] bg-white rounded-t-2xl shadow-2xl p-5"
+                  >
+                    <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+                    <h3 className="text-sm font-bold text-gray-900 mb-3">Share Notes</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button 
+                        onClick={handleShareImage}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium active:scale-95 transition-transform"
+                        style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
+                      >
+                        <Image className="w-4 h-4" /> As Image
+                      </button>
+                      <button 
+                        onClick={handleSharePDF}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 text-sm font-medium active:scale-95 transition-transform"
+                        style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
+                      >
+                        <FileText className="w-4 h-4" /> As PDF
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -1176,7 +1167,7 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70]"
+              className="fixed inset-0 bg-black/40 z-[70]"
               onClick={() => setShowThemePicker(false)}
             />
             <motion.div

@@ -1,10 +1,10 @@
 // ============================================================
-// NikNote 4.0 — Mobile Bottom Navigation (Notion-style Pro)
-// Clean, minimal, touch-friendly — like Notion mobile app
+// NikNote 4.0 — Mobile Bottom Navigation
+// SIMPLIFIED: No Framer Motion layout animation (breaks touch)
+// Pure CSS transitions — 100% touch reliable
 // ============================================================
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { PenLine, Palette, Sparkles, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,8 +31,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-      <div className="bg-white/90 backdrop-blur-xl border-t border-gray-200/60">
+    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+         style={{ touchAction: 'manipulation' }}>
+      <div className="bg-white border-t border-gray-200"
+           style={{ boxShadow: '0 -2px 10px rgba(0,0,0,0.05)' }}>
         <div className="flex items-center justify-around h-[52px] px-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -41,21 +43,20 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-xl transition-all duration-150 relative active:scale-95",
-                  isActive ? "text-indigo-600" : "text-gray-400"
+                  "flex flex-col items-center gap-0.5 px-5 py-1.5 rounded-xl transition-colors duration-150 relative",
+                  isActive ? "text-indigo-600 bg-indigo-50" : "text-gray-400 active:bg-gray-100"
                 )}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  cursor: 'pointer',
+                  minWidth: '48px',
+                  minHeight: '40px',
+                }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="mobileTabIndicator"
-                    className="absolute inset-0 bg-indigo-50 rounded-xl"
-                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                  />
-                )}
-                <span className="relative z-10">{tab.icon}</span>
+                <span>{tab.icon}</span>
                 <span className={cn(
-                  "relative z-10 text-[10px] font-semibold tracking-wide",
+                  "text-[10px] font-semibold tracking-wide",
                   isActive ? "text-indigo-600" : "text-gray-400"
                 )}>
                   {tab.label}

@@ -573,12 +573,12 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     <button
                       onClick={() => updateBlock(block.id, { collapsed: !block.collapsed })}
                       className="hover:bg-gray-100 rounded p-0.5 active:scale-90 transition-transform"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
                       tabIndex={-1}
                     >
-                      <motion.div animate={{ rotate: block.collapsed ? 0 : 90 }} transition={{ duration: 0.15 }}>
+                      <div style={{ transform: block.collapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }}>
                         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-                      </motion.div>
+                      </div>
                     </button>
                   ) : block.type === 'bullet' ? (
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
@@ -603,24 +603,17 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
 
                 {/* Content area */}
                 <div className="flex-1 relative min-w-0">
-                  {/* Typing indicator */}
-                  <AnimatePresence>
-                    {isTyping && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0 }}
-                        className="absolute -top-1 -right-1 z-10"
-                      >
-                        <motion.div
-                          animate={{ scale: [1, 1.3, 1] }}
-                          transition={{ duration: 0.5, repeat: Infinity }}
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: inkData?.hex || '#6366f1' }}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {/* Typing indicator — simple CSS, no Framer Motion */}
+                  {isTyping && (
+                    <div
+                      className="absolute -top-1 -right-1 z-10"
+                    >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full animate-pulse"
+                        style={{ backgroundColor: inkData?.hex || '#6366f1' }}
+                      />
+                    </div>
+                  )}
 
                   <textarea
                     ref={(el) => setRef(block.id, el)}
@@ -635,7 +628,6 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                     onPaste={(e) => handlePaste(block.id, e)}
                     onFocus={() => setFocusedBlockId(block.id)}
                     onClick={(e) => { e.stopPropagation(); setFocusedBlockId(block.id); }}
-                    onTouchStart={(e) => { e.stopPropagation(); setFocusedBlockId(block.id); }}
                     placeholder={config.placeholder}
                     rows={1}
                     className={cn(
@@ -753,13 +745,9 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                   </button>
                 </div>
 
-                {/* Inline color picker */}
-                <AnimatePresence>
-                  {showInlineColor === block.id && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
+                {/* Inline color picker — simple, no AnimatePresence */}
+                {showInlineColor === block.id && (
+                    <div
                       className="absolute left-4 top-full mt-1 z-50 bg-white rounded-xl border border-gray-200 shadow-xl p-2 flex gap-1 flex-wrap max-w-[240px]"
                     >
                       {LINE_INK_COLORS.map((ink) => (
@@ -774,13 +762,12 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                             "w-7 h-7 rounded-full border-2 transition-transform active:scale-110",
                             blockColor === ink.value ? "border-indigo-500 scale-110 ring-2 ring-indigo-200" : "border-transparent"
                           )}
-                          style={{ backgroundColor: ink.hex }}
+                          style={{ backgroundColor: ink.hex, touchAction: 'manipulation', cursor: 'pointer' }}
                           title={ink.label}
                         />
                       ))}
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
               </div>
             </div>
           );
@@ -813,18 +800,14 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
         onClose={() => setSlashMenu(null)}
       />
 
-      {/* @ Mention Menu — Mobile-friendly positioned */}
-      <AnimatePresence>
-        {mentionMenu && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ duration: 0.15 }}
+      {/* @ Mention Menu — Simple, no AnimatePresence */}
+      {mentionMenu && (
+          <div
             className="fixed z-50 w-[260px] max-h-[300px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl py-1.5"
             style={{ 
               top: Math.min(mentionMenu.position.top, window.innerHeight - 320),
-              left: Math.max(8, Math.min(mentionMenu.position.left, window.innerWidth - 270))
+              left: Math.max(8, Math.min(mentionMenu.position.left, window.innerWidth - 270)),
+              touchAction: 'manipulation',
             }}
           >
             <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Mentions & AI</div>
@@ -833,7 +816,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                 key={item.id}
                 onClick={() => handleMentionSelect(item.id)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-indigo-50 active:bg-indigo-100 transition-colors"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
+                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', cursor: 'pointer' }}
               >
                 <span className="text-base flex-shrink-0">{item.label.split(' ')[0]}</span>
                 <div className="min-w-0">
@@ -842,9 +825,8 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                 </div>
               </button>
             ))}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
     </div>
   );
