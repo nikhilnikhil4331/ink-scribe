@@ -538,7 +538,12 @@ const AdminPanelNikhil: React.FC = () => {
     const totalExports = allActivities?.filter(a => a.action?.includes('export')).length || 0;
     const aiRequests = allActivities?.filter(a => a.action?.includes('ai_') || a.action === 'ai_document_process').length || 0;
     const totalUploads = allActivities?.filter(a => a.action?.includes('upload')).length || 0;
-    const totalRevenue = premiumUsers * 99; // Estimated based on monthly plan
+    // Revenue estimation with multiple plan tiers
+    const weeklyUsers = subscriptions?.filter(s => s.status === 'active' && s.plan_code === 'weekly').length || 0;
+    const monthlyUsers = subscriptions?.filter(s => s.status === 'active' && s.plan_code === 'monthly').length || 0;
+    const annualUsers = subscriptions?.filter(s => s.status === 'active' && s.plan_code === 'annual').length || 0;
+    const lifetimeUsers = subscriptions?.filter(s => s.status === 'active' && s.plan_code === 'lifetime').length || 0;
+    const totalRevenue = (weeklyUsers * 49 * 4) + (monthlyUsers * 99) + (annualUsers * 499 / 12) + (lifetimeUsers * 1999 / 12); // Monthly recurring revenue
     const conversionRate = totalUsers ? Math.round((premiumUsers / (totalUsers || 1)) * 100) : 0;
 
     setKpiData({

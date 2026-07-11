@@ -455,6 +455,27 @@ const Index = () => {
       toast.success(`PDF download ho gaya! 📄 (${totalPages} page)`, { id: toastId });
       playSuccess();
       triggerHaptic('success');
+
+      // 🎯 VIRAL GROWTH: Prompt sharing after successful PDF export
+      setTimeout(() => {
+        toast('Share NikNote with friends? 🎓', {
+          description: '3 friends share = 7 days FREE Premium!',
+          duration: 8000,
+          action: {
+            label: 'WhatsApp Share 📱',
+            onClick: () => {
+              const msg = encodeURIComponent(
+                `🎓 NikNote — Free AI Study App! ✨\n\n✍️ Handwriting notes (16+ styles)\n🧠 AI Teacher (Hindi!)\n📝 Quiz + Flashcards generator\n\nDownload FREE: https://niknote.online\n3 dosto ko bhejo — Premium free! 🎁`
+              );
+              window.open(`https://wa.me/?text=${msg}`, '_blank');
+              try {
+                const clicks = parseInt(localStorage.getItem('niknote_share_clicks') || '0', 10);
+                localStorage.setItem('niknote_share_clicks', (clicks + 1).toString());
+              } catch {}
+            }
+          }
+        });
+      }, 1500);
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('PDF export error:', msg);
