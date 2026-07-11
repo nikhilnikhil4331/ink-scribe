@@ -1,13 +1,13 @@
 // ============================================================
-// NikNote 4.0 — Enhanced Slash Command Menu
-// Notion-level with categories, search, keyboard nav
+// NikNote 4.0 — Slash Command Menu V2
+// No Framer Motion — pure CSS, touch-friendly
 // 25+ block types organized by category
 // ============================================================
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SLASH_COMMANDS, SlashCommand, BlockType } from '@/types/block';
+import { Slash } from 'lucide-react';
 
 interface SlashCommandMenuProps {
   isOpen: boolean;
@@ -48,17 +48,13 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
     const groups: { category: string; commands: SlashCommand[] }[] = [];
     for (const cat of CATEGORY_ORDER) {
       const cmds = filteredCommands.filter(c => c.category === cat);
-      if (cmds.length > 0) {
-        groups.push({ category: cat, commands: cmds });
-      }
+      if (cmds.length > 0) groups.push({ category: cat, commands: cmds });
     }
     return groups;
   }, [filteredCommands]);
 
   // Reset index when query changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
+  useEffect(() => { setSelectedIndex(0); }, [query]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -82,7 +78,7 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, filteredCommands, selectedIndex, onSelect, onClose]);
 
-  // Scroll into view
+  // Scroll selected into view
   useEffect(() => {
     const el = menuRef.current?.querySelector(`[data-index="${selectedIndex}"]`);
     el?.scrollIntoView({ block: 'nearest' });
@@ -90,75 +86,71 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
 
   if (!isOpen) return null;
 
-  // Adjust position to stay in viewport
   const adjustedTop = Math.min(position.top, window.innerHeight - 400);
   const adjustedLeft = Math.min(position.left, window.innerWidth - 300);
 
   let flatIndex = 0;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        ref={menuRef}
-        initial={{ opacity: 0, y: 4, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 4, scale: 0.98 }}
-        transition={{ duration: 0.15 }}
-        className="fixed z-50 w-[280px] max-h-[380px] overflow-y-auto rounded-xl border border-gray-200/60 bg-white/95 backdrop-blur-xl shadow-xl py-1.5"
-        style={{ top: adjustedTop, left: adjustedLeft }}
-      >
-        {grouped.length === 0 ? (
-          <div className="text-center py-6 text-gray-400 text-sm">
-            No blocks found
-          </div>
-        ) : (
-          grouped.map((group) => {
-            const catInfo = CATEGORY_LABELS[group.category] || { label: group.category, emoji: '📦' };
-            return (
-              <div key={group.category}>
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span>{catInfo.emoji}</span>
-                  {catInfo.label}
-                </div>
-                {group.commands.map((cmd) => {
-                  const idx = flatIndex++;
-                  return (
-                    <button
-                      key={cmd.id}
-                      data-index={idx}
-                      onClick={() => { onSelect(cmd.id); onClose(); }}
-                      onMouseEnter={() => setSelectedIndex(idx)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors",
-                        idx === selectedIndex
-                          ? "bg-indigo-50 text-indigo-900"
-                          : "text-gray-700 hover:bg-gray-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-sm",
-                        idx === selectedIndex ? "bg-indigo-100" : "bg-gray-100"
-                      )}>
-                        {cmd.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-medium truncate">{cmd.label}</div>
-                        <div className="text-[10px] text-gray-400 truncate">{cmd.description}</div>
-                      </div>
-                      {cmd.shortcut && (
-                        <kbd className="text-[9px] font-mono text-gray-400 bg-gray-100 px-1 py-0.5 rounded">
-                          {cmd.shortcut}
-                        </kbd>
-                      )}
-                    </button>
-                  );
-                })}
-                <div className="h-px bg-gray-100 my-1 mx-3" />
+    <div
+      ref={menuRef}
+      className="fixed z-50 w-[280px] max-h-[380px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
+      style={{ top: adjustedTop, left: adjustedLeft, touchAction: 'manipulation' }}
+    >
+      {/* Header */}
+      <div className="sticky top-0 bg-white px-3 py-2 border-b border-gray-100 flex items-center gap-2 z-10">
+        <Slash className="w-3.5 h-3.5 text-indigo-500" />
+        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Block Types</span>
+        <kbd className="ml-auto text-[9px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">ESC</kbd>
+      </div>
+
+      {grouped.length === 0 ? (
+        <div className="text-center py-6 text-gray-400 text-sm">No blocks found</div>
+      ) : (
+        grouped.map((group) => {
+          const catInfo = CATEGORY_LABELS[group.category] || { label: group.category, emoji: '📦' };
+          return (
+            <div key={group.category}>
+              <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>{catInfo.emoji}</span> {catInfo.label}
               </div>
-            );
-          })
-        )}
-      </motion.div>
-    </AnimatePresence>
+              {group.commands.map((cmd) => {
+                const idx = flatIndex++;
+                return (
+                  <button
+                    key={cmd.id}
+                    data-index={idx}
+                    onClick={() => { onSelect(cmd.id); onClose(); }}
+                    onMouseEnter={() => setSelectedIndex(idx)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors",
+                      idx === selectedIndex
+                        ? "bg-indigo-50 text-indigo-900"
+                        : "text-gray-700 hover:bg-gray-50"
+                    )}
+                    style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <div className={cn(
+                      "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-sm",
+                      idx === selectedIndex ? "bg-indigo-100" : "bg-gray-100"
+                    )}>
+                      {cmd.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] font-medium truncate">{cmd.label}</div>
+                      <div className="text-[10px] text-gray-400 truncate">{cmd.description}</div>
+                    </div>
+                    {cmd.shortcut && (
+                      <kbd className="text-[9px] font-mono text-gray-400 bg-gray-100 px-1 py-0.5 rounded">{cmd.shortcut}</kbd>
+                    )}
+                  </button>
+                );
+              })}
+              <div className="h-px bg-gray-100 my-1 mx-3" />
+            </div>
+          );
+        })
+      )}
+    </div>
   );
 };
