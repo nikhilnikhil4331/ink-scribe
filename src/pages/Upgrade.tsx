@@ -1,15 +1,61 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, CheckCircle2, Sparkles, Shield, Zap, CreditCard } from 'lucide-react';
+import {
+  ArrowLeft, Crown, CheckCircle2, Sparkles, Shield, Zap,
+  CreditCard, Star, TrendingUp, Brain, BookOpen, Target,
+  Gift, Flame, Users
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/hooks/usePremium';
 
-const features = [
-  { icon: Sparkles, text: 'AI Writing Assistant' },
-  { icon: Zap, text: 'Voice Dictation' },
-  { icon: Shield, text: 'AI Style Matcher' },
-  { icon: Crown, text: 'Unlimited Exports' },
+const plans = [
+  {
+    code: 'weekly',
+    label: 'Student Pro',
+    price: 49,
+    period: '/week',
+    icon: Zap,
+    features: ['All AI features', 'All handwriting styles', 'PDF export', 'Voice dictation'],
+  },
+  {
+    code: 'monthly',
+    label: 'Premium',
+    price: 99,
+    period: '/month',
+    icon: Star,
+    popular: true,
+    features: ['Everything in Student Pro', 'Priority AI responses', 'Exam pack discounts', 'Early access to features'],
+  },
+  {
+    code: 'annual',
+    label: 'Annual Premium',
+    price: 499,
+    period: '/year',
+    icon: TrendingUp,
+    savings: 'Save 58%',
+    features: ['Everything in Premium', 'Just ₹41.6/month', 'All exam packs FREE', 'Priority support'],
+  },
+  {
+    code: 'lifetime',
+    label: 'Lifetime',
+    price: 1999,
+    period: 'one-time',
+    icon: Crown,
+    savings: '🔥 Limited',
+    features: ['Everything, forever', 'All future updates FREE', 'VIP support', 'Lifetime badge'],
+  },
+];
+
+const allFeatures = [
+  { icon: Sparkles, text: 'AI Note Generator', desc: 'Unlimited AI notes' },
+  { icon: Brain, text: 'AI Solver', desc: 'Solve any problem' },
+  { icon: Target, text: 'AI Flashcards', desc: 'Auto study cards' },
+  { icon: BookOpen, text: 'Voice Dictation', desc: 'Speak to write' },
+  { icon: Crown, text: '16+ Handwriting Styles', desc: 'Your handwriting, AI-powered' },
+  { icon: Gift, text: 'Exam Packs', desc: 'JEE, NEET, UPSC content' },
+  { icon: Shield, text: 'Unlimited Exports', desc: 'PDF, image, share' },
+  { icon: Zap, text: 'Priority AI', desc: 'Faster responses' },
 ];
 
 const Upgrade: React.FC = () => {
@@ -27,108 +73,144 @@ const Upgrade: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-lg">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-3xl border border-border/50 shadow-xl overflow-hidden"
-        >
-          <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-4 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-white text-sm font-medium">
-              <Crown className="w-4 h-4" />
-              Premium Features
-            </div>
+      <main className="container mx-auto px-4 py-6 max-w-4xl space-y-8 pb-12">
+        {/* Social Proof */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-sm font-medium">
+            <Flame className="h-4 w-4 text-orange-500" />
+            2,500+ students already premium
           </div>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            {isPremium ? "You're Premium! 🎉" : "Unlock Your Full Potential"}
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto text-sm">
+            {isPremium
+              ? 'All premium features are active. Keep creating amazing notes!'
+              : 'The ultimate AI study companion — write, solve, and learn smarter.'}
+          </p>
+        </div>
 
-          <div className="p-6 space-y-4">
-            <h2 className="text-xl font-bold text-center text-foreground">
-              {isPremium ? 'You\'re Premium! 🎉' : 'Unlock Everything'}
-            </h2>
-            <p className="text-sm text-muted-foreground text-center">
-              {isPremium
-                ? 'You have access to all premium features.'
-                : 'Get access to all premium features and create beautiful handwritten notes effortlessly.'}
-            </p>
-
-            <div className="grid gap-3 pt-4">
-              {features.map((feature, index) => (
+        {isPremium ? (
+          <div className="text-center py-8">
+            <Button onClick={() => navigate('/')} className="rounded-xl">Go to Editor</Button>
+          </div>
+        ) : (
+          <>
+            {/* Features Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {allFeatures.map((feature, index) => (
                 <motion.div
                   key={feature.text}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-card border border-border/30 text-center"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                     <feature.icon className="w-4 h-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-foreground">{feature.text}</span>
-                  <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
+                  <div className="text-xs font-medium">{feature.text}</div>
+                  <div className="text-[10px] text-muted-foreground">{feature.desc}</div>
                 </motion.div>
               ))}
             </div>
-          </div>
 
-          <div className="h-px bg-border mx-6" />
-
-          <div className="p-6 space-y-4">
-            {isPremium ? (
-              <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-xl border border-green-200 dark:border-green-800 text-center">
-                <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  ✅ Your premium subscription is active
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => navigate('/payment?plan=weekly')}
-                    className="p-4 rounded-2xl border-2 border-border/50 bg-card hover:border-primary hover:bg-primary/5 transition-all text-left"
-                  >
-                    <div className="text-xl font-bold">₹49</div>
-                    <div className="text-xs text-muted-foreground">/week</div>
-                    <div className="text-sm font-medium mt-1">Weekly</div>
-                  </button>
-                  <button
-                    onClick={() => navigate('/payment?plan=monthly')}
-                    className="relative p-4 rounded-2xl border-2 border-primary bg-primary/5 shadow-lg shadow-primary/10 text-left"
-                  >
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-                      Best Value
-                    </span>
-                    <div className="text-xl font-bold">₹99</div>
-                    <div className="text-xs text-muted-foreground">/month</div>
-                    <div className="text-sm font-medium mt-1">Monthly</div>
-                  </button>
-                </div>
-
-                <Button
-                  onClick={() => navigate('/payment?plan=monthly')}
-                  className="w-full h-14 rounded-2xl text-base font-semibold bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20"
+            {/* Plans */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {plans.map((plan, index) => (
+                <motion.div
+                  key={plan.code}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                  className={`relative bg-card rounded-2xl border-2 overflow-hidden ${
+                    plan.popular ? 'border-primary shadow-xl shadow-primary/10' : 'border-border/30'
+                  }`}
                 >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Subscribe Now
-                </Button>
-              </>
-            )}
+                  {plan.popular && (
+                    <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-primary/60" />
+                  )}
+                  {plan.savings && (
+                    <div className={`absolute top-3 right-3 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      plan.savings.includes('🔥') ? 'bg-orange-500/10 text-orange-600' : 'bg-green-500/10 text-green-600'
+                    }`}>
+                      {plan.savings}
+                    </div>
+                  )}
+                  {plan.popular && (
+                    <div className="absolute top-3 right-3 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <plan.icon className={`h-5 w-5 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span className="font-semibold">{plan.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-3xl font-bold">₹{plan.price}</span>
+                      <span className="text-sm text-muted-foreground">{plan.period}</span>
+                    </div>
+                    <ul className="space-y-2 mb-5">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2 text-sm">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      onClick={() => navigate(`/payment?plan=${plan.code}`)}
+                      className={`w-full rounded-xl ${
+                        plan.popular
+                          ? 'bg-gradient-to-r from-primary to-primary/80'
+                          : ''
+                      }`}
+                      variant={plan.popular ? 'default' : 'outline'}
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Get {plan.label}
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
-            <p className="text-xs text-center text-muted-foreground">
-              Secured by Razorpay • UPI, Cards, Wallets accepted
-            </p>
-          </div>
-        </motion.div>
+            {/* B2B Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/20 text-center space-y-3"
+            >
+              <Users className="h-8 w-8 text-primary mx-auto" />
+              <h3 className="text-lg font-bold">For Schools & Coaching Centers</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Custom plans starting ₹25,000/year. White-label option available. Contact us for bulk pricing.
+              </p>
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  window.open('mailto:nikhilnikhil4331@gmail.com?subject=NikNote%20B2B%20Inquiry&body=Hi%2C%20I%20am%20interested%20in%20NikNote%20for%20my%20institution.%20Please%20share%20details.', '_blank');
+                }}
+              >
+                Contact for B2B Pricing
+              </Button>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6 text-center"
-        >
-          <Button variant="ghost" onClick={() => navigate('/')} className="rounded-xl text-muted-foreground">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Notes
-          </Button>
-        </motion.div>
+            {/* Trust Signals */}
+            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <Shield className="h-3.5 w-3.5" />
+                Secured by Razorpay
+              </span>
+              <span>UPI, Cards, Wallets</span>
+              <span>Cancel Anytime</span>
+              <span>7-day Refund Policy</span>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

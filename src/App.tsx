@@ -48,6 +48,9 @@ const QAPage = lazy(() =>
 const BlogPage = lazy(() =>
   import("@/pages/Blog").then(m => ({ default: m.default }))
 );
+const B2BPage = lazy(() =>
+  import("@/pages/B2BLanding").then(m => ({ default: m.default }))
+);
 
 // Simple page loader
 const PageLoader = () => (
@@ -111,6 +114,8 @@ const App = () => {
                     <Route path="/achievements" element={<Achievements />} />
                     <Route path="/notebooks" element={<MyNotebooks />} />
                     <Route path="/landing" element={<PremiumLanding />} />
+                    <Route path="/schools" element={<Suspense fallback={<PageLoader />}><B2BPage /></Suspense>} />
+                    <Route path="/institutions" element={<Suspense fallback={<PageLoader />}><B2BPage /></Suspense>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
