@@ -41,7 +41,8 @@ const PremiumLanding: React.FC = () => {
       <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <img src={niknoteLogoImg} alt="Niknote" className="h-9" />
+            <img src={niknoteLogoImg} alt="NikNote" className="h-10" />
+            <span className="text-xl font-extrabold bg-gradient-to-r from-orange-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">NikNote</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/50 font-medium">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -67,6 +68,16 @@ const PremiumLanding: React.FC = () => {
         <GlowOrb className="w-[500px] h-[500px] bg-purple-600/15 top-1/4 -right-40" />
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 text-center max-w-4xl mx-auto px-6">
+          {/* Logo Big */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
+            className="flex items-center justify-center gap-4 mb-8"
+          >
+            <img src={niknoteLogoImg} alt="NikNote" className="h-20 sm:h-24 drop-shadow-2xl" style={{ filter: 'drop-shadow(0 0 30px rgba(168,85,247,0.4))' }} />
+          </motion.div>
+
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -84,7 +95,7 @@ const PremiumLanding: React.FC = () => {
             transition={{ delay: 0.35, duration: 0.8 }}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05]"
           >
-            <span className="block">Niknote:</span>
+            <span className="block">NikNote:</span>
             <span className="block mt-2 bg-gradient-to-r from-orange-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">
               Your Notes, Supercharged&nbsp;by&nbsp;AI.
             </span>
@@ -108,7 +119,7 @@ const PremiumLanding: React.FC = () => {
               <span className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 animate-pulse" />
               <span className="absolute inset-[2px] rounded-full bg-gradient-to-r from-orange-500/90 via-pink-500/90 to-purple-600/90 group-hover:from-orange-400 group-hover:via-pink-400 group-hover:to-purple-500 transition-all" />
               <span className="relative flex items-center gap-2">
-                ✨ Try Niknote Free
+                ✨ Try NikNote Free
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
               </span>
             </button>
@@ -135,7 +146,7 @@ const PremiumLanding: React.FC = () => {
           <div className="text-center mb-10">
             <span className="text-sm font-semibold tracking-widest uppercase text-orange-400/80">Watch the magic</span>
             <h2 className="mt-3 text-3xl md:text-5xl font-extrabold text-white">
-              See Niknote in{' '}
+              See NikNote in{' '}
               <span className="bg-gradient-to-r from-orange-400 via-pink-400 to-purple-500 bg-clip-text text-transparent">Action</span>
             </h2>
           </div>
@@ -260,7 +271,7 @@ const PremiumLanding: React.FC = () => {
             <span className="text-sm font-semibold tracking-widest uppercase text-purple-400/80">Feature 02</span>
             <h2 className="mt-4 text-4xl md:text-6xl font-extrabold">
               Stuck? Just Ask{' '}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Niknote.</span>
+              <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">NikNote.</span>
             </h2>
             <p className="mt-4 text-white/40 text-lg max-w-xl mx-auto">
               From calculus to history, our AI Solver breaks down complex problems in seconds.
@@ -351,7 +362,7 @@ const PremiumLanding: React.FC = () => {
             {[
               { icon: '📝', title: 'Smart Summarizer', desc: 'Turn 50-page lectures into crisp, exam-ready notes in one click.' },
               { icon: '🧠', title: 'Auto Quiz Generator', desc: 'Create practice questions from any topic. Test yourself instantly.' },
-              { icon: '🎤', title: 'Voice to Handwriting', desc: 'Dictate your thoughts. Niknote writes them in your handwriting.' },
+              { icon: '🎤', title: 'Voice to Handwriting', desc: 'Dictate your thoughts. NikNote writes them in your handwriting.' },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -432,7 +443,8 @@ const PremiumLanding: React.FC = () => {
       <footer className="relative border-t border-white/[0.06] py-16 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
-            <img src={niknoteLogoImg} alt="Niknote" className="h-7 opacity-60" />
+            <img src={niknoteLogoImg} alt="NikNote" className="h-9" />
+            <span className="text-sm font-bold text-white/60">NikNote</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-white/30">
             <a href="#features" className="hover:text-white/60 transition-colors">Features</a>
@@ -440,7 +452,7 @@ const PremiumLanding: React.FC = () => {
             <a href="#power" className="hover:text-white/60 transition-colors">AI Power</a>
             <button onClick={goApp} className="hover:text-white/60 transition-colors">Open App</button>
           </div>
-          <p className="text-xs text-white/20">© {new Date().getFullYear()} Niknote. All rights reserved.</p>
+          <p className="text-xs text-white/20">© {new Date().getFullYear()} NikNote by Nikhil Jatav. Made with ❤️ in India</p>
         </div>
       </footer>
     </div>
