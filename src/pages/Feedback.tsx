@@ -5,6 +5,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, MessageSquare, Star, Send, CheckCircle2,
@@ -37,7 +38,8 @@ const categories: { id: FeedbackCategory; label: string }[] = [
   { id: 'other', label: '📦 Other' },
 ];
 
-const FeedbackPage: React.FC = () => {
+const FeedbackPage = () => {
+  useDocumentTitle({ title: 'Feedback — NikNote | Help Us Improve', description: 'Share your feedback on NikNote AI study app. Help us improve for Indian students.' });
   const navigate = useNavigate();
   const { user } = useAuth();
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion');

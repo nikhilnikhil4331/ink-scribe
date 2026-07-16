@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -41,7 +42,8 @@ const allFeatures = [
   { icon: Sparkles, text: 'AI Text Tools', desc: 'Rewrite, summarize' },
 ];
 
-const Upgrade: React.FC = () => {
+const Upgrade = () => {
+  useDocumentTitle({ title: 'Upgrade to Premium — NikNote | AI Study App', description: 'Unlock all NikNote premium features — AI notes, handwriting, quizzes, flashcards. Starting ₹49/week.' });
   const navigate = useNavigate();
   const { isPremium } = usePremium();
 

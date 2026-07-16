@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   ArrowLeft, Check, Crown, Sparkles, CheckCircle, AlertCircle,
   Loader2, CreditCard, Shield, Zap, Star, Flame
@@ -62,6 +63,7 @@ function loadRazorpayScript(): Promise<boolean> {
 }
 
 export default function PaymentPage() {
+  useDocumentTitle({ title: 'Go Premium — NikNote | ₹49/week Student Pro, ₹99/month Premium', description: 'Upgrade to NikNote Premium — Unlimited AI notes, 16+ handwriting styles, voice dictation, priority AI. Starting ₹49/week.' });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();

@@ -3,6 +3,7 @@
 // For Schools, Coaching Centers, Colleges
 // This is the ₹5 Crore revenue engine
 // ============================================================
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
@@ -141,7 +142,8 @@ const faqs = [
   },
 ];
 
-const B2BPage: React.FC = () => {
+const B2BPage = () => {
+  useDocumentTitle({ title: 'NikNote for Schools const B2BPage: React.FC = () => { Coaching | AI Learning Platform — Starting ₹25,000/year', description: 'NikNote for schools and coaching centers — AI-powered learning platform. 92% cheaper than printed notes. Teacher dashboard, student analytics. Starting ₹25,000/year.' });
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', institution: '', students: '', message: '' });
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
