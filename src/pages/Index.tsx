@@ -139,12 +139,47 @@ const Index = () => {
   const previewLines = blockEditor.blocks.some(b => b.content.trim()) ? blockEditor.lines : lines;
   const hasContent = blockEditor.blocks.some(b => b.content.trim()) || lines.some(l => l.text.trim());
 
-  // Auto-trigger onboarding for new users
+  // Auto-trigger onboarding for new users + Welcome back toast + Streak
   useEffect(() => {
     if (user) {
       const hasSeenOnboarding = localStorage.getItem('niknote_onboarding_done');
       if (!hasSeenOnboarding) {
         navigate('/onboarding');
+      } else {
+        // Welcome back toast for returning users
+        const lastVisit = localStorage.getItem('niknote_last_visit');
+        const today = new Date().toISOString().split('T')[0];
+        if (lastVisit && lastVisit !== today) {
+          const streak = parseInt(localStorage.getItem('niknote_streak') || '0', 10);
+          const newStreak = streak + 1;
+          localStorage.setItem('niknote_streak', newStreak.toString());
+          if (newStreak >= 3) {
+            toast.success(`🔥 ${newStreak} day streak! Keep it up!`);
+          } else {
+            toast.success('Welcome back! 👋');
+          }
+        }
+        localStorage.setItem('niknote_last_visit', today);
+
+        // Referral reminder (show once every 7 days)
+        const lastReferralPrompt = localStorage.getItem('niknote_referral_prompt');
+        const daysSincePrompt = lastReferralPrompt ? (Date.now() - parseInt(lastReferralPrompt, 10)) / 86400000 : 999;
+        if (daysSincePrompt >= 7) {
+          setTimeout(() => {
+            toast('Share NikNote with friends? 🎁', {
+              description: '3 friends = 7 days FREE Premium!',
+              duration: 8000,
+              action: {
+                label: 'Share 📱',
+                onClick: () => {
+                  const msg = encodeURIComponent('🎓 NikNote — Free AI Study App! ✨\n\n✍️ Handwriting notes (16+ styles)\n🧠 AI Teacher (Hindi!)\n📝 Quiz + Flashcards\n\nDownload FREE: https://niknote.online');
+                  window.open(`https://wa.me/?text=${msg}`, '_blank');
+                }
+              }
+            });
+            localStorage.setItem('niknote_referral_prompt', Date.now().toString());
+          }, 10000);
+        }
       }
     }
   }, [user, navigate]);
@@ -654,7 +689,7 @@ const Index = () => {
                     <DropdownMenuItem onClick={handleReset}><RotateCcw className="w-4 h-4 mr-2" /> Reset</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/notebooks')}><FileText className="w-4 h-4 mr-2" /> My Notebooks</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/feedback')}><MessageSquare className="w-4 h-4 mr-2" /> Feedback 💬</DropdownMenuItem>
-                    {!premium.isPremium && <DropdownMenuItem onClick={() => navigate('/payment')}><Crown className="w-4 h-4 mr-2" /> Upgrade</DropdownMenuItem>}
+                    {!premium.isPremium && <DropdownMenuItem onClick={() => navigate('/payment')}><Crown className="w-4 h-4 mr-2" /> Upgrade to Premium ✨</DropdownMenuItem>}
                     {user ? <DropdownMenuItem onClick={() => navigate('/account')}>👤 Account</DropdownMenuItem>
                       : <DropdownMenuItem onClick={() => navigate('/login')}><LogIn className="w-4 h-4 mr-2" /> Sign In</DropdownMenuItem>}
                   </DropdownMenuContent>

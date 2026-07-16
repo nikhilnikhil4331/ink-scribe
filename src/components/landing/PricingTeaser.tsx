@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight, Sparkles } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,50 +11,54 @@ const plans = [
     period: 'forever',
     description: 'Shuru karo — risk nahi!',
     features: [
-      '✍️ 16+ handwriting styles',
-      '🧠 AI Teacher (28+ subjects)',
-      '📝 Quiz Generator',
+      '✍️ 1 handwriting style',
+      '🧠 AI Teacher (limited)',
+      '📝 5 AI notes/month',
       '📄 Basic PDF export',
       '🎨 12 ink colors',
       '📱 Mobile + Desktop',
     ],
     cta: 'Start Free ✨',
     highlighted: false,
+    link: '/signup',
   },
   {
     name: 'Student Pro',
-    price: '₹99',
-    period: '/month',
-    description: 'Ek chai se sasta! ☕',
+    price: '₹49',
+    period: '/week',
+    description: 'Try karke dekho! ☕',
     features: [
       '✨ Sab kuch Free mein +',
-      '📄 Unlimited pages',
-      '📥 No watermark PDF',
-      '🎨 Custom colors + presets',
+      '📄 Unlimited AI notes',
       '🧠 Advanced AI features',
-      '💾 Project history & sync',
+      '📥 No watermark PDF',
+      '🎨 16+ handwriting styles',
+      '💾 Voice dictation',
+      '⚡ Priority AI responses',
+      '📊 Flashcards & quizzes',
+    ],
+    cta: 'Try ₹49/week',
+    highlighted: false,
+    link: '/payment?plan=weekly',
+  },
+  {
+    name: 'Premium',
+    price: '₹99',
+    period: '/month',
+    description: 'Best value — ek chai se sasta! ☕',
+    features: [
+      '✨ Sab kuch Student Pro +',
+      '📄 Unlimited everything',
+      '🧠 Priority AI responses',
+      '📥 HD PDF export',
+      '🎨 All handwriting DNA',
+      '💾 Full history & sync',
       '📊 Mind Maps & Diagrams',
       '⚡ Priority rendering',
     ],
-    cta: 'Get Student Pro 🔥',
+    cta: 'Get Premium 🔥',
     highlighted: true,
-  },
-  {
-    name: 'Lifetime',
-    price: '₹999',
-    period: 'once',
-    description: 'Ek baar pay, forever use!',
-    features: [
-      '✨ Sab kuch Student Pro +',
-      '🔓 Lifetime access',
-      '🚀 Early access to new features',
-      '💬 Priority support',
-      '👨‍🏫 Teacher mode',
-      '📊 Batch export',
-      '🔌 API access',
-    ],
-    cta: 'Get Lifetime Access 🏆',
-    highlighted: false,
+    link: '/payment?plan=monthly',
   },
 ];
 
@@ -119,7 +123,7 @@ export const PricingTeaser: React.FC = () => {
               </ul>
 
               <Button
-                onClick={() => navigate(plan.highlighted ? '/payment' : '/signup')}
+                onClick={() => navigate(plan.link)}
                 className={`w-full rounded-full h-12 font-semibold ${
                   plan.highlighted
                     ? 'bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 text-white shadow-lg shadow-primary/20'
@@ -131,10 +135,15 @@ export const PricingTeaser: React.FC = () => {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
 
-              {plan.name === 'Student Pro' && (
-                <p className="text-center text-[11px] text-muted-foreground mt-3">
-                  UPI • Credit Card • Debit Card accepted
-                </p>
+              {plan.highlighted && (
+                <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    Razorpay Secure
+                  </span>
+                  <span>•</span>
+                  <span>UPI • Cards • Wallets</span>
+                </div>
               )}
             </motion.div>
           ))}
