@@ -471,6 +471,69 @@ Jee, NEET pack se alag — UPSC-specific content:
 
 **Start UPSC prep free: https://niknote.online** 🎯`,
   },
+  {
+    slug: 'ai-homework-helper-hindi',
+    title: 'AI Homework Helper in Hindi — Free App for CBSE Students 2026',
+    excerpt: 'AI se homework karo Hindi mein! CBSE Class 1-12 ke liye free AI homework helper. Solve math, science, English questions instantly.',
+    category: 'Study Tool',
+    readTime: '4 min',
+    tags: ['homework helper', 'AI app', 'CBSE', 'Hindi', 'free'],
+    content: `# AI Homework Helper in Hindi 📚
+
+CBSE students ke liye free AI homework helper — Hindi mein jawab deta hai!
+
+## Kaise Kaam Karta Hai?
+
+1. Question type karo ya photo upload karo
+2. AI Hindi mein samjhai
+3. Step-by-step solution milega
+4. Handwriting mein notes bana lo
+
+**Try free: https://niknote.online** 📚`,
+  },
+  {
+    slug: 'handwriting-notes-maker-online-free',
+    title: 'Handwriting Notes Maker Online Free — Convert Text to Handwriting Instantly',
+    excerpt: 'Free online handwriting notes maker — text type karo, handwriting mein convert karo. 16+ styles, PDF download, mobile friendly. No signup needed.',
+    category: 'Tool',
+    readTime: '3 min',
+    tags: ['handwriting maker', 'online free', 'text to handwriting', 'notes maker'],
+    content: `# Free Online Handwriting Notes Maker ✍️
+
+NikNote se text ko handwriting mein convert karo — bilkul free!
+
+## Features
+- ✅ 16+ handwriting styles
+- ✅ PDF download free
+- ✅ No signup required
+- ✅ Works on mobile
+- ✅ 12 ink colors
+
+**Try free: https://niknote.online** ✍️`,
+  },
+  {
+    slug: 'best-note-taking-app-india-2026',
+    title: 'Best Note Taking App India 2026 — Top 5 Apps Compared for Indian Students',
+    excerpt: 'India ke top 5 note-taking apps compared — NikNote vs Notion vs OneNote vs GoodNotes vs Google Keep. Price, features, Hindi support, UPI payment.',
+    category: 'Comparison',
+    readTime: '8 min',
+    tags: ['note taking app', 'India', 'comparison', 'best app', 'students'],
+    content: `# Best Note Taking App India 2026 🇮🇳
+
+Indian students ke liye top 5 note-taking apps:
+
+| App | Price | Hindi AI | Handwriting | UPI | Offline |
+|-----|-------|----------|-------------|-----|---------|
+| NikNote | ₹99/mo | ✅ | ✅ | ✅ | ✅ |
+| Notion | ₹670/mo | ❌ | ❌ | ❌ | ❌ |
+| OneNote | Free | ❌ | Basic | ❌ | ✅ |
+| GoodNotes | ₹899 | ❌ | ✅ | ❌ | ✅ |
+| Google Keep | Free | ❌ | ❌ | ❌ | ❌ |
+
+**Winner: NikNote** — Best for Indian students!
+
+**Try free: https://niknote.online** 🇮🇳`,
+  },
 ];
 
 const BlogPage: React.FC = () => {

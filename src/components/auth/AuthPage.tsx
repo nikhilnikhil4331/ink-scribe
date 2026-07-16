@@ -43,6 +43,14 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Account created! Welcome aboard! 🎉');
+          // Track referral conversion
+          try {
+            const refCode = localStorage.getItem('niknote_referral');
+            if (refCode) {
+              localStorage.setItem('niknote_referral_converted', refCode);
+              localStorage.removeItem('niknote_referral');
+            }
+          } catch {}
           navigate('/');
         }
       }
