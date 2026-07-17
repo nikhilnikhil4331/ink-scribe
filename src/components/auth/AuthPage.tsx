@@ -43,6 +43,17 @@ export const AuthPage: React.FC = () => {
         } else {
           playSuccess();
           toast.success('Account created! Welcome aboard! 🎉');
+          // Show upgrade nudge after 3 seconds
+          setTimeout(() => {
+            toast('Get Premium for just ₹49/week! 🎁', {
+              description: '3 AI notes free, upgrade for unlimited everything',
+              duration: 10000,
+              action: {
+                label: 'See Plans',
+                onClick: () => { window.location.href = '/upgrade'; }
+              }
+            });
+          }, 3000);
           // Track referral conversion
           try {
             const refCode = localStorage.getItem('niknote_referral');

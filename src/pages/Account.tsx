@@ -264,17 +264,16 @@ export default function AccountPage() {
                   {isPremium ? (
                     <span className="inline-flex items-center gap-1.5 text-sm text-accent mt-3 font-semibold bg-accent/10 px-3 py-1.5 rounded-full">
                       <Crown className="w-4 h-4" />
-                      Premium Member
+                      Premium Member ✨
                     </span>
                   ) : (
                     <Button 
-                      variant="outline" 
                       size="sm" 
                       onClick={() => navigate('/payment')}
-                      className="mt-3 gap-2 border-accent/30 text-accent hover:bg-accent/10"
+                      className="mt-3 gap-2 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-400 hover:via-pink-400 hover:to-purple-500 text-white font-bold shadow-lg shadow-purple-500/20"
                     >
                       <Crown className="w-4 h-4" />
-                      Upgrade to Premium
+                      Upgrade to Premium — ₹49/week
                     </Button>
                   )}
                 </div>
