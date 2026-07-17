@@ -3,11 +3,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Crown, CheckCircle2, Sparkles, Shield, Zap,
-  CreditCard, Star, Brain, BookOpen, Flame, Users
+  CreditCard, Star, Brain, BookOpen, Flame, Users, TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePremium } from '@/hooks/usePremium';
+import { UrgencyTimer } from '@/components/urgency/UrgencyTimer';
 
 const plans = [
   {
@@ -59,11 +60,17 @@ const Upgrade = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-8 pb-12">
+        {/* Urgency Timer */}
+        <UrgencyTimer variant="card" />
+
         {/* Social Proof */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 via-orange-500/10 to-pink-500/10 text-sm font-medium border border-primary/10">
             <Flame className="h-4 w-4 text-orange-500" />
             2,500+ students already premium
+            <span className="text-muted-foreground">•</span>
+            <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+            <span className="text-green-600 font-semibold">₹49/week</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             {isPremium ? "You're Premium! 🎉" : "Unlock Your Full Potential"}

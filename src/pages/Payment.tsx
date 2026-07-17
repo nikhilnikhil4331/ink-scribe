@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   ArrowLeft, Check, Crown, Sparkles, CheckCircle, AlertCircle,
-  Loader2, CreditCard, Shield, Zap, Star, Flame
+  Loader2, CreditCard, Shield, Zap, Star, Flame, Clock, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremium } from "@/hooks/usePremium";
+import { UrgencyTimer } from "@/components/urgency/UrgencyTimer";
 
 type PlanCode = "weekly" | "monthly";
 type PaymentStep = "select" | "processing" | "success" | "error";
@@ -272,16 +273,22 @@ export default function PaymentPage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-4 space-y-4 pb-28">
-        {/* Social Proof Bar */}
+        {/* Urgency Timer Card */}
+        <UrgencyTimer variant="card" />
+
+        {/* Social Proof Bar — Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center gap-2 py-2 px-4 bg-primary/5 rounded-full text-xs font-medium"
+          className="flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-primary/5 via-orange-500/5 to-pink-500/5 rounded-full text-xs font-medium border border-primary/10"
         >
           <Flame className="h-3.5 w-3.5 text-orange-500" />
           <span>2,500+ students already premium</span>
           <span className="text-muted-foreground">•</span>
           <span className="text-green-600">4.8 ⭐</span>
+          <span className="text-muted-foreground">•</span>
+          <TrendingUp className="h-3 w-3 text-green-500" />
+          <span className="text-green-600 font-semibold">₹49/week</span>
         </motion.div>
 
         {/* Premium Features Grid */}
@@ -379,6 +386,8 @@ export default function PaymentPage() {
       {/* Sticky Pay Button */}
       <div className="fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/40 p-4">
         <div className="max-w-lg mx-auto space-y-2">
+          {/* Urgency inline */}
+          <UrgencyTimer variant="inline" className="justify-center" />
           <Button
             onClick={handlePay}
             disabled={paymentStep === "processing"}

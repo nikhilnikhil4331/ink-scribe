@@ -71,6 +71,8 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ open, onOpenChange, 
           <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-muted-foreground">
             <Flame className="h-3 w-3 text-orange-500" />
             <span>2,500+ students already premium</span>
+            <span>•</span>
+            <span className="text-orange-500 font-semibold">Offer ends soon!</span>
           </div>
         </div>
 
