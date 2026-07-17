@@ -690,6 +690,14 @@ const Index = () => {
                     <DropdownMenuItem onClick={() => navigate('/notebooks')}><FileText className="w-4 h-4 mr-2" /> My Notebooks</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/feedback')}><MessageSquare className="w-4 h-4 mr-2" /> Feedback 💬</DropdownMenuItem>
                     {!premium.isPremium && <DropdownMenuItem onClick={() => navigate('/payment')}><Crown className="w-4 h-4 mr-2" /> Upgrade to Premium ✨</DropdownMenuItem>}
+                    {!premium.isPremium && (() => {
+                      const aiAccess = premium.checkFeatureAccess('ai_solver');
+                      return aiAccess.limit < Infinity ? (
+                        <div className="px-2 py-1.5 text-[10px] text-amber-600 flex items-center gap-1.5">
+                          <Zap className="h-3 w-3" /> AI: {aiAccess.limit - aiAccess.used}/{aiAccess.limit} free left today
+                        </div>
+                      ) : null;
+                    })()}
                     {user ? <DropdownMenuItem onClick={() => navigate('/account')}>👤 Account</DropdownMenuItem>
                       : <DropdownMenuItem onClick={() => navigate('/login')}><LogIn className="w-4 h-4 mr-2" /> Sign In</DropdownMenuItem>}
                   </DropdownMenuContent>
