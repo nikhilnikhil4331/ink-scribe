@@ -19,13 +19,14 @@ export type PremiumFeature =
   | "ai_flashcards";
 
 // Free tier limits — MUST match PremiumContext.tsx FREE_LIMITS
+// Tightened for better free→paid conversion (users must feel the need)
 const FREE_LIMITS: Record<PremiumFeature, { limit: number; period: "day" | "month" }> = {
-  ai_note_generator: { limit: 5, period: "month" },
-  ai_solver: { limit: 10, period: "day" },
-  ai_text_tools: { limit: 20, period: "day" },
+  ai_note_generator: { limit: 3, period: "month" },
+  ai_solver: { limit: 3, period: "day" },
+  ai_text_tools: { limit: 5, period: "day" },
   handwriting_styles: { limit: 1, period: "month" },
-  image_pdf_convert: { limit: 3, period: "month" },
-  voice_to_notes: { limit: 10, period: "month" },
+  image_pdf_convert: { limit: 2, period: "month" },
+  voice_to_notes: { limit: 3, period: "month" },
   ai_flashcards: { limit: 1, period: "month" },
 };
 

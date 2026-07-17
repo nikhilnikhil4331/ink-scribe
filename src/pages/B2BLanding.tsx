@@ -4,6 +4,7 @@
 // This is the ₹5 Crore revenue engine
 // ============================================================
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { supabase } from '@/integrations/supabase/client';
 
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
@@ -153,15 +154,42 @@ const B2BPage = () => {
     e.preventDefault();
     setSubmitting(true);
 
-    // Send email via mailto
-    const subject = encodeURIComponent(`NikNote B2B Inquiry - ${formData.institution}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nInstitution: ${formData.institution}\nStudents: ${formData.students}\nMessage: ${formData.message}`
-    );
-    window.open(`mailto:nikhilnikhil4331@gmail.com?subject=${subject}&body=${body}`, '_blank');
+    try {
+      // Save lead to Supabase via edge function
+      const { error } = await supabase.functions.invoke('b2b-lead', {
+        body: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          institution: formData.institution,
+          students: formData.students,
+          message: formData.message,
+          plan: 'school_pro',
+        },
+      });
 
-    toast.success("Thank you! We'll contact you within 24 hours 🎉");
-    setSubmitting(false);
+      if (error) {
+        console.error('B2B lead error:', error);
+      }
+
+      // Also open mailto as backup notification
+      const subject = encodeURIComponent(`NikNote B2B Inquiry - ${formData.institution}`);
+      const body = encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nInstitution: ${formData.institution}\nStudents: ${formData.students}\nMessage: ${formData.message}`
+      );
+      window.open(`mailto:nikhilnikhil4331@gmail.com?subject=${subject}&body=${body}`, '_blank');
+
+      toast.success("Thank you! We'll contact you within 24 hours 🎉");
+    } catch (err) {
+      console.error('Submit error:', err);
+      // Fallback: just mailto
+      const subject = encodeURIComponent(`NikNote B2B Inquiry - ${formData.institution}`);
+      const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nInstitution: ${formData.institution}\nStudents: ${formData.students}\nMessage: ${formData.message}`);
+      window.open(`mailto:nikhilnikhil4331@gmail.com?subject=${subject}&body=${body}`, '_blank');
+      toast.success("Thank you! We'll contact you soon 🎉");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
