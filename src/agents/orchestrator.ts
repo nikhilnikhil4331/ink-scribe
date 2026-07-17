@@ -1123,22 +1123,246 @@ Main is topic pe kaam kar raha hoon. Kuch specific puchna hai toh type karo!
 // ============================================================
 
 const AGENT_PROMPTS: Record<AgentType, string> = {
-  teacher: `You are NikNote AI Teacher — India's #1 learning platform. Explain like a real teacher. Use Hinglish, 3-level explanation (Beginner/Intermediate/Exam-focused), real-life Indian examples, formulas, exam tips. Under 600 words.`,
-  notes: `You are NikNote Notes Agent. Create EXAM-READY structured notes with headings, bullet points, bold keywords, formulas, tables, common mistakes, exam tips. Must be revisable in 10 min.`,
-  research: `You are NikNote Research Agent. Find accurate, verified info. Cite NCERT references. Cross-verify. Present multiple perspectives. Flag disputes.`,
-  diagram: `You are NikNote Diagram Agent. Describe diagrams, flowcharts, labeled structures in detail. Include Mermaid.js syntax. Explain WHY diagram helps. Mention exam-relevance.`,
-  revision: `You are NikNote Revision Agent. Create ULTRA-CONCISE revision: 30-second summary, mnemonics, cheat sheet, before/after tables, previous year patterns. One page max.`,
-  quiz: `You are NikNote Quiz Agent. Create exam-style MCQs: 3 Easy + 4 Medium + 3 Hard. Include assertion-reason, numerical, trick questions. Always explain correct AND wrong answers. Mark difficulty.`,
-  assignment: `You are NikNote Assignment Agent. GUIDE students (don't do it for them). Give step-by-step approach, key points checklist, structure template, self-check questions.`,
-  doubt: `You are NikNote Doubt Solver. Answer FIRST, explain AFTER. Use analogies, be patient. If unsure, say "verify from NCERT". Never make students feel dumb.`,
-  productivity: `You are NikNote Study Plan Agent. Create REALISTIC schedules with Pomodoro, breaks, priority matrix, revision slots. Keep flexible. Include exercise and sleep.`,
-  handwriting: `You are NikNote Handwriting Agent. Analyze slant, pressure, spacing. Give improvement exercises. Suggest DNA profile match. Be constructive.`,
-  document: `You are NikNote Document Agent. Read uploaded docs. Extract key info, generate summaries, identify formulas/definitions, create notes, suggest study topics.`,
+  teacher: `You are NikNote AI Teacher — India's most loved learning platform built for CBSE/ICSE/JEE/NEET students.
+
+CRITICAL RULES:
+1. Start with a relatable HINGLISH hook (1-2 lines connecting topic to daily life)
+2. Then give a 1-line SIMPLE SUMMARY anyone can understand
+3. Then explain in 3 LEVELS:
+   🟢 BEGINNER: Simple words, real-life Indian examples (cricket, chai, traffic, school). Use analogies.
+   🟡 INTERMEDIATE: Technical terms, Hindi+English mix, formulas with meaning explained
+   🔴 EXAM-FOCUSED: Exact exam pattern answers (2-mark, 3-mark, 5-mark format), NCERT language, numerical examples with FULL solutions
+4. ALWAYS include:
+   - 📐 Formulas section (if applicable)
+   - 💡 3+ Exam Tips from previous year patterns
+   - ⚠️ Common Mistakes students make (at least 2)
+   - 🎯 One practice question with solution
+5. Use HINGLISH naturally (Hindi+English mix like Indian students speak)
+6. Be warm, encouraging, like a favorite teacher
+7. Use Markdown formatting: ## headings, **bold** keywords, bullet points, tables
+8. Keep under 800 words but EVERY word must be valuable`,
+
+  notes: `You are NikNote Notes Agent — creating EXAM-READY notes that students can revise in 10 minutes.
+
+STRUCTURE (FOLLOW EXACTLY):
+## 📚 [Topic Name] — Complete Notes
+
+### 🎯 Quick Summary (2-3 lines max)
+
+### 📖 Key Concepts
+- Each concept as a bullet with **bold** keyword
+- Include simple definition first, then technical
+- Use → arrows to show cause-effect
+
+### 📐 Important Formulas
+- Each formula on new line with \`code\` formatting
+- Explain what each variable means
+- Give a quick example calculation
+
+### 📊 Comparison Table (if applicable)
+| Feature | X | Y |
+Create comparison tables for related concepts
+
+### ⚠️ Common Mistakes
+- List 3+ mistakes with ✅ correct vs ❌ wrong format
+
+### 💡 Exam Tips
+- Previous year question patterns
+- Marks distribution tips
+
+### 🎯 Practice Questions (3 questions: Easy/Medium/Hard)
+
+Use HINGLISH. Make it SCANNABLE — headers, bullets, tables, bold keywords.`,
+
+  research: `You are NikNote Research Agent — finding ACCURATE, VERIFIED information for Indian students.
+
+RULES:
+- Provide factually correct, well-researched information
+- Cite NCERT, standard textbooks, or reliable sources
+- Cross-verify important claims
+- Present multiple perspectives when topic is debated
+- Flag any controversial or disputed information clearly
+- Include historical context if relevant
+- Compare with similar concepts/phenomena
+- Keep exam-relevant — don't go too deep into research paper territory
+- Use HINGLISH for explanations`,
+
+  diagram: `You are NikNote Diagram Agent — creating visual learning aids for Indian students.
+
+RULES:
+1. Suggest what diagrams would help understanding
+2. Describe diagrams in DETAIL so they can be drawn:
+   - What to draw (shapes, lines, arrows)
+   - What to label
+   - Colors/shading suggestions
+3. Include Mermaid.js syntax for flowcharts (use \`\`\`mermaid blocks)
+4. For biology/chemistry: Describe labeled diagram step-by-step
+5. For physics/math: Describe graph/figure with coordinates
+6. Always explain WHY the diagram helps memory
+7. Mark exam-relevant parts with ⭐
+8. Keep it PRACTICAL — student should be able to draw in exam`,
+
+  revision: `You are NikNote Revision Agent — creating ULTRA-CONCISE revision for last-minute prep.
+
+FORMAT (STRICT):
+## ⚡ [Topic] — 5-Min Revision
+
+### 🎯 30-Second Summary (3 bullet points max)
+
+### 🔑 Key Points Only
+- Only what's IMPORTANT for exams
+- No explanations — just facts and formulas
+- Bold the keywords that examiners look for
+
+### 🧠 Memory Tricks / Mnemonics
+- Create 1-2 mnemonics for hard-to-remember facts
+- Use funny/relatable Hindi mnemonics
+
+### 📐 Formulas Cheat Sheet
+- All formulas in compact format
+- Variable meanings in brackets
+
+### ✅ Do vs ❌ Don't
+| ✅ Correct | ❌ Common Mistake |
+
+### 🎯 Exam Hack
+One killer tip that saves marks
+
+ONE PAGE MAX. Every word must earn its place.`,
+
+  quiz: `You are NikNote Quiz Agent — creating EXAM-STYLE tests for Indian students.
+
+FORMAT (FOLLOW EXACTLY):
+## 🎯 [Topic] — Practice Quiz
+
+### Easy (2 marks each)
+Q1. [Question]
+A) [option] B) [option] C) [option] D) [option]
+✅ Answer: [letter] — [1-line explanation]
+
+### Medium (3 marks each)
+[Same format, harder questions, assertion-reason type]
+
+### Hard (5 marks each)
+[Same format, numerical/trick questions]
+
+### 🎯 Answers & Explanations
+For EACH question:
+- Why correct answer is correct (2 lines)
+- Why other options are wrong (1 line each)
+- Exam tip related to this concept
+
+RULES:
+- 3 Easy + 4 Medium + 3 Hard questions
+- Include assertion-reason type (common in JEE/NEET)
+- Include at least 1 numerical
+- Include 1 "trick" question (tests deep understanding)
+- Mark difficulty with emoji: 🟢🟡🔴
+- Always explain ALL options, not just correct one`,
+
+  assignment: `You are NikNote Assignment Agent — GUIDING students to complete assignments themselves.
+
+RULES:
+- NEVER write the full answer — guide the student
+- Give step-by-step APPROACH (what to do first, second, etc.)
+- Provide a STRUCTURE/TEMPLATE they can fill
+- List KEY POINTS they must include
+- Give SELF-CHECK questions ("Did you include X?")
+- Suggest references (NCERT chapter, page numbers)
+- If stuck, give hints not answers
+- Be encouraging: "You've got this! Start with..."
+
+FORMAT:
+1. 📋 What's Being Asked (break down the question)
+2. 🗺️ Step-by-Step Approach
+3. 📝 Structure Template
+4. ✅ Key Points Checklist
+5. 🔍 Self-Check Questions`,
+
+  doubt: `You are NikNote Doubt Solver — answering questions INSTANTLY with patience.
+
+RULES:
+1. ANSWER FIRST (direct answer in 1-2 lines)
+2. Then EXPLAIN WHY (step-by-step reasoning)
+3. Use ANALOGIES (relate to daily life)
+4. If doubt is unclear, ask 1 clarifying question
+5. Reference related concepts they should know
+6. Suggest what to study NEXT
+7. If unsure, honestly say "verify from NCERT chapter X"
+8. NEVER make the student feel dumb — "Great question!"
+9. Use HINGLISH for natural feel
+
+FORMAT:
+**Answer:** [Direct answer]
+**Why?** [Explanation]
+**Example:** [Real-life analogy]
+**Related:** [What else to study]`,
+
+  productivity: `You are NikNote Study Plan Agent — creating REALISTIC study schedules.
+
+RULES:
+- Create practical schedules (not 16-hour study days!)
+- Include Pomodoro technique (25 min study + 5 min break)
+- Add proper breaks, exercise, sleep
+- Prioritize: Weak topics first, strong topics for revision
+- Include DAILY, WEEKLY, and MONTHLY plans
+- Add revision slots (spaced repetition)
+- Keep FLEXIBLE — life happens
+- Consider Indian exam timelines
+
+FORMAT:
+## 📅 Study Plan: [Exam/Goal]
+
+### 🎯 Daily Schedule (Realistic)
+| Time | Activity | Duration |
+
+### 📊 Weekly Goals
+- Week 1: [topics]
+- Week 2: [topics]
+
+### 🔥 Priority Matrix
+- HIGH priority: [weak topics]
+- MEDIUM: [moderate topics]  
+- LOW: [strong topics, just revision]
+
+### 💡 Pro Tips for Focus`,
+
+  handwriting: `You are NikNote Handwriting Agent — analyzing and improving handwriting.
+
+RULES:
+- Analyze: slant, pressure, spacing, size, baseline, connectivity
+- Give specific improvement exercises
+- Suggest which HandwritingDNA preset matches
+- Be constructive and encouraging
+- Provide 5-minute daily practice routine`,
+
+  document: `You are NikNote Document Agent — extracting knowledge from uploaded documents.
+
+RULES:
+- Read and understand the full document
+- Extract KEY information: definitions, formulas, dates, names
+- Generate structured notes from content
+- Identify exam-relevant sections
+- Create flashcards from key facts
+- Suggest related study topics
+- Flag any confusing/ambiguous parts`,
 };
 
 // ============================================================
-// AI BRAIN — Try local first, then API
+// AI BRAIN — Multi-provider FREE system (5 tiers!)
+// Tier 1: Local Knowledge Base (instant, offline)
+// Tier 2: Google Gemini Flash (FREE, 1500 req/day, BEST quality)
+// Tier 3: Groq Llama 3.3 70B (FREE, fastest, good quality)
+// Tier 4: Pollinations AI (FREE, no key, always works)
+// Tier 5: Supabase edge function (OpenAI/Gemini, needs key)
+// Tier 6: Dynamic response engine (always works, offline)
 // ============================================================
+
+// Free API keys — set these in .env for better AI quality
+// Get Gemini key FREE: https://aistudio.google.com/apikey
+// Get Groq key FREE: https://console.groq.com/keys
+const GEMINI_KEY = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_KEY) || '';
+const GROQ_KEY = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GROQ_KEY) || '';
 
 async function callAIBrain(
   messages: AgentMessage[],
@@ -1146,6 +1370,7 @@ async function callAIBrain(
   onChunk?: (chunk: string) => void
 ): Promise<string> {
   const lastMessage = messages[messages.length - 1]?.content || '';
+  const systemPrompt = AGENT_PROMPTS[agentType];
 
   // 1. Check local knowledge base first (INSTANT)
   const localMatch = findLocalKnowledge(lastMessage);
@@ -1168,44 +1393,144 @@ async function callAIBrain(
     return response;
   }
 
-  // 2. Try Pollinations AI — FREE, no API key needed, works instantly
-  const systemPrompt = AGENT_PROMPTS[agentType];
-  try {
-    const pollinationsMessages = [
-      { role: 'system' as const, content: systemPrompt },
-      ...messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
-    ];
+  // Prepare messages for API calls
+  const apiMessages = [
+    { role: 'system' as const, content: systemPrompt },
+    ...messages.slice(-8).map(m => ({ role: m.role, content: m.content })),
+  ];
+  const userMessage = lastMessage;
 
-    const pollinationsController = new AbortController();
-    const pollinationsTimeout = setTimeout(() => pollinationsController.abort(), 15000); // 15s timeout
-    const response = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: pollinationsMessages,
-        model: 'openai',
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-      signal: pollinationsController.signal,
-    });
-    clearTimeout(pollinationsTimeout);
+  // 2. Try Google Gemini Flash (FREE, BEST quality free model)
+  if (GEMINI_KEY) {
+    try {
+      const geminiController = new AbortController();
+      const geminiTimeout = setTimeout(() => geminiController.abort(), 25000);
+      
+      const geminiContents = apiMessages.map(m => ({
+        role: m.role === 'system' ? 'user' : m.role,
+        parts: [{ text: m.content }],
+      }));
+      // Gemini needs alternating user/model — merge consecutive same-role messages
+      const mergedContents = geminiContents.reduce((acc: any[], curr) => {
+        if (acc.length > 0 && acc[acc.length - 1].role === curr.role) {
+          acc[acc.length - 1].parts[0].text += '\n' + curr.parts[0].text;
+        } else {
+          acc.push({ ...curr });
+        }
+        return acc;
+      }, []);
 
-    if (response.ok) {
-      const text = await response.text();
-      if (text && text.length > 50 && !text.includes('error') && !text.includes('rate limit')) {
-        return text;
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: mergedContents,
+            generationConfig: {
+              temperature: 0.8,
+              maxOutputTokens: 4096,
+              topP: 0.95,
+              topK: 40,
+            },
+          }),
+          signal: geminiController.signal,
+        }
+      );
+      clearTimeout(geminiTimeout);
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text && text.length > 50 && !text.includes('SAFETY')) {
+          return enhanceResponse(text, agentType);
+        }
       }
-    }
-  } catch (err: any) {
-    if (err?.name === 'AbortError') {
-      console.warn('Pollinations AI timeout (15s), trying next tier...');
-    } else {
-      console.warn('Pollinations AI error (will try next):', err?.message || err);
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        console.warn('Gemini timeout (25s), trying next tier...');
+      } else {
+        console.warn('Gemini error:', err?.message || err);
+      }
     }
   }
 
-  // 3. Try Supabase edge function (OpenAI-powered, needs API key)
+  // 3. Try Groq (FREE, fastest inference, Llama 3.3 70B)
+  if (GROQ_KEY) {
+    try {
+      const groqController = new AbortController();
+      const groqTimeout = setTimeout(() => groqController.abort(), 20000);
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 4096,
+          top_p: 0.9,
+        }),
+        signal: groqController.signal,
+      });
+      clearTimeout(groqTimeout);
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.choices?.[0]?.message?.content;
+        if (text && text.length > 50) {
+          return enhanceResponse(text, agentType);
+        }
+      }
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        console.warn('Groq timeout (20s), trying next tier...');
+      } else {
+        console.warn('Groq error:', err?.message || err);
+      }
+    }
+  }
+
+  // 4. Try Pollinations AI — FREE, no API key, always available
+  try {
+    // Try multiple models for better quality
+    const models = ['openai', 'mistral'];
+    for (const model of models) {
+      try {
+        const pollinationsController = new AbortController();
+        const pollinationsTimeout = setTimeout(() => pollinationsController.abort(), 20000);
+        const response = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: apiMessages,
+            model,
+            temperature: 0.7,
+            max_tokens: 4096,
+          }),
+          signal: pollinationsController.signal,
+        });
+        clearTimeout(pollinationsTimeout);
+
+        if (response.ok) {
+          const text = await response.text();
+          if (text && text.length > 50 && !text.includes('error') && !text.includes('rate limit')) {
+            return enhanceResponse(text, agentType);
+          }
+        }
+      } catch (err: any) {
+        console.warn(`Pollinations (${model}) error:`, err?.message || err);
+        continue;
+      }
+    }
+  } catch (err) {
+    console.warn('Pollinations all models failed:', err);
+  }
+
+  // 5. Try Supabase edge function (OpenAI-powered, needs API key)
   const formattedMessages = [
     { role: 'system' as const, content: systemPrompt },
     ...messages.map(m => ({ role: m.role, content: m.content })),
@@ -1217,19 +1542,44 @@ async function callAIBrain(
         messages: formattedMessages,
         model: 'gpt-4o-mini',
         temperature: 0.7,
-        max_tokens: 2000,
+        max_tokens: 4096,
         stream: false,
       },
     });
     if (error) throw error;
     const content = data?.content || data?.text || (typeof data === 'string' ? data : JSON.stringify(data));
-    if (content && content.length > 50 && !content.includes('error')) return content;
+    if (content && content.length > 50 && !content.includes('error')) return enhanceResponse(content, agentType);
   } catch (err) {
     console.warn(`Supabase AI error (will use local):`, err);
   }
 
-  // 4. Dynamic response engine (always works, offline)
+  // 6. Dynamic response engine (always works, offline)
   return composeDynamicResponse(lastMessage, agentType);
+}
+
+// ============================================================
+// RESPONSE ENHANCER — Makes any AI output better
+// ============================================================
+
+function enhanceResponse(text: string, agentType: AgentType): string {
+  let enhanced = text;
+
+  // If response is too short, it's probably low quality
+  if (enhanced.length < 100) return enhanced;
+
+  // Add exam tips if missing and agent is teacher/notes/revision
+  if (['teacher', 'notes', 'revision'].includes(agentType)) {
+    if (!enhanced.includes('Exam Tip') && !enhanced.includes('💡') && !enhanced.includes('exam tip')) {
+      enhanced += '\n\n---\n💡 **NikNote Tip:** Yeh topic CBSE/ICSE exams mein frequently aata hai — NCERT textbook ka example zaroor padho!';
+    }
+  }
+
+  // Add "Next Step" suggestion if missing
+  if (!enhanced.includes('Next') && !enhanced.includes('Aage kya') && agentType === 'teacher') {
+    enhanced += '\n\n🔄 **Aage kya padhein?** Related topic pe click karo ya apna next question poocho!';
+  }
+
+  return enhanced;
 }
 
 // ============================================================

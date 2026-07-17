@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, School, GraduationCap, Briefcase, Camera, Wand2, ArrowRight, Check, X } from "lucide-react";
+import { Sparkles, School, GraduationCap, Briefcase, Camera, Wand2, ArrowRight, Check, X, BookOpen, Trophy, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const steps = ["welcome", "usecase", "handwriting", "ai-demo", "tour"] as const;
+const steps = ["welcome", "usecase", "exam", "handwriting", "ai-demo", "tour"] as const;
 type Step = (typeof steps)[number];
 
 export default function OnboardingPage() {
@@ -16,6 +16,7 @@ export default function OnboardingPage() {
   const { user } = useAuth();
   const [step, setStep] = useState<Step>("welcome");
   const [useCase, setUseCase] = useState<string | null>(null);
+  const [examBoard, setExamBoard] = useState<string | null>(null);
   const [aiTopic, setAiTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -42,6 +43,17 @@ export default function OnboardingPage() {
       await supabase
         .from("profiles")
         .update({ use_case: uc } as any)
+        .eq("user_id", user.id);
+    }
+    next();
+  };
+
+  const handleExamSelect = async (exam: string) => {
+    setExamBoard(exam);
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ exam_board: exam } as any)
         .eq("user_id", user.id);
     }
     next();
@@ -192,7 +204,47 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* STEP 3: Handwriting */}
+            {/* STEP 3: Exam Board */}
+            {step === "exam" && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-xl font-bold">Which exam are you preparing for?</h2>
+                  <p className="text-sm text-muted-foreground mt-1">We'll customize content for your exam</p>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { id: "cbse", icon: BookOpen, label: "📚 CBSE Board", desc: "Class 9-12, NCERT pattern", color: "bg-blue-500/10 text-blue-600" },
+                    { id: "icse", icon: BookOpen, label: "📖 ICSE/ISC Board", desc: "CISCE curriculum", color: "bg-purple-500/10 text-purple-600" },
+                    { id: "jee", icon: Trophy, label: "🎯 JEE (Main + Advanced)", desc: "IIT engineering entrance", color: "bg-red-500/10 text-red-600" },
+                    { id: "neet", icon: Star, label: "🏥 NEET", desc: "Medical entrance exam", color: "bg-green-500/10 text-green-600" },
+                    { id: "upsc", icon: Briefcase, label: "🏛️ UPSC Civil Services", desc: "IAS, IPS, IFS preparation", color: "bg-amber-500/10 text-amber-600" },
+                    { id: "state", icon: School, label: "🏫 State Board", desc: "UP, Bihar, MP, Rajasthan, etc.", color: "bg-teal-500/10 text-teal-600" },
+                    { id: "other", icon: Zap, label: "📋 Other / College", desc: "B.Tech, B.Sc, MBA, etc.", color: "bg-gray-500/10 text-gray-600" },
+                  ].map((exam) => (
+                    <button
+                      key={exam.id}
+                      onClick={() => handleExamSelect(exam.id)}
+                      className={`w-full flex items-center gap-4 p-3.5 rounded-2xl border-2 transition-all text-left ${
+                        examBoard === exam.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border/50 bg-card hover:border-primary/40"
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${exam.color}`}>
+                        <exam.icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">{exam.label}</div>
+                        <div className="text-xs text-muted-foreground">{exam.desc}</div>
+                      </div>
+                      {examBoard === exam.id && <Check className="w-5 h-5 text-primary ml-auto" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: Handwriting */}
             {step === "handwriting" && (
               <div className="space-y-6 text-center">
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
@@ -238,7 +290,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* STEP 4: AI Demo */}
+            {/* STEP 5: AI Demo */}
             {step === "ai-demo" && (
               <div className="space-y-6 text-center">
                 <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -278,7 +330,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* STEP 5: Quick Tour */}
+            {/* STEP 6: Quick Tour */}
             {step === "tour" && (
               <div className="space-y-6 text-center">
                 <motion.div
