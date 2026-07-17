@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNotebooks, Notebook } from '@/hooks/useNotebooks';
+import { useStudyStreak } from '@/components/gamification/StudyStreak';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -311,6 +312,9 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
 
       {/* ===== BOTTOM SECTION ===== */}
       <div className="border-t border-gray-100">
+        {/* Streak + Quick Stats */}
+        <StreakDisplay />
+
         {/* Quick Stats */}
         <div className="px-3 py-2">
           <div className="flex items-center gap-2 text-[10px] text-gray-400">
@@ -476,5 +480,33 @@ const FolderItem: React.FC<{
         )}
       </AnimatePresence>
     </div>
+  );
+};
+
+// Compact streak display for sidebar
+const StreakDisplay: React.FC = () => {
+  const { streakData } = useStudyStreak();
+  const navigate = useNavigate();
+
+  return (
+    <button
+      onClick={() => navigate('/account')}
+      className="w-full px-3 py-2 flex items-center gap-2 hover:bg-gray-50 transition-colors text-left"
+    >
+      <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${
+        streakData.currentStreak > 0 ? 'bg-orange-500/10' : 'bg-gray-100'
+      }`}>
+        <Flame className={`w-3.5 h-3.5 ${
+          streakData.currentStreak > 0 ? 'text-orange-500' : 'text-gray-400'
+        }`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] font-semibold text-gray-600">
+          {streakData.currentStreak > 0 ? `${streakData.currentStreak} day streak 🔥` : 'Start your streak!'}
+        </div>
+        <div className="text-[9px] text-gray-400">Write daily to earn rewards</div>
+      </div>
+      <Crown className="w-3 h-3 text-amber-500" />
+    </button>
   );
 };

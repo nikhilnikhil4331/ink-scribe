@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
 import { ReferralWidget } from '@/components/promotion/ReferralWidget';
+import { StudyStreakWidget } from '@/components/gamification/StudyStreak';
 
 interface ActivityItem {
   id: string;
@@ -234,6 +235,11 @@ export default function AccountPage() {
             <ReferralWidget variant="card" />
           </motion.div>
         )}
+
+        {/* Study Streak Widget */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <StudyStreakWidget />
+        </motion.div>
 
         {/* User Profile Card */}
         <motion.div

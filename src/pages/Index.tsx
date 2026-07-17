@@ -150,14 +150,9 @@ const Index = () => {
         const lastVisit = localStorage.getItem('niknote_last_visit');
         const today = new Date().toISOString().split('T')[0];
         if (lastVisit && lastVisit !== today) {
-          const streak = parseInt(localStorage.getItem('niknote_streak') || '0', 10);
-          const newStreak = streak + 1;
-          localStorage.setItem('niknote_streak', newStreak.toString());
-          if (newStreak >= 3) {
-            toast.success(`🔥 ${newStreak} day streak! Keep it up!`);
-          } else {
-            toast.success('Welcome back! 👋');
-          }
+          toast.success('Welcome back! 👋 Your streak continues 🔥');
+        } else if (!lastVisit) {
+          localStorage.setItem('niknote_last_visit', today);
         }
         localStorage.setItem('niknote_last_visit', today);
 
