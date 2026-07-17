@@ -129,10 +129,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <Button
               size="lg"
               onClick={onStartWriting}
-              className="group h-14 px-8 text-base font-semibold rounded-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-500 text-white shadow-lg shadow-primary/25 hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="group h-14 px-8 text-base font-bold rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 hover:from-orange-400 hover:via-pink-400 hover:to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-300 hover:scale-105"
             >
               <Zap className="w-5 h-5 mr-2" />
-              Start Free — No Signup
+              Start Writing FREE ✨
               <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
 
