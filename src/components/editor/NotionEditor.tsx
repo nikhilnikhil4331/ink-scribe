@@ -12,7 +12,7 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, ChevronRight, Check, Copy, Loader2,
-  Trash2, Hash, AtSign, Slash, X, Search, MoreHorizontal
+  Trash2, Hash, AtSign, Slash, X, Search, MoreHorizontal, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Block, BlockType, createBlock, detectBlockPrefix, SLASH_COMMANDS, generateBlockId } from '@/types/block';
@@ -326,6 +326,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     if (!blockId) return;
 
     const template = BLOCK_TEMPLATES[type];
+    const config = BLOCK_CONFIG[type] || BLOCK_CONFIG.text;
     
     // Close menu FIRST
     setSlashMenu(null);
@@ -334,18 +335,77 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       updateBlock(blockId, { type: 'divider', content: '' });
       addBlockAfter(blockId);
     } else {
-      updateBlock(blockId, { type, content: template?.content || '', ...template?.extra });
-      if (['image', 'bookmark', 'video', 'table', 'equation', 'ai-generated'].includes(type)) {
+      // Clear content to show placeholder for new block type
+      updateBlock(blockId, { type, content: '', ...template?.extra });
+      if (['image', 'bookmark', 'video', 'table', 'equation', 'ai-generated', 'code', 'toggle', 'callout'].includes(type)) {
         setTimeout(() => addBlockAfter(blockId, 'text', ''), 50);
       }
       focusBlock(blockId, 0);
     }
-    toast.success(`✅ ${type} block added`);
+    toast.success(`✅ ${config.icon} ${type} block added`);
   }, [slashMenu, updateBlock, addBlockAfter, focusBlock]);
 
   // ============================================================
   // @ MENTION SELECT — CRITICAL FIX: save blockId before closing
   // ============================================================
+  // Pending AI action — stores which AI action to trigger after user types their question
+  const [pendingAI, setPendingAI] = useState<{ blockId: string; actionId: string; label: string } | null>(null);
+
+  // Run AI with the user's typed question
+  const runAIOnBlock = useCallback(async (blockId: string, actionId: string, userQuestion: string) => {
+    const selectedItem = MENTION_ITEMS.find(m => m.id === actionId);
+    const actionLabel = selectedItem?.label || 'AI';
+
+    updateBlock(blockId, { content: `⏳ ${actionLabel} soch raha hai...`, type: 'ai-generated' });
+    setAiLoadingBlock(blockId);
+    toast.info(`🧠 ${actionLabel} call ho raha hai...`);
+
+    try {
+      const { aiOrchestrator } = await import('@/agents/orchestrator');
+
+      const agentMap: Record<string, string> = {
+        'ai-teacher': 'teacher', 'ai-notes': 'notes', 'ai-quiz': 'quiz',
+        'ai-flashcards': 'quiz', 'ai-revision': 'revision',
+        'ai-summarize': 'notes', 'ai-translate': 'teacher', 'ai-explain': 'teacher',
+      };
+      const agentType = agentMap[actionId] || 'teacher';
+
+      // Use user's question! Not generic prompt
+      const promptMap: Record<string, string> = {
+        'ai-teacher': `Explain this in Hindi+English (Hinglish) with examples and exam tips: ${userQuestion}`,
+        'ai-notes': `Create detailed study notes in Hinglish for: ${userQuestion}`,
+        'ai-quiz': `Generate 5 MCQ quiz questions in Hinglish about: ${userQuestion}`,
+        'ai-flashcards': `Create 5 flashcards in Hinglish for revision: ${userQuestion}`,
+        'ai-revision': `Quick revision notes in Hinglish with key formulas: ${userQuestion}`,
+        'ai-summarize': `Summarize in 5-7 bullet points (Hinglish): ${userQuestion}`,
+        'ai-translate': `Translate this to Hindi (if English) or English (if Hindi): ${userQuestion}`,
+        'ai-explain': `Explain like I am 5 years old in Hinglish with fun examples: ${userQuestion}`,
+      };
+
+      const prompt = promptMap[actionId] || `Explain in Hinglish: ${userQuestion}`;
+      const response = await aiOrchestrator.chat(prompt, agentType as any);
+
+      if (response?.content) {
+        const formattedContent = response.content.replace(/^##\s/gm, '').replace(/^###\s/gm, '').trim();
+        updateBlock(blockId, { content: formattedContent, type: 'ai-generated', aiPrompt: prompt, aiModel: agentType });
+        setAiLoadingBlock(null);
+        setPendingAI(null);
+        setTimeout(() => addBlockAfter(blockId), 100);
+        toast.success(`✅ ${actionLabel} ne response diya!`);
+      } else {
+        updateBlock(blockId, { content: '⚠️ AI ne koi response nahi diya. Dobara try karo!', type: 'text' });
+        setAiLoadingBlock(null);
+        setPendingAI(null);
+      }
+    } catch (err) {
+      console.error('AI error:', err);
+      updateBlock(blockId, { content: '⚠️ AI response fail. Dobara try karo!', type: 'text' });
+      setAiLoadingBlock(null);
+      setPendingAI(null);
+      toast.error('❌ AI call fail ho gaya');
+    }
+  }, [updateBlock, addBlockAfter]);
+
   const handleMentionSelect = useCallback(async (item: string) => {
     const blockId = mentionMenu?.blockId;
     if (!blockId) return;
@@ -353,57 +413,20 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     // Close menu FIRST
     setMentionMenu(null);
 
-    // AI actions
+    // AI actions — DON'T auto-trigger! Let user type their question first
     if (item.startsWith('ai-')) {
       const selectedItem = MENTION_ITEMS.find(m => m.id === item);
       const actionLabel = selectedItem?.label || 'AI';
-      
-      updateBlock(blockId, { content: `⏳ ${actionLabel} soch raha hai...`, type: 'ai-generated' });
-      setAiLoadingBlock(blockId);
-      toast.info(`🧠 ${actionLabel} call ho raha hai...`);
+      const actionEmoji = selectedItem?.icon || '🧠';
 
-      try {
-        const { aiOrchestrator } = await import('@/agents/orchestrator');
-        
-        const agentMap: Record<string, string> = {
-          'ai-teacher': 'teacher', 'ai-notes': 'notes', 'ai-quiz': 'quiz',
-          'ai-flashcards': 'quiz', 'ai-revision': 'revision',
-          'ai-summarize': 'notes', 'ai-translate': 'teacher', 'ai-explain': 'teacher',
-        };
-        const agentType = agentMap[item] || 'teacher';
-        const context = blocksRef.current.filter(b => b.id !== blockId && b.content.trim() && !b.content.startsWith('⏳'))
-          .map(b => b.content).join('\n').slice(-500);
-        
-        const promptMap: Record<string, string> = {
-          'ai-teacher': context ? `Explain this in Hindi+English (Hinglish) with examples: ${context.slice(-200)}` : 'Koi bhi important topic samjhao Hindi+English mein, jaise Newton ke Laws ya Photosynthesis',
-          'ai-notes': context ? `Create detailed study notes in Hinglish for: ${context.slice(-200)}` : 'Create study notes for any CBSE/ICSE topic in Hinglish with headings, bullet points, formulas',
-          'ai-quiz': context ? `Generate 5 MCQ quiz questions in Hinglish about: ${context.slice(-200)}` : 'Generate 5 MCQ quiz questions in Hinglish about any science/math topic',
-          'ai-flashcards': context ? `Create 5 flashcards in Hinglish for revision: ${context.slice(-200)}` : 'Create 5 flashcards in Hinglish for any important topic',
-          'ai-revision': context ? `Quick revision notes in Hinglish with key formulas: ${context.slice(-200)}` : 'Quick revision notes in Hinglish — important formulas and key points',
-          'ai-summarize': context ? `Summarize in 5-7 bullet points (Hinglish): ${context.slice(-300)}` : 'Give me a summary of any important academic topic in Hinglish',
-          'ai-translate': context ? `Translate this to Hindi (if English) or English (if Hindi): ${context.slice(-200)}` : 'Translate any sentence from Hindi to English or English to Hindi',
-          'ai-explain': context ? `Explain like I am 5 years old in Hinglish: ${context.slice(-200)}` : 'Explain any science topic like I am 5, in Hinglish with fun examples',
-        };
-
-        const prompt = promptMap[item] || promptMap['ai-teacher'];
-        const response = await aiOrchestrator.chat(prompt, agentType as any);
-
-        if (response?.content) {
-          const formattedContent = response.content.replace(/^##\s/gm, '').replace(/^###\s/gm, '').trim();
-          updateBlock(blockId, { content: formattedContent, type: 'ai-generated', aiPrompt: prompt, aiModel: agentType });
-          setAiLoadingBlock(null);
-          setTimeout(() => addBlockAfter(blockId), 100);
-          toast.success(`✅ ${actionLabel} ne response diya!`);
-        } else {
-          updateBlock(blockId, { content: '⚠️ AI ne koi response nahi diya. Dobara try karo!', type: 'text' });
-          setAiLoadingBlock(null);
-        }
-      } catch (err) {
-        console.error('AI error:', err);
-        updateBlock(blockId, { content: '⚠️ AI response fail. Dobara try karo!', type: 'text' });
-        setAiLoadingBlock(null);
-        toast.error('❌ AI call fail ho gaya');
-      }
+      // Insert AI label and let user type their question
+      updateBlock(blockId, { content: `${actionEmoji} ${actionLabel} → `, type: 'text' });
+      setPendingAI({ blockId, actionId: item, label: actionLabel });
+      focusBlock(blockId); // Focus so user can start typing immediately
+      toast(`Type your question, then press Ctrl+Enter to generate ✨`, {
+        description: `${actionLabel} ready hai — apna sawaal likho!`,
+        duration: 5000,
+      });
     } else if (item === 'date') {
       const dateStr = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       updateBlock(blockId, { content: `📅 ${dateStr}` });
@@ -415,7 +438,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       updateBlock(blockId, { content: '## 📋 Note Template\n\n### Topic\n\n### Key Points\n- \n- \n- \n\n### Formulas\n\n### Summary', type: 'callout', emoji: '📋' });
       focusBlock(blockId);
     }
-  }, [mentionMenu, updateBlock, focusBlock, addBlockAfter]);
+  }, [mentionMenu, updateBlock, focusBlock]);
 
   // ============================================================
   // # HASHTAG SELECT — CRITICAL FIX: was referencing mentionMenu!
@@ -449,6 +472,31 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     if (slashMenu?.blockId === blockId || mentionMenu?.blockId === blockId || hashtagMenu?.blockId === blockId) {
       if (e.key === 'Escape') { setSlashMenu(null); setMentionMenu(null); setHashtagMenu(null); e.preventDefault(); }
       return;
+    }
+
+    // Ctrl+Enter or Cmd+Enter: Trigger pending AI action
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && pendingAI?.blockId === blockId) {
+      e.preventDefault();
+      const question = block.content.replace(/^[^\s]+\s+[^\s]+\s*→\s*/, '').trim();
+      if (question) {
+        runAIOnBlock(blockId, pendingAI.actionId, question);
+      } else {
+        toast.error('Pehle apna sawaal type karo!');
+      }
+      return;
+    }
+
+    // Regular Enter on a block with pending AI — trigger AI (user finished typing question)
+    if (e.key === 'Enter' && !e.shiftKey && pendingAI?.blockId === blockId) {
+      e.preventDefault();
+      const question = block.content.replace(/^[^\s]+\s+[^\s]+\s*→\s*/, '').trim();
+      if (question) {
+        runAIOnBlock(blockId, pendingAI.actionId, question);
+      } else {
+        // No question typed yet — just create new block as normal
+        setPendingAI(null);
+        // Fall through to normal Enter handling below
+      }
     }
 
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -494,7 +542,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       const indent = block.indent || 0;
       updateBlock(blockId, { indent: e.shiftKey ? Math.max(0, indent - 1) : Math.min(3, indent + 1) });
     }
-  }, [slashMenu, mentionMenu, hashtagMenu, updateBlock, addBlockAfter, removeBlock, focusBlock]);
+  }, [slashMenu, mentionMenu, hashtagMenu, pendingAI, runAIOnBlock, updateBlock, addBlockAfter, removeBlock, focusBlock]);
 
   // Paste handling
   const handlePaste = useCallback((blockId: string, e: React.ClipboardEvent) => {
@@ -743,6 +791,34 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Pending AI Generate Button — shows after user types @ AI and their question */}
+              {pendingAI?.blockId === block.id && (
+                <div className="flex items-center gap-2 ml-10 my-1">
+                  <button
+                    onClick={() => {
+                      const question = block.content.replace(/^[^\s]+\s+[^\s]+\s*→\s*/, '').trim();
+                      if (question) {
+                        runAIOnBlock(block.id, pendingAI.actionId, question);
+                      } else {
+                        toast.error('Pehle apna sawaal likho!');
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-xs font-semibold shadow-md hover:shadow-lg active:scale-95 transition-all"
+                    style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Generate ✨
+                  </button>
+                  <span className="text-[10px] text-gray-400">ya Ctrl+Enter dabao</span>
+                  <button
+                    onClick={() => { setPendingAI(null); updateBlock(block.id, { content: block.content.replace(/^[^\s]+\s+[^\s]+\s*→\s*/, '') }); }}
+                    className="text-[10px] text-gray-400 hover:text-red-500 ml-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

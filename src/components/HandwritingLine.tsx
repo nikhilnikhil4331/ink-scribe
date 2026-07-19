@@ -217,6 +217,10 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',
     ...lineStyle,
+    // Block type styling from editor (headings, etc.)
+    ...(line.fontSize ? { fontSize: `${line.fontSize}px` } : {}),
+    ...(line.fontWeight ? { fontWeight: line.fontWeight } : {}),
+    ...(line.indent ? { paddingLeft: `${line.indent * 20}px` } : {}),
   };
 
   const isMobileViewport = typeof window !== 'undefined' && window.innerWidth < 768;

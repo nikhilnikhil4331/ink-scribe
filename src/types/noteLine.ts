@@ -5,6 +5,11 @@ export interface NoteLine {
   text: string;
   color: LineInkColor;
   timestamp: number;
+  // Block type info for preview styling
+  blockType?: string;
+  fontSize?: number;   // Override font size for headings
+  fontWeight?: string; // Override font weight for headings
+  indent?: number;     // Indentation level
 }
 
 export interface LineHistory {

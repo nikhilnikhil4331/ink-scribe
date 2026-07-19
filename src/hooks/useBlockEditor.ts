@@ -199,21 +199,25 @@ export const useBlockEditor = () => {
     triggerAutoSave(next);
   }, [pushHistory, triggerAutoSave]);
 
-  // Convert blocks to NoteLine[] for preview compatibility
+  // Convert blocks to NoteLine[] for preview — WITH block type info for styling
   const lines: NoteLine[] = useMemo(() => {
     return blocks
       .filter(b => b.type !== 'divider')
       .map((block, i) => {
         let text = block.content;
+        let fontSize: number | undefined;
+        let fontWeight: string | undefined;
+        const blockType = block.type;
+
         switch (block.type) {
-          case 'heading1': text = `# ${text}`; break;
-          case 'heading2': text = `## ${text}`; break;
-          case 'heading3': text = `### ${text}`; break;
-          case 'bullet': text = `• ${text}`; break;
-          case 'numbered': text = `${i + 1}. ${text}`; break;
-          case 'todo': text = block.checked ? `☑ ${text}` : `☐ ${text}`; break;
+          case 'heading1': fontSize = 28; fontWeight = 'bold'; break;
+          case 'heading2': fontSize = 22; fontWeight = 'bold'; break;
+          case 'heading3': fontSize = 18; fontWeight = '600'; break;
+          case 'bullet': text = `•  ${text}`; break;
+          case 'numbered': text = `${i + 1}.  ${text}`; break;
+          case 'todo': text = block.checked ? `☑  ${text}` : `☐  ${text}`; break;
           case 'quote': text = `"${text}"`; break;
-          case 'callout': text = `💡 ${text}`; break;
+          case 'callout': text = `${block.emoji || '💡'}  ${text}`; break;
           case 'code': text = `  ${text}`; break;
         }
         return {
@@ -221,6 +225,10 @@ export const useBlockEditor = () => {
           text,
           color: (block.color || currentColorRef.current) as LineInkColor,
           timestamp: Date.now(),
+          blockType,
+          fontSize,
+          fontWeight,
+          indent: block.indent,
         };
       });
   }, [blocks]);
