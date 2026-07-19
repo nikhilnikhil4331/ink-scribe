@@ -29,46 +29,54 @@ export const useBlockEditor = () => {
     return [createBlock('text', '')];
   });
 
+  // FIX: Use state for history position so canUndo/canRedo trigger re-renders
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [historyLength, setHistoryLength] = useState(0);
   const currentColorRef = useRef<LineInkColor>('black');
   const historyRef = useRef<HistoryEntry[]>([]);
-  const historyIndexRef = useRef(-1);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ─── HISTORY (Undo/Redo) ───
   const pushHistory = useCallback((newBlocks: Block[]) => {
     const entry: HistoryEntry = { blocks: newBlocks, timestamp: Date.now() };
     const history = historyRef.current;
-    const idx = historyIndexRef.current;
 
     // Remove future entries if we're not at the end
-    if (idx < history.length - 1) {
-      historyRef.current = history.slice(0, idx + 1);
+    const currentIdx = history.length > 0 ? historyIndex : -1;
+    if (currentIdx < history.length - 1) {
+      historyRef.current = history.slice(0, currentIdx + 1);
     }
 
     historyRef.current.push(entry);
     if (historyRef.current.length > MAX_HISTORY) {
       historyRef.current.shift();
     }
-    historyIndexRef.current = historyRef.current.length - 1;
-  }, []);
+    const newIdx = historyRef.current.length - 1;
+    setHistoryIndex(newIdx);
+    setHistoryLength(historyRef.current.length);
+  }, [historyIndex]);
 
   const undo = useCallback(() => {
-    const idx = historyIndexRef.current;
-    if (idx > 0) {
-      historyIndexRef.current = idx - 1;
-      const prev = historyRef.current[idx - 1];
-      if (prev) setBlocks(prev.blocks);
+    if (historyIndex > 0) {
+      const newIdx = historyIndex - 1;
+      const prev = historyRef.current[newIdx];
+      if (prev) {
+        setBlocks(prev.blocks);
+        setHistoryIndex(newIdx);
+      }
     }
-  }, []);
+  }, [historyIndex]);
 
   const redo = useCallback(() => {
-    const idx = historyIndexRef.current;
-    if (idx < historyRef.current.length - 1) {
-      historyIndexRef.current = idx + 1;
-      const next = historyRef.current[idx + 1];
-      if (next) setBlocks(next.blocks);
+    if (historyIndex < historyRef.current.length - 1) {
+      const newIdx = historyIndex + 1;
+      const next = historyRef.current[newIdx];
+      if (next) {
+        setBlocks(next.blocks);
+        setHistoryIndex(newIdx);
+      }
     }
-  }, []);
+  }, [historyIndex]);
 
   // ─── AUTO-SAVE ───
   const triggerAutoSave = useCallback((newBlocks: Block[]) => {
@@ -255,7 +263,7 @@ export const useBlockEditor = () => {
     clearAll,
     undo,
     redo,
-    canUndo: historyIndexRef.current > 0,
-    canRedo: historyIndexRef.current < historyRef.current.length - 1,
+    canUndo: historyIndex > 0,
+    canRedo: historyIndex < historyLength - 1,
   };
 };

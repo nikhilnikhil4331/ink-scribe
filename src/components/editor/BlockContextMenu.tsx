@@ -153,6 +153,8 @@ export const BlockContextMenu: React.FC<BlockContextMenuProps> = ({
         exit={{ opacity: 0, scale: 0.9, y: -5 }}
         transition={{ duration: 0.15, ease: 'easeOut' }}
         className="fixed z-[9999] w-[220px] rounded-xl border border-gray-200 bg-white/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+        role="menu"
+        aria-label="Block actions menu"
         style={{ left: pos.x, top: pos.y }}
       >
         {/* Header */}

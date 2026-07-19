@@ -71,6 +71,12 @@ const BLOCK_CONFIG: Record<string, { icon: string; placeholder: string; textClas
   video: { icon: '🎥', placeholder: 'Video URL...', textClass: '' },
   audio: { icon: '🎵', placeholder: 'Audio URL...', textClass: '' },
   pdf: { icon: '📄', placeholder: 'PDF URL...', textClass: '' },
+  file: { icon: '📎', placeholder: 'File attachment URL...', textClass: '' },
+  embed: { icon: '📦', placeholder: 'Embed URL...', textClass: '' },
+  column: { icon: '▦', placeholder: 'Multi-column layout', textClass: '' },
+  'table_of_contents': { icon: '📑', placeholder: 'Auto Table of Contents', textClass: 'text-sm text-gray-500 italic' },
+  mention: { icon: '@', placeholder: '@mention...', textClass: '' },
+  comment: { icon: '💬', placeholder: 'Comment...', textClass: 'text-sm text-gray-500 bg-yellow-50/60 rounded-lg px-2 border border-yellow-200/50' },
 };
 
 // @ AI actions
@@ -568,7 +574,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
   // RENDER
   // ============================================================
   return (
-    <div ref={editorRef} className="notion-editor relative" style={{ touchAction: 'manipulation' }}>
+    <div ref={editorRef} className="notion-editor relative" style={{ touchAction: 'manipulation' }} role="textbox" aria-label="NikNote Block Editor" aria-multiline="true">
       {/* Shortcut hints */}
       <div className={cn("flex items-center gap-2 mb-2 text-[11px] text-gray-400", isMobile ? "px-2" : "px-1")}>
         <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-mono font-semibold text-gray-500">/</kbd> Commands</span>
@@ -695,7 +701,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
                           {block.aiModel && <span className="text-[10px] text-violet-400 ml-1.5">• {block.aiModel}</span>}
                         </div>
                         <div className="flex items-center gap-1">
-                          <button onMouseDown={preventFocusSteal} onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copied! 📋'); }} className="ai-action-btn p-1.5 rounded-lg" style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} title="Copy"><Copy className="w-3.5 h-3.5 text-violet-400" /></button>
+                      <button onMouseDown={preventFocusSteal} onClick={() => { try { navigator.clipboard.writeText(block.content).catch(() => {}); toast.success('Copied! 📋'); } catch { const ta = document.createElement('textarea'); ta.value = block.content; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast.success('Copied! 📋'); } }} className="ai-action-btn p-1.5 rounded-lg" style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} title="Copy"><Copy className="w-3.5 h-3.5 text-violet-400" /></button>
                           <button onMouseDown={preventFocusSteal} onClick={() => { updateBlock(block.id, { type: 'text' }); toast.success('Text block mein convert ho gaya'); }} className="ai-action-btn p-1.5 rounded-lg" style={{ touchAction: 'manipulation', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }} title="Convert to text"><X className="w-3.5 h-3.5 text-violet-400" /></button>
                         </div>
                       </div>
@@ -753,7 +759,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
 
       {/* ===== SLASH COMMAND MENU ===== */}
       {slashMenu && groupedSlash.length > 0 && (
-        <div data-menu-popup className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
+        <div data-menu-popup role="listbox" aria-label="Block type commands" className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
           style={{
             bottom: isMobile ? '60px' : undefined,
             top: isMobile ? undefined : Math.max(60, Math.min(window.innerHeight * 0.2, window.innerHeight - 400)),
@@ -792,7 +798,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
 
       {/* ===== @ MENTION MENU ===== */}
       {mentionMenu && filteredMentions.length > 0 && (
-        <div data-menu-popup className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
+        <div data-menu-popup role="listbox" aria-label="AI actions and mentions" className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
           style={{
             bottom: isMobile ? '60px' : undefined,
             top: isMobile ? undefined : Math.max(60, Math.min(window.innerHeight * 0.2, window.innerHeight - 380)),
@@ -844,7 +850,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
 
       {/* ===== # HASHTAG MENU ===== */}
       {hashtagMenu && filteredHashtags.length > 0 && (
-        <div data-menu-popup className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
+        <div data-menu-popup role="listbox" aria-label="Topic tags" className="fixed z-[9999] w-[280px] max-h-[350px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl"
           style={{
             bottom: isMobile ? '60px' : undefined,
             top: isMobile ? undefined : Math.max(60, Math.min(window.innerHeight * 0.2, window.innerHeight - 380)),
@@ -888,7 +894,7 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
         onAIAction={(id, action) => { onAIAction?.(action); }}
         onCopyContent={(id) => {
           const b = blocks.find(bl => bl.id === id);
-          if (b) { navigator.clipboard.writeText(b.content); toast.success('Copied! 📋'); }
+          if (b) { try { navigator.clipboard.writeText(b.content).catch(() => {}); toast.success('Copied! 📋'); } catch { const ta = document.createElement('textarea'); ta.value = b.content; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast.success('Copied! 📋'); } }
         }}
         isPremium={false}
       />
