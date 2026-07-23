@@ -76,25 +76,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      
-      if (error) {
-        console.warn('Session fetch error:', error.message);
+    // Then check for existing session (with mobile network timeout)
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<{ data: { session: Session | null }; error: null }>((resolve) =>
+      setTimeout(() => resolve({ data: { session: null }, error: null }), 10000)
+    );
+
+    Promise.race([sessionPromise, timeoutPromise])
+      .then(({ data, error }) => {
+        if (!mounted) return;
+        const session = data?.session ?? (data as any)?.session ?? null;
+        if (error) {
+          console.warn('Session fetch error:', error.message);
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        setLoading(false);
+      }).catch(() => {
+        if (!mounted) return;
+        // Network error on mobile — allow app to load anyway
+        console.warn('Session fetch network error — allowing offline mode');
         setSession(null);
         setUser(null);
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
-      }
-      setLoading(false);
-    }).catch(() => {
-      if (!mounted) return;
-      setSession(null);
-      setUser(null);
-      setLoading(false);
-    });
+        setLoading(false);
+      });
 
     return () => {
       mounted = false;

@@ -51,14 +51,26 @@ export function usePremium() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("user_subscriptions")
-        .select("status, current_period_end, plan_code")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // Mobile-safe: timeout after 8 seconds
+      const result = await Promise.race([
+        supabase
+          .from("user_subscriptions")
+          .select("status, current_period_end, plan_code")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        new Promise<{ data: null; error: { message: 'timeout' } }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 8000)
+        )
+      ]);
+
+      const { data, error } = result as any;
 
       if (error) {
-        console.error("Error fetching subscription:", error);
+        if (error.message === 'timeout') {
+          console.warn('Subscription fetch timed out');
+        } else {
+          console.error("Error fetching subscription:", error);
+        }
         setIsPremium(false);
         setStatus(null);
       } else if (data) {
@@ -75,7 +87,7 @@ export function usePremium() {
         setCurrentPeriodEnd(null);
       }
     } catch (err) {
-      console.error("Premium check failed:", err);
+      console.warn("Premium check failed (network):", err);
       setIsPremium(false);
     } finally {
       setLoading(false);
@@ -85,10 +97,18 @@ export function usePremium() {
   const fetchUsage = useCallback(async () => {
     if (!user) return;
     try {
-      const { data } = await supabase
-        .from("feature_usage")
-        .select("feature_name, usage_count, usage_month")
-        .eq("user_id", user.id);
+      // Mobile-safe: timeout after 8 seconds
+      const result = await Promise.race([
+        supabase
+          .from("feature_usage")
+          .select("feature_name, usage_count, usage_month")
+          .eq("user_id", user.id),
+        new Promise<{ data: null }>((resolve) =>
+          setTimeout(() => resolve({ data: null }), 8000)
+        )
+      ]);
+
+      const { data } = result as any;
 
       if (data) {
         const map: Record<string, number> = {};
@@ -98,7 +118,7 @@ export function usePremium() {
         setUsageMap(map);
       }
     } catch (err) {
-      console.error("Usage fetch failed:", err);
+      console.warn("Usage fetch failed (network):", err);
     }
   }, [user]);
 

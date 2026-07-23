@@ -5,9 +5,9 @@
 // network-first for API calls
 // ============================================================
 
-const CACHE_NAME = 'niknote-v4.0';
-const STATIC_CACHE = 'niknote-static-v4.0';
-const DYNAMIC_CACHE = 'niknote-dynamic-v4.0';
+const CACHE_NAME = 'niknote-v5.0';
+const STATIC_CACHE = 'niknote-static-v5.0';
+const DYNAMIC_CACHE = 'niknote-dynamic-v5.0';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -18,7 +18,7 @@ const STATIC_ASSETS = [
 
 // Install event — cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing NikNote 4.0 Service Worker');
+  console.log('[SW] Installing NikNote 5.0 Service Worker — Payment + Mobile Fix');
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       console.log('[SW] Caching static assets');
@@ -31,7 +31,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event — clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating NikNote 4.0 Service Worker');
+  console.log('[SW] Activating NikNote 5.0 Service Worker — Clearing old caches');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(

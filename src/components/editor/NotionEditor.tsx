@@ -176,9 +176,9 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Close menus on outside click — but NOT on menu item clicks
+  // Close menus on outside click/touch — but NOT on menu item clicks
   useEffect(() => {
-    const handleDocClick = (e: MouseEvent) => {
+    const handleDocClick = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
       // Don't close if clicking inside a popup menu
       if (target.closest('[data-menu-popup]')) return;
@@ -188,7 +188,11 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       }
     };
     document.addEventListener('mousedown', handleDocClick);
-    return () => document.removeEventListener('mousedown', handleDocClick);
+    document.addEventListener('touchstart', handleDocClick as any, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleDocClick);
+      document.removeEventListener('touchstart', handleDocClick as any);
+    };
   }, []);
 
   const focusBlock = useCallback((id: string, cursorPos?: number) => {
@@ -422,7 +426,8 @@ export const NotionEditor: React.FC<NotionEditorProps> = ({
       // Insert AI label and let user type their question
       updateBlock(blockId, { content: `${actionEmoji} ${actionLabel} → `, type: 'text' });
       setPendingAI({ blockId, actionId: item, label: actionLabel });
-      focusBlock(blockId); // Focus so user can start typing immediately
+      // Mobile: longer delay to let keyboard settle
+      setTimeout(() => focusBlock(blockId), isMobile ? 300 : 50);
       toast(`Type your question, then press Ctrl+Enter to generate ✨`, {
         description: `${actionLabel} ready hai — apna sawaal likho!`,
         duration: 5000,

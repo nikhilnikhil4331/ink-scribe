@@ -61,14 +61,26 @@ export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     try {
-      const { data, error } = await supabase
-        .from("user_subscriptions")
-        .select("status, current_period_end, plan_code")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // Mobile-safe: timeout after 8 seconds
+      const result = await Promise.race([
+        supabase
+          .from("user_subscriptions")
+          .select("status, current_period_end, plan_code")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        new Promise<{ data: null; error: { message: 'timeout' } }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 8000)
+        )
+      ]);
+
+      const { data, error } = result as any;
 
       if (error) {
-        console.error("Subscription fetch error:", error);
+        if (error.message === 'timeout') {
+          console.warn('Subscription fetch timed out (slow network)');
+        } else {
+          console.error("Subscription fetch error:", error);
+        }
         setIsPremium(false);
       } else if (data) {
         const isActive = data.status === "active";
@@ -84,7 +96,8 @@ export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setCurrentPeriodEnd(null);
       }
     } catch (err) {
-      console.error("Premium check failed:", err);
+      // Network error — allow app to function, just set free tier
+      console.warn("Premium check failed (network):", err);
       setIsPremium(false);
     } finally {
       setLoading(false);
@@ -94,10 +107,18 @@ export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const fetchUsage = useCallback(async () => {
     if (!user) return;
     try {
-      const { data } = await supabase
-        .from("feature_usage")
-        .select("feature_name, usage_count, usage_month")
-        .eq("user_id", user.id);
+      // Mobile-safe: timeout after 8 seconds
+      const result = await Promise.race([
+        supabase
+          .from("feature_usage")
+          .select("feature_name, usage_count, usage_month")
+          .eq("user_id", user.id),
+        new Promise<{ data: null }>((resolve) =>
+          setTimeout(() => resolve({ data: null }), 8000)
+        )
+      ]);
+
+      const { data } = result as any;
 
       if (data) {
         const map: Record<string, number> = {};
@@ -107,7 +128,8 @@ export const PremiumProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setUsageMap(map);
       }
     } catch (err) {
-      console.error("Usage fetch failed:", err);
+      // Silently fail — usage data is optional
+      console.warn("Usage fetch failed (network):", err);
     }
   }, [user]);
 
