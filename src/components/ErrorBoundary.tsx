@@ -19,6 +19,7 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   reported: boolean;
+  autoRecovered: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -27,19 +28,66 @@ export class ErrorBoundary extends Component<Props, State> {
     error: null,
     errorInfo: null,
     reported: false,
+    autoRecovered: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null, reported: false };
+    return { hasError: true, error, errorInfo: null, reported: false, autoRecovered: false };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('🔴 NikNote Error:', error, errorInfo);
     this.setState({ errorInfo });
 
-    // Report to Supabase error_logs in production
-    if (!isDev && !this.state.reported) {
-      this.reportError(error, errorInfo);
+    // AUTO-RECOVERY: If this is likely a stale cache error, try to recover
+    // by clearing caches and reloading automatically
+    if (!this.state.reported && !this.state.autoRecovered) {
+      const errorMsg = error.message || '';
+      // Common stale cache errors: "X is not defined", "Cannot read properties of undefined"
+      const likelyStaleCache = errorMsg.includes('is not defined') || 
+                               errorMsg.includes('Cannot read properties') ||
+                               errorMsg.includes('is not a function');
+      
+      if (likelyStaleCache) {
+        console.log('[ErrorBoundary] Auto-recovery: clearing caches and reloading');
+        this.setState({ autoRecovered: true });
+        this.autoRecover();
+        return; // Don't report to Supabase, just recover
+      }
+      
+      // Report to Supabase error_logs in production
+      if (!isDev && !this.state.reported) {
+        this.reportError(error, errorInfo);
+      }
+    }
+  }
+
+  private async autoRecover() {
+    try {
+      // 1. Delete ALL browser caches
+      if ('caches' in window) {
+        const names = await caches.keys();
+        for (const name of names) {
+          console.log('[AutoRecover] Purging cache:', name);
+          await caches.delete(name);
+        }
+      }
+      // 2. Unregister ALL service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          console.log('[AutoRecover] Unregistering SW:', reg.scope);
+          await reg.unregister();
+        }
+      }
+      // 3. Wait 500ms for cleanup, then hard reload
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('[AutoRecover] Reloading with fresh state...');
+      window.location.href = window.location.origin + '/?fresh=' + Date.now();
+    } catch (e) {
+      console.warn('[AutoRecover] Failed:', e);
+      // Still try a basic reload
+      window.location.reload();
     }
   }
 
@@ -61,11 +109,46 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReload = () => {
-    window.location.reload();
+    // CRITICAL FIX: Before reloading, clear ALL caches and unregister old SW
+    // This prevents "Zap is not defined" crash from stale HTML+JS mismatch
+    const clearAndReload = async () => {
+      try {
+        // 1. Delete ALL browser caches
+        if ('caches' in window) {
+          const names = await caches.keys();
+          for (const name of names) {
+            console.log('[ErrorBoundary] Purging cache:', name);
+            await caches.delete(name);
+          }
+        }
+        // 2. Unregister ALL service workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) {
+            console.log('[ErrorBoundary] Unregistering SW:', reg.scope);
+            await reg.unregister();
+          }
+        }
+        // 3. Clear localStorage for NikNote (optional, but helps reset state)
+        // Don't clear all localStorage - just NikNote-specific keys
+        const niknoteKeys = Object.keys(localStorage).filter(k => k.startsWith('niknote'));
+        niknoteKeys.forEach(k => localStorage.removeItem(k));
+        
+        console.log('[ErrorBoundary] Caches cleared, SW unregistered. Reloading...');
+      } catch (e) {
+        console.warn('[ErrorBoundary] Cache clear failed:', e);
+      }
+      
+      // Force hard reload - bypass any remaining cache
+      window.location.href = window.location.origin + '/?fresh=' + Date.now();
+    };
+    
+    clearAndReload();
   };
 
   private handleGoHome = () => {
-    window.location.href = '/';
+    // Same cache-clear logic before going home
+    this.handleReload();
   };
 
   public render() {
