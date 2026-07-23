@@ -1,40 +1,42 @@
 // ============================================================
-// NikNote 4.0 — Service Worker
-// Offline-first PWA for Indian students
-// Cache strategy: stale-while-revalidate for app shell,
-// network-first for API calls
+// NikNote 5.0 — Service Worker
+// OFFLINE-FIRST PWA for Indian students
+// CRITICAL FIX: HTML pages are ALWAYS network-first (no stale cache)
+// Only static assets (JS, CSS, images) use cache-first
 // ============================================================
 
-const CACHE_NAME = 'niknote-v5.0';
-const STATIC_CACHE = 'niknote-static-v5.0';
-const DYNAMIC_CACHE = 'niknote-dynamic-v5.0';
+const CACHE_NAME = 'niknote-v5.0.2';
+const STATIC_CACHE = 'niknote-static-v5.0.2';
+const DYNAMIC_CACHE = 'niknote-dynamic-v5.0.2';
 
-// Static assets to cache on install
+// Static assets to cache on install — ONLY truly static files, NOT HTML
 const STATIC_ASSETS = [
-  '/',
-  '/offline.html',
   '/manifest.json',
+  '/offline.html',
+  '/niknote-logo.png',
+  '/favicon.ico',
 ];
 
 // Install event — cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing NikNote 5.0 Service Worker — Payment + Mobile Fix');
+  console.log('[SW] Installing NikNote 5.0.2 — HTML always fresh');
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      console.log('[SW] Caching static assets');
+      console.log('[SW] Caching static assets only (no HTML)');
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  // Skip waiting to activate immediately
+  // Skip waiting to activate immediately — force update on user's phone
   self.skipWaiting();
 });
 
-// Activate event — clean old caches
+// Activate event — clean old caches (v4.0 and earlier)
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating NikNote 5.0 Service Worker — Clearing old caches');
+  console.log('[SW] Activating NikNote 5.0.2 — Clearing ALL old caches');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
+        // Delete ALL old caches — no exceptions
         cacheNames
           .filter((name) => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
           .map((name) => {
@@ -44,7 +46,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Claim all clients immediately
+  // Claim all clients immediately — force new SW on all tabs
   self.clients.claim();
 });
 
@@ -59,23 +61,28 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
-  // API calls: network-first
+  // CRITICAL FIX: HTML pages ALWAYS network-first (never stale cache!)
+  // SPA must always get fresh HTML — old HTML references old JS chunks = crash
+  if (request.headers.get('accept')?.includes('text/html') || url.pathname === '/' || url.pathname === '/index.html') {
+    event.respondWith(networkFirstHTML(request));
+    return;
+  }
+
+  // API calls: network-first (no caching)
   if (url.pathname.startsWith('/rest/') ||
       url.hostname.includes('supabase') ||
-      url.hostname.includes('openai') ||
+      url.hostname.includes('razorpay') ||
       url.hostname.includes('lovable')) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(fetch(request).catch(() => {
+      // API calls can't be cached — just fail
+      return new Response('Offline', { status: 503 });
+    }));
     return;
   }
 
-  // Static assets: cache-first
-  if (url.pathname.match(/\.(js|css|woff2?|png|jpg|jpeg|svg|ico|webp)$/)) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // HTML pages: stale-while-revalidate
-  if (request.headers.get('accept')?.includes('text/html')) {
+  // Static assets (JS, CSS, images, fonts): stale-while-revalidate
+  // These have content hashes in filenames so stale = still valid
+  if (url.pathname.match(/\.(js|css|woff2?|png|jpg|jpeg|svg|ico|webp|mp4)$/)) {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
@@ -84,7 +91,26 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirst(request));
 });
 
-// Cache-first strategy
+// Network-first for HTML — CRITICAL for SPA
+async function networkFirstHTML(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      // Cache the fresh HTML for true offline (but always try network first)
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    // Network failed — try cache (offline mode)
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    // No cache either — show offline page
+    return caches.match('/offline.html');
+  }
+}
+
+// Cache-first strategy (for static hashed assets)
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -97,15 +123,11 @@ async function cacheFirst(request) {
     }
     return response;
   } catch (error) {
-    // Return offline page for HTML requests
-    if (request.headers.get('accept')?.includes('text/html')) {
-      return caches.match('/offline.html');
-    }
     return new Response('Offline', { status: 503 });
   }
 }
 
-// Network-first strategy
+// Network-first strategy (for dynamic content)
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
@@ -117,15 +139,11 @@ async function networkFirst(request) {
   } catch (error) {
     const cached = await caches.match(request);
     if (cached) return cached;
-
-    if (request.headers.get('accept')?.includes('text/html')) {
-      return caches.match('/offline.html');
-    }
     return new Response('Offline', { status: 503 });
   }
 }
 
-// Stale-while-revalidate strategy
+// Stale-while-revalidate strategy (for hashed static assets)
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(DYNAMIC_CACHE);
   const cached = await cache.match(request);
@@ -135,7 +153,7 @@ async function staleWhileRevalidate(request) {
       cache.put(request, response.clone());
     }
     return response;
-  }).catch(() => cached);
+  }).catch(() => cached || new Response('Offline', { status: 503 }));
 
   return cached || fetchPromise;
 }
@@ -144,5 +162,8 @@ async function staleWhileRevalidate(request) {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'CLEAR_ALL_CACHES') {
+    caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))));
   }
 });

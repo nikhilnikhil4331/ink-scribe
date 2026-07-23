@@ -12,11 +12,44 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  }
-});
+let supabaseClient: any;
+
+try {
+  supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    }
+  });
+} catch (err) {
+  console.error('🔴 Supabase client creation failed:', err);
+  // Create a stub that won't crash the app
+  supabaseClient = {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase not initialized') }),
+      signUp: () => Promise.resolve({ data: null, error: new Error('Supabase not initialized') }),
+      signInWithOAuth: () => Promise.resolve({ data: null, error: new Error('Supabase not initialized') }),
+      signOut: () => Promise.resolve(),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          single: () => Promise.resolve({ data: null, error: null }),
+        }),
+      }),
+      insert: () => Promise.resolve({ data: null, error: null }),
+      upsert: () => Promise.resolve({ data: null, error: null }),
+      delete: () => Promise.resolve({ data: null, error: null }),
+    }),
+    functions: {
+      invoke: () => Promise.resolve({ data: null, error: new Error('Supabase not initialized') }),
+    },
+  };
+}
+
+export const supabase = supabaseClient;
