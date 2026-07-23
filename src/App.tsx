@@ -75,11 +75,30 @@ const App = () => {
   useEffect(() => {
     document.documentElement.classList.remove("dark");
     localStorage.setItem("theme", "light");
+    
+    // CRITICAL: Clear ALL stale caches from old SW versions before registering new
+    // This prevents "Zap is not defined" crash from stale HTML+JS mismatch
     if (import.meta.env.PROD) {
+      // First clear caches, then register new SW
+      try {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              // Delete ALL old caches - only keep current version
+              if (!name.includes('v5.0.2')) {
+                console.log('[App] Purging stale cache:', name);
+                caches.delete(name);
+              }
+            });
+          });
+        }
+      } catch {}
+      
       registerServiceWorker();
     }
+    
     // Track referral on first visit
-    checkReferral();
+    try { checkReferral(); } catch {}
   }, []);
 
   return (
