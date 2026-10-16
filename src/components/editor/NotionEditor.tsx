@@ -43,7 +43,7 @@ const BLOCK_TEMPLATES: Partial<Record<BlockType, { content: string; extra?: Part
   bookmark: { content: '', extra: { url: '' } }, video: { content: '', extra: { url: '' } },
   audio: { content: '', extra: { url: '' } }, embed: { content: '', extra: { url: '' } },
   pdf: { content: '', extra: { url: '' } }, file: { content: '', extra: { url: '' } },
-  table: { content: '', extra: { tableData: { headers: ['Column 1', 'Column 2', 'Column 3'], rows: [['', '', ''], ['', '', '']], colCount: 3 } } },
+  table: { content: '', extra: { tableData: { headers: ['Column 1', 'Column 2', 'Column 3'], rows: [[{ id: 't1', content: '', type: 'text' }, { id: 't2', content: '', type: 'text' }, { id: 't3', content: '', type: 'text' }], [{ id: 't4', content: '', type: 'text' }, { id: 't5', content: '', type: 'text' }, { id: 't6', content: '', type: 'text' }]], colCount: 3 } } },
   'ai-generated': { content: '' }, mermaid: { content: 'graph TD\n  A[Start] --> B[End]' },
   synced: { content: '', extra: { syncId: `sync-${Date.now()}` } },
   breadcrumb: { content: '' }, 'table_of_contents': { content: '' }, mention: { content: '' }, comment: { content: '' },

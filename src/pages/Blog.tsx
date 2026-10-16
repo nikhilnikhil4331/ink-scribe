@@ -195,6 +195,7 @@ Coaching fees ₹50,000+? NikNote free mein AI Teacher, Quiz Generator, aur Flas
     excerpt: 'Free mein handwriting notes banane wala app? Haan! NikNote 16+ handwriting styles deta hai bilkul free mein. Indian students ke liye best.',
     category: 'App Review',
     readTime: '4 min',
+    date: '2026-06-25',
     tags: ['handwriting app', 'free app', 'Indian students', 'notes app'],
     content: `# Free Handwriting App for Indian Students 🇮🇳
 
@@ -238,6 +239,7 @@ Notes ko PDF mein download karo — print karke submit karo. Free tier mein basi
     excerpt: 'Notion expensive hai aur Hindi support nahi hai. NikNote Indian students ke liye better hai — cheaper, Hindi AI, handwriting notes, UPI payment.',
     category: 'Comparison',
     readTime: '6 min',
+    date: '2026-06-24',
     tags: ['notion alternative', 'Indian students', 'study app', 'comparison'],
     content: `# NikNote vs Notion — Indian Students Ke Liye Kaunsa Better? 🤔
 
@@ -290,6 +292,7 @@ JEE, NEET, UPSC content pre-loaded. Notion mein yeh nahi hai.
     excerpt: 'AI se flashcards banao Hindi mein! Spaced repetition se 3x faster yaad karo. JEE, NEET, UPSC ke liye perfect. Free try karo NikNote.',
     category: 'Study Tips',
     readTime: '5 min',
+    date: '2026-06-23',
     tags: ['flashcards', 'spaced repetition', 'Hindi', 'study app', 'AI'],
     content: `# AI Flashcards in Hindi — Smart Revision Technique 🧠
 
@@ -334,6 +337,7 @@ NikNote mein **@** type karo, AI se kaho "JEE Physics ke liye flashcards banao" 
     excerpt: 'Internet nahi hai? Koi baat nahi! NikNote offline bhi chalta hai. Notes banao, handwriting convert karo, revise karo — bina internet ke.',
     category: 'App Feature',
     readTime: '4 min',
+    date: '2026-06-22',
     tags: ['offline app', 'no internet', 'study app', 'PWA'],
     content: `# Study App That Works WITHOUT Internet! 📱
 
@@ -378,6 +382,7 @@ But basic note-taking + handwriting + PDF = **100% offline!**
     excerpt: 'Schools aur coaching centers ke liye NikNote — AI-powered learning platform. Starting ₹25,000/year for 100 students. 14-day free trial.',
     category: 'B2B',
     readTime: '7 min',
+    date: '2026-06-21',
     tags: ['school software', 'coaching center', 'EdTech', 'B2B', 'institution'],
     content: `# NikNote for Schools & Coaching Centers 🏫
 
@@ -432,6 +437,7 @@ We believe every student deserves access to AI-powered learning. Government scho
     excerpt: 'UPSC prep ke liye AI notes generator! Current affairs, GS, essay templates — sab Hindi/English mein. Free try karo NikNote.',
     category: 'Exam Prep',
     readTime: '6 min',
+    date: '2026-06-20',
     tags: ['UPSC', 'IAS', 'civil services', 'AI notes', 'current affairs'],
     content: `# UPSC Preparation with AI — Smart Notes for IAS Aspirants 🎯
 
@@ -477,6 +483,7 @@ Jee, NEET pack se alag — UPSC-specific content:
     excerpt: 'AI se homework karo Hindi mein! CBSE Class 1-12 ke liye free AI homework helper. Solve math, science, English questions instantly.',
     category: 'Study Tool',
     readTime: '4 min',
+    date: '2026-06-19',
     tags: ['homework helper', 'AI app', 'CBSE', 'Hindi', 'free'],
     content: `# AI Homework Helper in Hindi 📚
 
@@ -497,6 +504,7 @@ CBSE students ke liye free AI homework helper — Hindi mein jawab deta hai!
     excerpt: 'Free online handwriting notes maker — text type karo, handwriting mein convert karo. 16+ styles, PDF download, mobile friendly. No signup needed.',
     category: 'Tool',
     readTime: '3 min',
+    date: '2026-06-18',
     tags: ['handwriting maker', 'online free', 'text to handwriting', 'notes maker'],
     content: `# Free Online Handwriting Notes Maker ✍️
 
@@ -517,6 +525,7 @@ NikNote se text ko handwriting mein convert karo — bilkul free!
     excerpt: 'India ke top 5 note-taking apps compared — NikNote vs Notion vs OneNote vs GoodNotes vs Google Keep. Price, features, Hindi support, UPI payment.',
     category: 'Comparison',
     readTime: '8 min',
+    date: '2026-06-17',
     tags: ['note taking app', 'India', 'comparison', 'best app', 'students'],
     content: `# Best Note Taking App India 2026 🇮🇳
 

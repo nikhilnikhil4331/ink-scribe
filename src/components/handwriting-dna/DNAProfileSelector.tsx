@@ -71,27 +71,27 @@ export const DNAProfileSelector: React.FC = () => {
         </div>
         <div className="bg-muted/30 rounded-lg p-2 text-center">
           <div className="text-[10px] text-muted-foreground">Pressure</div>
-          <div className="text-xs font-bold">{(dna.penPressure * 100).toFixed(0)}%</div>
+          <div className="text-xs font-bold">{((dna.penPressure ?? 0.5) * 100).toFixed(0)}%</div>
         </div>
         <div className="bg-muted/30 rounded-lg p-2 text-center">
           <div className="text-[10px] text-muted-foreground">Speed</div>
-          <div className="text-xs font-bold">{dna.strokeSpeed.toFixed(1)}x</div>
+          <div className="text-xs font-bold">{(dna.strokeSpeed ?? 1).toFixed(1)}x</div>
         </div>
       </div>
 
       {/* Confidence indicator */}
-      {dna.confidence > 0 && (
+      {(dna.confidence ?? 0) > 0 && (
         <div className="flex items-center gap-2">
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-primary rounded-full"
               initial={{ width: 0 }}
-              animate={{ width: `${dna.confidence * 100}%` }}
+              animate={{ width: `${(dna.confidence ?? 0) * 100}%` }}
               transition={{ duration: 0.5 }}
             />
           </div>
           <span className="text-[10px] text-muted-foreground">
-            {(dna.confidence * 100).toFixed(0)}% match
+            {((dna.confidence ?? 0) * 100).toFixed(0)}% match
           </span>
         </div>
       )}

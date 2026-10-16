@@ -664,7 +664,7 @@ const AdminPanelNikhil: React.FC = () => {
     const exporterMap = new Map<string, number>();
     const moodMap = new Map<string, number>();
 
-    const profileMap = new Map(profiles?.map(p => [p.user_id, p.display_name || 'Unknown']) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.user_id, p.display_name || 'Unknown'] as [string, string]) || []);
 
     activities?.forEach(activity => {
       // Count features

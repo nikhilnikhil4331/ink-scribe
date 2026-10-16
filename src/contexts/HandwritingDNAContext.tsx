@@ -124,7 +124,7 @@ export function HandwritingDNAProvider({ children }: { children: React.ReactNode
         applyPreset,
         analyzeFromImage,
         isAnalyzing,
-        confidence: dna.confidence,
+        confidence: dna.confidence ?? 0,
         getLineCSS,
         getWordCSS,
         getBaseCSS,

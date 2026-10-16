@@ -14,23 +14,25 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallBanner } from "@/components/InstallBanner";
 import { ShareButtons } from "@/components/promotion/ShareButtons";
 import { HandwritingDNAProvider } from "@/contexts/HandwritingDNAContext";
+// Home (editor + landing) stays eager so "/" has no lazy-load waterfall;
+// every other route is code-split (Frontend Developer agent: lazy loading)
 import Index from "./pages/Index";
-import Welcome from "./pages/Welcome";
-import NotFound from "./pages/NotFound";
-import { AuthPage } from "@/components/auth/AuthPage";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Upgrade from "./pages/Upgrade";
-import Payment from "./pages/Payment";
-import Admin from "./pages/Admin";
-import AdminPanelNikhil from "./pages/AdminPanelNikhil";
-import AdminLogin from "./pages/AdminLogin";
-import History from "./pages/History";
-import Account from "./pages/Account";
-import Achievements from "./pages/Achievements";
-import MyNotebooks from "./pages/MyNotebooks";
-import PremiumLanding from "./pages/PremiumLanding";
-import Onboarding from "./pages/Onboarding";
+const Welcome = lazy(() => import("./pages/Welcome"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AuthPage = lazy(() => import("@/components/auth/AuthPage").then(m => ({ default: m.AuthPage })));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Upgrade = lazy(() => import("./pages/Upgrade"));
+const Payment = lazy(() => import("./pages/Payment"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminPanelNikhil = lazy(() => import("./pages/AdminPanelNikhil"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const History = lazy(() => import("./pages/History"));
+const Account = lazy(() => import("./pages/Account"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const MyNotebooks = lazy(() => import("./pages/MyNotebooks"));
+const PremiumLanding = lazy(() => import("./pages/PremiumLanding"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 
 // Lazy load heavy/new pages — if they crash, main app stays alive
 const AISolverPage = lazy(() =>

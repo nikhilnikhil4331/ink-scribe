@@ -143,10 +143,10 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
   // Resolve DNA params: prefer full DNA profile, fall back to individual props
   const resolvedDNA = dna || getDefaultDNA();
   const slant = dna ? dna.slant : propSlant;
-  const penPressure = dna ? dna.penPressure : propPenPressure;
-  const strokeThickness = dna ? dna.strokeThickness : propStrokeThickness;
-  const baselineJitterAmount = dna ? dna.baselineDrift : propBaselineJitter;
-  const letterSpacingVariation = dna ? dna.letterSpacing : propLetterSpacingVar;
+  const penPressure = dna ? (dna.penPressure ?? propPenPressure) : propPenPressure;
+  const strokeThickness = dna ? (dna.strokeThickness ?? propStrokeThickness) : propStrokeThickness;
+  const baselineJitterAmount = dna ? (dna.baselineDrift ?? propBaselineJitter) : propBaselineJitter;
+  const letterSpacingVariation = dna ? (dna.letterSpacing ?? propLetterSpacingVar) : propLetterSpacingVar;
 
   // Generate DNA-powered line variation (v2)
   const dnaLineCSS = useMemo(() => {
@@ -209,7 +209,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
 
   // Use DNA-driven baseline variation when available
   const baselineVariation = dna
-    ? (dna.baselineDrift * 0.75)
+    ? ((dna.baselineDrift ?? 0) * 0.75)
     : (settings.baselineJitter ? Math.max(1.5, baselineJitterAmount * 0.75) : 0);
 
   const wrapperStyle: React.CSSProperties = {
@@ -266,7 +266,7 @@ export const HandwritingLine = memo(forwardRef<HTMLDivElement, HandwritingLinePr
                     wordCSS={dna ? generateWordVariation(dna, lineIndex, wordIndex) : undefined}
                   />
                   {wordIndex < words.length - 1 && (
-                    <span style={{ marginRight: `${dna ? dna.wordSpacing : settings.wordSpacing}px` }}> </span>
+                    <span style={{ marginRight: `${dna ? (dna.wordSpacing ?? settings.wordSpacing) : settings.wordSpacing}px` }}> </span>
                   )}
                 </React.Fragment>
               ))

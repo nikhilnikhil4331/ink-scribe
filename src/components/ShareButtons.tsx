@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Share2, Link2, Check, Download } from 'lucide-react';
-import { toast } from './Toast';
+import { toast } from './NikNoteToast';
 
 interface ShareButtonsProps {
   title?: string;

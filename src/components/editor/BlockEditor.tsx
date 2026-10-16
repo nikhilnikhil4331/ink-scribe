@@ -133,7 +133,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onBlocksChange
       embed: { content: '', extra: { url: '' } },
       pdf: { content: '', extra: { url: '' } },
       file: { content: '', extra: { url: '' } },
-      table: { content: '', extra: { tableData: { headers: ['Column 1', 'Column 2', 'Column 3'], rows: [['', '', ''], ['', '', '']], colCount: 3 } } },
+      table: { content: '', extra: { tableData: { headers: ['Column 1', 'Column 2', 'Column 3'], rows: [[{ id: 't1', content: '', type: 'text' }, { id: 't2', content: '', type: 'text' }, { id: 't3', content: '', type: 'text' }], [{ id: 't4', content: '', type: 'text' }, { id: 't5', content: '', type: 'text' }, { id: 't6', content: '', type: 'text' }]], colCount: 3 } } },
       column: { content: '' },
       'ai-generated': { content: '✨ AI will generate content here...' },
       mermaid: { content: 'graph TD\n  A[Start] --> B[Process]\n  B --> C[End]' },

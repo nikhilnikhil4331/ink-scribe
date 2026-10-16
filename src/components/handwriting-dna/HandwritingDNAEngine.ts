@@ -26,6 +26,19 @@ export interface HandwritingDNA {
   // Derived style name
   styleName: string;
   styleDescription: string;
+
+  // Extended v2 parameters — set by HandwritingAnalyzer & UI (optional: legacy DNA may not carry them)
+  penPressure?: number;      // 0 (light) to 1 (heavy)
+  strokeThickness?: number;  // multiplier, e.g. 1
+  baselineDrift?: number;    // px drift per line
+  letterSpacing?: number;    // px variation
+  wordSpacing?: number;      // px between words
+  characterSize?: number;    // px font size
+  strokeSpeed?: number;      // multiplier, e.g. 1
+  closestFont?: string;      // nearest handwriting font id
+  confidence?: number;       // 0..1 analysis confidence
+  sampleQuality?: 'good' | 'fair' | 'poor';
+  fontModifications?: Record<string, unknown>;
 }
 
 // Preset DNA profiles for quick selection
@@ -370,8 +383,8 @@ export function generateLineVariation(dna: HandwritingDNA, lineIndex: number): R
   };
 }
 
-export function generateWordVariation(dna: HandwritingDNA, wordIndex: number): Record<string, number> {
-  const seed = wordIndex * 73.7;
+export function generateWordVariation(dna: HandwritingDNA, lineIndex: number, wordIndex: number): Record<string, number> {
+  const seed = lineIndex * 73.7 + wordIndex * 31.1;
   return {
     offsetX: Math.sin(seed) * dna.spacing * 0.05,
     offsetY: Math.cos(seed) * 1,

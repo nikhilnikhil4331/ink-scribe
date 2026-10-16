@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+// html2canvas is imported on demand so it stays out of the initial bundle
 import { exportToPDF } from './export';
 
 /**
@@ -9,6 +9,8 @@ export async function shareAsImage(
   title: string = 'NikNote'
 ): Promise<void> {
   await document.fonts.ready;
+
+  const { default: html2canvas } = await import('html2canvas');
 
   const canvas = await html2canvas(element, {
     scale: 2,
