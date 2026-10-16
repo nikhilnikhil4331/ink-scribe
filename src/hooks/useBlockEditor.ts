@@ -25,13 +25,15 @@ export const useBlockEditor = () => {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { /* ignore — non-critical persistence */ }
     return [createBlock('text', '')];
   });
 
   // FIX: Use state for history position so canUndo/canRedo trigger re-renders
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [historyLength, setHistoryLength] = useState(0);
+  // Save indicator for the editor UI: 'saving' while debounce pending, 'saved' after write
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const currentColorRef = useRef<LineInkColor>('black');
   const historyRef = useRef<HistoryEntry[]>([]);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -81,10 +83,14 @@ export const useBlockEditor = () => {
   // ─── AUTO-SAVE ───
   const triggerAutoSave = useCallback((newBlocks: Block[]) => {
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    setSaveStatus('saving');
     autoSaveTimerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(newBlocks));
-      } catch {}
+        setSaveStatus('saved');
+      } catch {
+        setSaveStatus('idle');
+      }
     }, 1000);
   }, []);
 
@@ -256,6 +262,7 @@ export const useBlockEditor = () => {
   return {
     blocks,
     setBlocks: updateBlocks,
+    saveStatus,
     lines,
     getPlainText,
     importText,

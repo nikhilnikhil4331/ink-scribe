@@ -31,6 +31,7 @@ const History = lazy(() => import("./pages/History"));
 const Account = lazy(() => import("./pages/Account"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const MyNotebooks = lazy(() => import("./pages/MyNotebooks"));
+const MoneyTracker = lazy(() => import("./pages/MoneyTracker"));
 const PremiumLanding = lazy(() => import("./pages/PremiumLanding"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 
@@ -134,6 +135,7 @@ const App = () => {
                     <Route path="/blog" element={<BlogPage />} />
                     <Route path="/blog/:slug" element={<BlogPage />} />
                     <Route path="/history" element={<History />} />
+                    <Route path="/money" element={<MoneyTracker />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/achievements" element={<Achievements />} />
                     <Route path="/notebooks" element={<MyNotebooks />} />

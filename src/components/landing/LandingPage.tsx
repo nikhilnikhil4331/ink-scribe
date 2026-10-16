@@ -1,7 +1,6 @@
 import React from 'react';
 import { LandingHeader } from './LandingHeader';
 import { HeroSection } from './HeroSection';
-import { SocialProofSection } from './SocialProofSection';
 import { HowItWorksSection } from './HowItWorksSection';
 import { FeatureShowcase } from './FeatureShowcase';
 import { PreviewSection } from './PreviewSection';
@@ -11,11 +10,19 @@ import { CTASection } from './CTASection';
 import { DisclaimerBanner } from './DisclaimerBanner';
 import { LandingFooter } from './LandingFooter';
 import { ReferralWidget } from '@/components/promotion/ReferralWidget';
-import { UrgencyTimer } from '@/components/urgency/UrgencyTimer';
-import { LiveActivityFeed } from '@/components/urgency/LiveActivityFeed';
-import { ExitIntentPopup } from '@/components/urgency/ExitIntentPopup';
-import { MobilePremiumBar } from '@/components/urgency/MobilePremiumBar';
 
+/**
+ * Unified NikNote landing experience (served at /welcome and /landing).
+ *
+ * Design principles: real product capabilities over fake statistics,
+ * meaningful scroll reveals over forced transitions, one restrained accent,
+ * paper-and-ink identity.
+ *
+ * Intentionally NOT composed here anymore (invented social proof / pressure
+ * patterns — see AGENT-TUNEUP notes):
+ *   SocialProofSection (fabricated testimonials), UrgencyTimer, LiveActivityFeed
+ *   (simulated "activity" toasts), ExitIntentPopup, MobilePremiumBar.
+ */
 interface LandingPageProps {
   isDark: boolean;
   onToggleDark: () => void;
@@ -28,64 +35,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onStartWriting,
 }) => {
   const handlePreviewNotes = () => {
-    const previewSection = document.getElementById('preview-section');
-    if (previewSection) {
-      previewSection.scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById('how-it-works');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Urgency Banner at top */}
-      <UrgencyTimer variant="banner" />
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/20">
+      <LandingHeader isDark={isDark} onToggleDark={onToggleDark} onStartWriting={onStartWriting} />
 
-      <LandingHeader 
-        isDark={isDark} 
-        onToggleDark={onToggleDark}
-        onStartWriting={onStartWriting}
-      />
-      
-      <main className="pt-16">
-        <HeroSection 
-          onStartWriting={onStartWriting}
-          onPreviewNotes={handlePreviewNotes}
-        />
-        
-        <SocialProofSection />
-        
+      <main>
+        <HeroSection onStartWriting={onStartWriting} onPreviewNotes={handlePreviewNotes} />
+
         <HowItWorksSection />
-        
+
         <FeatureShowcase />
-        
-        <div id="preview-section">
-          <PreviewSection />
-        </div>
-        
-        {/* Urgency Card — between features and pricing for maximum conversion */}
-        <div className="container mx-auto px-4 lg:px-6 max-w-lg py-6">
-          <UrgencyTimer variant="card" />
-        </div>
-        
-        {/* Referral Widget — between features and pricing for maximum visibility */}
-        <div className="container mx-auto px-4 lg:px-6 max-w-2xl py-8">
-          <ReferralWidget variant="card" />
-        </div>
-        
+
+        <PreviewSection />
+
         <PricingTeaser />
-        
+
+        <section className="container mx-auto px-4 lg:px-6 pb-8">
+          <ReferralWidget variant="card" />
+        </section>
+
         <FAQSection />
-        
+
         <CTASection onStartWriting={onStartWriting} />
-        
-        <DisclaimerBanner />
-        
-        <LandingFooter />
       </main>
 
-      {/* Conversion urgency overlays */}
-      <LiveActivityFeed />
-      <ExitIntentPopup />
-      <MobilePremiumBar />
+      <DisclaimerBanner />
+      <LandingFooter />
     </div>
   );
 };

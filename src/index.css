@@ -1334,3 +1334,129 @@
     overscroll-behavior-y: contain;
   }
 }
+
+/* ============================================================
+   NikNote Premium UI Layer — motion, depth, interaction states
+   (Design system: one indigo accent, paper-and-ink identity)
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Motion tokens */
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 400ms;
+
+    /* Layered soft shadows (premium depth without glow spam) */
+    --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 12px rgb(15 23 42 / 0.05);
+    --shadow-raised: 0 2px 4px rgb(15 23 42 / 0.05), 0 12px 28px rgb(15 23 42 / 0.09);
+    --shadow-overlay: 0 8px 16px rgb(15 23 42 / 0.08), 0 24px 48px rgb(15 23 42 / 0.14);
+    --ring-accent: 0 0 0 3px hsl(var(--primary) / 0.25);
+  }
+
+  /* Visible keyboard focus everywhere (accessibility) */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-raised { box-shadow: var(--shadow-raised); }
+  .shadow-overlay { box-shadow: var(--shadow-overlay); }
+
+  /* Premium card: subtle lift on hover, no glow */
+  .lift {
+    transition: transform var(--duration-base) var(--ease-out-quint),
+                box-shadow var(--duration-base) var(--ease-out-quint);
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-raised);
+  }
+
+  /* Tactile press feedback for buttons/cards */
+  .press {
+    transition: transform var(--duration-fast) var(--ease-out-quint),
+                background-color var(--duration-fast) ease,
+                color var(--duration-fast) ease,
+                border-color var(--duration-fast) ease,
+                box-shadow var(--duration-fast) ease;
+  }
+  .press:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Scroll-reveal default state (JS toggles .reveal-visible) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity var(--duration-slow) var(--ease-out-quint),
+                transform var(--duration-slow) var(--ease-out-quint);
+  }
+  .reveal-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Ruled-paper motif — NikNote signature, used sparingly on marketing surfaces */
+  .paper-lines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      hsl(var(--line-color) / 0.5) 27px,
+      hsl(var(--line-color) / 0.5) 28px
+    );
+  }
+
+  /* Shimmer skeleton for loading states */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--muted));
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, hsl(var(--muted-foreground) / 0.08), transparent);
+    animation: skeleton-shimmer 1.4s infinite;
+  }
+
+  /* Text display gradient — ONE accent, restrained (headlines only) */
+  .text-accent-ink {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Respect reduced-motion: kill transforms/animations, keep opacity */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lift:hover { transform: none; }
+  .press:active:not(:disabled) { transform: none; }
+}
