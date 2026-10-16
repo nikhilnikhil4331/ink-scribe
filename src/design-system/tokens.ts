@@ -217,3 +217,44 @@ export const sidebarTokens = {
   itemPadding: '6px 8px',
   indentPerLevel: 16,
 } as const;
+
+// ============================================================
+// Premium motion system — fast enough for productivity
+// Mirrors CSS tokens in index.css (--ease-out-quint, --duration-*)
+// ============================================================
+
+export const motionTokens = {
+  duration: {
+    fast: 150,    // buttons, toggles, hover states
+    base: 250,    // dropdowns, tooltips, small reveals
+    slow: 400,    // modals, page reveals
+  },
+  ease: {
+    outQuint: [0.22, 1, 0.36, 1] as [number, number, number, number],
+    spring: [0.34, 1.56, 0.64, 1] as [number, number, number, number],
+    standard: [0.4, 0, 0.2, 1] as [number, number, number, number],
+  },
+  // Shared framer-motion variants (use with <motion.* variants=...>)
+  reveal: {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  },
+  stagger: {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.08 } },
+  },
+} as const;
+
+// Layered soft shadows — depth without glow
+export const shadowTokens = {
+  soft: '0 1px 2px rgb(15 23 42 / 0.04), 0 4px 12px rgb(15 23 42 / 0.05)',
+  raised: '0 2px 4px rgb(15 23 42 / 0.05), 0 12px 28px rgb(15 23 42 / 0.09)',
+  overlay: '0 8px 16px rgb(15 23 42 / 0.08), 0 24px 48px rgb(15 23 42 / 0.14)',
+} as const;
+
+// Button interaction contract: every button has these states
+export const buttonTokens = {
+  states: ['default', 'hover', 'pressed', 'focus-visible', 'disabled', 'loading'] as const,
+  pressScale: 0.97,
+  minTouchTarget: 40, // px — mobile accessibility
+} as const;

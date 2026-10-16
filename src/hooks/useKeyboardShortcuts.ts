@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useEffect, useCallback } from 'react';
-import { toast } from '@/components/Toast';
+import { toast } from '@/components/NikNoteToast';
 
 interface ShortcutConfig {
   key: string;           // e.g., 's', 'p', 'e'

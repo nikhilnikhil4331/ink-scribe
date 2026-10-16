@@ -32,7 +32,7 @@ const WorkspaceSidebar = lazy(() => import('@/components/workspace/WorkspaceSide
 import {
   Settings2, Edit3, FileDown, Palette, Crown, LogIn,
   Gem, MoreVertical, Moon, Sun, RotateCcw, Share2, Image, FileText, Sparkles,
-  LayoutGrid, Scan, Brain, PanelLeft, ChevronDown, MessageSquare
+  LayoutGrid, Scan, Brain, PanelLeft, ChevronDown, MessageSquare, Zap, Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -683,6 +683,7 @@ const Index = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleReset}><RotateCcw className="w-4 h-4 mr-2" /> Reset</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/notebooks')}><FileText className="w-4 h-4 mr-2" /> My Notebooks</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/money')}><Wallet className="w-4 h-4 mr-2" /> Money Tracker 💰</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/feedback')}><MessageSquare className="w-4 h-4 mr-2" /> Feedback 💬</DropdownMenuItem>
                     {!premium.isPremium && <DropdownMenuItem onClick={() => navigate('/payment')}><Crown className="w-4 h-4 mr-2" /> Upgrade to Premium ✨</DropdownMenuItem>}
                     {!premium.isPremium && (() => {
@@ -872,6 +873,17 @@ const Index = () => {
                   <span>Page {currentPageIndex + 1} of {totalPages}</span>
                   <span className="text-gray-300">·</span>
                   <span>{blockEditor.blocks.length} blocks</span>
+                  {blockEditor.saveStatus !== 'idle' && (
+                    <>
+                      <span className="text-gray-300">·</span>
+                      <span
+                        className={`transition-colors duration-300 ${blockEditor.saveStatus === 'saving' ? 'text-gray-400' : 'text-emerald-500'}`}
+                        aria-live="polite"
+                      >
+                        {blockEditor.saveStatus === 'saving' ? 'Saving…' : 'All changes saved ✓'}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 

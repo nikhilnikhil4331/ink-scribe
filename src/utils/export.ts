@@ -4,8 +4,8 @@
 // high-DPI, proper A4 sizing, dark/light mode support
 // ============================================================
 
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+// html2canvas & jsPDF are imported on demand below so the ~600KB vendor-pdf
+// chunk stays out of the initial bundle (Performance agent: lazy loading)
 
 export type ExportProgress = {
   current: number;
@@ -57,6 +57,8 @@ const captureToCanvas = async (
   retries = 2
 ): Promise<HTMLCanvasElement> => {
   if (!element) throw new Error('Element not found');
+
+  const { default: html2canvas } = await import('html2canvas');
 
   let lastError: Error | null = null;
 
@@ -140,6 +142,7 @@ export async function exportToPDF(
   onProgress?.({ current: 0, total: validElements.length, percentage: 0, status: 'preparing' });
   await waitForResources();
 
+  const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

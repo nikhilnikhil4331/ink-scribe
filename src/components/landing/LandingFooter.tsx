@@ -1,170 +1,138 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Twitter, Github, Mail, Heart, Shield, Star } from 'lucide-react';
+import { Github, Heart, Shield, Sparkles, Smartphone } from 'lucide-react';
+import niknoteLogoImg from '@/assets/niknote-logo.png';
 
+/**
+ * Premium footer — compact, useful, honest.
+ * Only real links and real claims (no invented support channels, ratings,
+ * social accounts, addresses or legal pages).
+ */
 export const LandingFooter: React.FC = () => {
+  const year = new Date().getFullYear();
+
   const handleWhatsAppShare = () => {
     const msg = encodeURIComponent(
       '🎓 NikNote — Free AI Study App! AI Teacher + Handwriting Notes + Quiz Generator\nTry free: https://niknote.online'
     );
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    window.open(`https://wa.me/?text=${msg}`, '_blank', 'noopener,noreferrer');
   };
 
+  const productLinks = [
+    { label: 'Features', to: '#features' },
+    { label: 'How it works', to: '#how-it-works' },
+    { label: 'Pricing', to: '#pricing' },
+    { label: 'FAQ', to: '#faq' },
+    { label: 'Blog', to: '/blog' },
+    { label: 'For schools', to: '/schools' },
+  ];
+
+  const moreLinks = [
+    { label: 'AI Solver', to: '/ai-solver' },
+    { label: 'AI Workspace', to: '/ai' },
+    { label: 'Money Tracker', to: '/money' },
+    { label: 'QA & Support', to: '/qa' },
+    { label: 'Send feedback', to: '/feedback' },
+    { label: 'Sign in', to: '/login' },
+    { label: 'Create account', to: '/signup' },
+  ];
+
   return (
-    <footer className="border-t border-border/50 bg-gradient-to-b from-background to-secondary/10">
-      {/* Trust & Founder Section */}
-      <div className="border-b border-border/30">
-        <div className="container mx-auto px-4 lg:px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            {/* Founder Card */}
-            <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-3">
-                <span className="text-xs font-bold text-primary">👨‍💻 Founder & Developer</span>
-              </div>
-              <h3 className="text-xl font-bold text-foreground">Nikhil Jatav</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Indian developer building tools for Indian students.
-                <br />"Padhai ko asaan banana hai — AI se, Hindi mein!"
-              </p>
-              <div className="flex items-center gap-3 mt-3 justify-center md:justify-start">
-                <a href="https://github.com/nikhilnikhil4331" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Github className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="text-center">
-              <h4 className="font-semibold text-foreground mb-3 text-sm">Trusted & Secure 🔒</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: Shield, label: 'Data Encrypted' },
-                  { icon: Star, label: '4.9 Rating' },
-                  { icon: Heart, label: 'Made in India' },
-                  { icon: Mail, label: '24/7 Support' },
-                ].map((badge) => (
-                  <div key={badge.label} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-muted/30 text-xs text-muted-foreground">
-                    <badge.icon className="w-3 h-3 text-primary" />
-                    {badge.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="text-center md:text-right">
-              <h4 className="font-semibold text-foreground mb-3 text-sm">NikNote by Numbers 📊</h4>
-              <div className="space-y-1.5">
-                {[
-                  { value: '16+', label: 'Handwriting Styles' },
-                  { value: '28+', label: 'AI Subjects' },
-                  { value: '9', label: 'AI Agents' },
-                  { value: '₹0', label: 'To Get Started' },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex items-center justify-center md:justify-end gap-2 text-sm">
-                    <span className="font-bold text-foreground">{stat.value}</span>
-                    <span className="text-muted-foreground">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Footer */}
-      <div className="container mx-auto px-4 lg:px-6 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+    <footer className="border-t border-border/50 bg-muted/20">
+      <div className="container mx-auto px-4 lg:px-6 py-12 md:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
           {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <img
-                src="/niknote-logo.png"
-                alt="NikNote"
-                className="h-8 w-auto object-contain"
-              />
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2.5">
+              <img src={niknoteLogoImg} alt="" className="h-9 w-9 rounded-lg shadow-soft" />
+              <span className="font-display text-lg font-bold text-foreground">NikNote</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-              AI-Powered Study App for Indian Students. Handwriting notes, AI Teacher, Quiz Generator — sab ek jagah!
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-[240px]">
+              Handwriting notes + AI teacher for Indian students. Padhai ko asaan banana hai — AI se, Hindi mein.
             </p>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-[10px] font-bold text-orange-600 border border-orange-200">
-              🇮🇳 Made in India
-            </span>
-          </div>
-
-          {/* Features */}
-          <div>
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Features</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">✍️ Handwriting Notes</Link></li>
-              <li><Link to="/ai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">🧠 AI Teacher</Link></li>
-              <li><Link to="/ai-solver" className="text-sm text-muted-foreground hover:text-foreground transition-colors">📝 AI Solver</Link></li>
-              <li><Link to="/documents" className="text-sm text-muted-foreground hover:text-foreground transition-colors">📄 Document AI</Link></li>
-              <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">📚 Blog</Link></li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Resources</h4>
-            <ul className="space-y-2">
-              <li><Link to="/upgrade" className="text-sm text-muted-foreground hover:text-foreground transition-colors">💎 Premium Plans</Link></li>
-              <li><a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">❓ FAQ</a></li>
-              <li><a href="mailto:support@niknote.online" className="text-sm text-muted-foreground hover:text-foreground transition-colors">📧 Contact Us</a></li>
-            </ul>
-          </div>
-
-          {/* Connect */}
-          <div>
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Connect</h4>
-            <div className="space-y-2">
+            <div className="mt-4 flex items-center gap-3">
+              <a
+                href="https://github.com/nikhilnikhil4331"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors press"
+                aria-label="NikNote on GitHub"
+              >
+                <Github className="w-4 h-4" aria-hidden="true" />
+                GitHub
+              </a>
               <button
+                type="button"
                 onClick={handleWhatsAppShare}
-                className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors press"
               >
-                <MessageCircle className="w-4 h-4" />
-                Share on WhatsApp
+                <Heart className="w-4 h-4" aria-hidden="true" />
+                Share
               </button>
-              <a
-                href="https://twitter.com/NikNote"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Twitter className="w-4 h-4" />
-                Follow on Twitter
-              </a>
-              <a
-                href="https://github.com/nikhilnikhil4331/ink-scribe"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Github className="w-4 h-4" />
-                Star on GitHub
-              </a>
-              <a
-                href="mailto:support@niknote.online"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Mail className="w-4 h-4" />
-                Email Support
-              </a>
             </div>
+          </div>
+
+          {/* Product */}
+          <nav aria-label="Product">
+            <h3 className="text-xs font-semibold tracking-[0.12em] uppercase text-foreground/70 mb-3">Product</h3>
+            <ul className="space-y-2.5">
+              {productLinks.map((link) => (
+                <li key={link.label}>
+                  {link.to.startsWith('#') ? (
+                    <a href={link.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link to={link.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* More */}
+          <nav aria-label="More">
+            <h3 className="text-xs font-semibold tracking-[0.12em] uppercase text-foreground/70 mb-3">Explore</h3>
+            <ul className="space-y-2.5">
+              {moreLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Trust — factual badges only */}
+          <div>
+            <h3 className="text-xs font-semibold tracking-[0.12em] uppercase text-foreground/70 mb-3">Why NikNote</h3>
+            <ul className="space-y-2.5">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Heart className="w-4 h-4 text-primary" aria-hidden="true" /> Made in India 🇮🇳
+              </li>
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" /> Free to start
+              </li>
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Shield className="w-4 h-4 text-primary" aria-hidden="true" /> Your notes stay yours
+              </li>
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Smartphone className="w-4 h-4 text-primary" aria-hidden="true" /> Phone &amp; laptop ready
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} NikNote. All rights reserved. Founded by Nikhil Jatav.
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a>
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Refund Policy</a>
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-red-500 fill-red-500" /> in India 🇮🇳 by Nikhil Jatav
+        {/* Bottom bar */}
+        <div className="mt-10 pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            © {year} NikNote · Founded &amp; built by Nikhil Jatav
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Made with <Heart className="w-3 h-3 inline text-red-500" aria-hidden="true" /> for students
           </p>
         </div>
       </div>

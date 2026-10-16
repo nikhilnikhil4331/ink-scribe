@@ -37,6 +37,7 @@ export interface OCRBlock {
     tableRows?: string[][];
     tableHeaders?: string[];
     imageUrl?: string;
+    caption?: string;
     readingOrder?: number;
   };
 }

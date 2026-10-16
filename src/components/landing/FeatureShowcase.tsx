@@ -1,180 +1,125 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import {
-  Pen,
-  Palette,
-  FileText,
-  Sparkles,
-  Download,
-  Mic,
-  Sliders,
-  BookOpen,
-  Brain,
-  Zap,
-  MessageCircle,
-  Layers,
-  Target,
-  Lightbulb,
-  GraduationCap,
+  PenLine, Palette, PencilRuler, Brain, LayoutTemplate, Flame, FolderOpen, Check, Wallet,
 } from 'lucide-react';
+import { Reveal } from '@/components/design/Reveal';
+import { SectionHeading } from '@/components/design/SectionHeading';
+import { FeatureIcon } from '@/components/design/FeatureIcon';
 
-const features = [
+/**
+ * Feature story — every section maps to a REAL NikNote capability
+ * (no invented stats, no fake features). Scrolltide-inspired storytelling:
+ * meaningful reveals that present content instead of hiding it behind motion.
+ */
+const featureStories = [
   {
-    icon: Brain,
-    title: '🧠 AI Teacher (Hindi + English)',
-    description: 'Ask any doubt — Newton\'s laws, Photosynthesis, Algebra — get instant explanation in Hindi & English. Works WITHOUT internet!',
-    badge: 'NEW',
-    badgeColor: 'bg-purple-500',
-  },
-  {
-    icon: Target,
-    title: '📝 Quiz & Flashcard Generator',
-    description: 'Enter any topic, get quiz questions + flashcards instantly. Exam revision ka best way! CBSE, JEE, NEET pattern.',
-    badge: 'POPULAR',
-    badgeColor: 'bg-red-500',
-  },
-  {
-    icon: Pen,
-    title: '✍️ 16+ Handwriting Styles',
-    description: 'From neat cursive to casual print — each with adjustable randomness so it never looks robotic. Real India-style handwriting!',
+    icon: PenLine,
+    tone: 'primary' as const,
+    eyebrow: 'Note writing',
+    title: 'A block editor that keeps up with your thoughts',
+    body: 'Type, paste or dictate — NikNote organizes everything into clean blocks. Slash commands, toggles, tables, code, equations and 25+ block types, with smart suggestions while you write.',
+    points: ['25+ block types', 'Smart editor suggestions', 'Paste multi-line notes'],
   },
   {
     icon: Palette,
-    title: '🎨 12 Ink Colors + Custom',
-    description: 'Classic blue, black, red, green, and more. Plus custom color picker. Match any notebook or assignment requirement.',
+    tone: 'paper' as const,
+    eyebrow: 'Handwriting personalization',
+    title: 'Your handwriting, your rules',
+    body: 'Convert typed text into realistic handwritten pages with 16+ handwriting styles, ink colors and paper types. The Handwriting DNA Scanner studies your style and reproduces it.',
+    points: ['16+ handwriting styles', 'Handwriting DNA Scanner', 'Ink colors & paper styles'],
   },
   {
-    icon: FileText,
-    title: '📄 14 Paper Styles',
-    description: 'Ruled, college-ruled, graph, dotted, plain, legal, and more. Exactly like your school/college notebooks!',
+    icon: PencilRuler,
+    tone: 'warm' as const,
+    eyebrow: 'Drawing & annotation',
+    title: 'Sketch, diagram, annotate — right on the page',
+    body: 'Draw diagrams, mark up your notes and import visuals. From physics figures to mind maps, your pages stay as expressive as a real notebook.',
+    points: ['Freehand drawing tools', 'Diagram import', 'Per-block styling'],
   },
   {
-    icon: Lightbulb,
-    title: '💡 Smart Editor with Suggestions',
-    description: 'AI suggests improvements while you type — fix grammar, expand ideas, simplify language. Like Grammarly for notes!',
+    icon: Brain,
+    tone: 'primary' as const,
+    eyebrow: 'AI learning tools',
+    title: 'An AI teacher that speaks your language',
+    body: 'Ask doubts in Hindi or English, generate quizzes, flashcards and mind maps, or snap a problem to the AI Solver. Local knowledge base answers even without internet.',
+    points: ['AI Teacher (Hindi + English)', 'Quiz & flashcard generator', 'Works offline-first'],
   },
   {
-    icon: Download,
-    title: '📥 PDF & Image Export (300 DPI)',
-    description: 'Export multi-page PDFs at 300 DPI — print-ready quality. Also download individual pages as PNG images.',
+    icon: LayoutTemplate,
+    tone: 'ink' as const,
+    eyebrow: 'Productivity',
+    title: 'Templates, workflows and print-ready exports',
+    body: 'Jump-start notes with ready templates and study workflows. Export clean multi-page PDFs at 300 DPI, share to WhatsApp, and find anything through the command palette.',
+    points: ['Quick templates & workflows', 'Multi-page PDF export', 'Command palette'],
   },
   {
-    icon: Layers,
-    title: '🧩 Mind Maps & Diagrams',
-    description: 'Create visual mind maps for any topic. AI generates structure — you just review and learn!',
+    icon: Flame,
+    tone: 'warm' as const,
+    eyebrow: 'Daily habits',
+    title: 'Build a study streak that actually sticks',
+    body: 'Track daily study streaks, unlock rewards as you go, and earn achievements for real work done — not for clicking buttons. Small wins, every single day.',
+    points: ['Study streaks & rewards', 'Achievement badges', 'Real progress tracking'],
   },
   {
-    icon: GraduationCap,
-    title: '📚 28+ Built-in Subjects',
-    description: 'Newton\'s Laws, Photosynthesis, Thermodynamics, Indian Constitution — instant notes without any API key!',
-    badge: 'FREE',
-    badgeColor: 'bg-green-500',
+    icon: FolderOpen,
+    tone: 'primary' as const,
+    eyebrow: 'Personal workspace',
+    title: 'Every subject, every notebook, one place',
+    body: 'Organize pages into notebooks by subject, colour-code them your way, and pick up exactly where you left off — on your phone or your laptop.',
+    points: ['Notebooks & pages', 'Subject organisation', 'Sync-ready workspace'],
   },
   {
-    icon: MessageCircle,
-    title: '📱 WhatsApp One-Click Share',
-    description: 'Share your handwritten notes directly to WhatsApp groups. Classmates ko bhejo — viral ho jao!',
-  },
-  {
-    icon: Mic,
-    title: '🎤 Voice Dictation',
-    description: 'Speak your thoughts and watch them transform into handwritten notes in real time. Hindi voice bhi kaam karta hai!',
-  },
-  {
-    icon: Sliders,
-    title: '🎯 Natural Imperfections',
-    description: 'Baseline jitter, stroke variation, spacing randomness — makes output look genuinely handwritten, not computer-generated.',
+    icon: Wallet,
+    tone: 'warm' as const,
+    eyebrow: 'Money tracking',
+    title: 'Pocket money, expenses and savings — sorted',
+    body: 'A calm little finance tracker for student life. Log income and expenses, see where money goes each month, and keep your savings on track.',
+    points: ['Income & expense log', 'Monthly breakdown', 'Category insights'],
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06 },
-  },
-};
+export const FeatureShowcase: React.FC = () => (
+  <section id="features" className="relative py-20 md:py-28">
+    <div className="container mx-auto px-4 lg:px-6">
+      <SectionHeading
+        eyebrow="Everything in one notebook"
+        title="Built for how Indian students actually study"
+        subtitle="From first draft to final revision — writing, handwriting, drawing, AI and daily habits work together in one calm, focused workspace."
+      />
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
-
-export const FeatureShowcase: React.FC = () => {
-  return (
-    <section id="features" className="py-24 bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto px-4 lg:px-6">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <span className="text-sm font-semibold text-primary uppercase tracking-wider">Features</span>
-          <h2 className="text-3xl sm:text-4xl font-bold mt-3 mb-4 text-foreground">
-            Notion + ChatGPT + GoodNotes ={' '}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              NikNote
-            </span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            AI-powered notes, realistic handwriting, exam preparation — sab ek app mein. Indian students ke liye, Indian students dwara! 🇮🇳
-          </p>
-        </motion.div>
-
-        {/* Features Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto"
-        >
-          {features.map((feature) => (
-            <motion.div
-              key={feature.title}
-              variants={itemVariants}
-              className="group relative p-6 bg-card rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
-            >
-              {feature.badge && (
-                <span className={`absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${feature.badgeColor}`}>
-                  {feature.badge}
-                </span>
-              )}
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                <feature.icon className="w-5 h-5 text-primary" />
+      <div className="space-y-16 md:space-y-24 max-w-5xl mx-auto">
+        {featureStories.map((story, i) => (
+          <Reveal key={story.eyebrow}>
+            <div className={`flex flex-col md:flex-row items-start gap-8 md:gap-12 ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
+              <div className="flex-shrink-0">
+                <FeatureIcon icon={<story.icon className="w-6 h-6" />} tone={story.tone} size="lg" />
               </div>
-              <h3 className="text-base font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {feature.description}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <p className="text-muted-foreground text-sm mb-4">
-            ...aur bahut kuch! Naye features har week add hote hain 🚀
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {['Hindi Support', 'Offline Mode', 'PWA Install', 'Free Forever Plan'].map((tag) => (
-              <span key={tag} className="px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-xs font-medium text-primary">
-                ✅ {tag}
-              </span>
-            ))}
-          </div>
-        </motion.div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold tracking-[0.14em] uppercase text-primary mb-2">
+                  {story.eyebrow}
+                </p>
+                <h3 className="font-display text-2xl sm:text-3xl font-bold text-foreground leading-snug">
+                  {story.title}
+                </h3>
+                <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
+                  {story.body}
+                </p>
+                <ul className="mt-5 flex flex-wrap gap-2">
+                  {story.points.map((point) => (
+                    <li
+                      key={point}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[hsl(var(--paper))] border border-[hsl(var(--line-color))] text-xs font-medium text-foreground/80"
+                    >
+                      <Check className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
