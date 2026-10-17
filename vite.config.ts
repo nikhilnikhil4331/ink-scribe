@@ -29,8 +29,17 @@ export default defineConfig(({ mode }) => ({
         // preload helper stays in the static graph (it was previously merged into
         // the vendor-pdf chunk, which forced the 600KB chunk onto every page load).
         manualChunks(id) {
-          // Keep Vite's preload helper inside a chunk the entry already loads
-          if (id.includes('preload-helper') || id.includes('\0vite/')) return 'vendor-react';
+          // Keep Rollup/Vite runtime helpers inside the React chunk the entry
+          // already loads. If they land in a lazily-loaded vendor chunk, that
+          // chunk ends up importing back into vendor-react and creates a
+          // circular chunk graph -> "Cannot read properties of undefined
+          // (reading 'forwardRef')" at boot (white screen in production).
+          if (
+            id.includes('preload-helper') ||
+            id.includes('commonjsHelpers') ||
+            id.includes('commonjs-dynamic-require') ||
+            id.includes('\0vite/')
+          ) return 'vendor-react';
           if (!id.includes('node_modules')) return undefined;
 
           const parts = id.split('node_modules/').pop()!.split('/');
